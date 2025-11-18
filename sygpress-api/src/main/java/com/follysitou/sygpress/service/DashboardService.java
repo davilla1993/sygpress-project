@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.format.TextStyle;
 import java.time.temporal.ChronoUnit;
@@ -332,7 +331,7 @@ public class DashboardService {
     private String getStatusLabel(ProcessingStatus status) {
         return switch (status) {
             case DEPOT -> "Dépôt";
-            case COLLECTE -> "Collecte";
+            case DEPOT -> "Collecte";
             case LAVAGE -> "Lavage";
             case REPASSAGE -> "Repassage";
             case PRET -> "Prêt";
