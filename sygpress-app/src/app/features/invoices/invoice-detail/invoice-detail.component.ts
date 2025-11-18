@@ -4,6 +4,7 @@ import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { InvoiceService } from '../../../core/services/invoice.service';
 import { Invoice, ProcessingStatus } from '../../../core/models';
+import { ToastService } from '../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-invoice-detail',
@@ -224,7 +225,8 @@ export class InvoiceDetailComponent implements OnInit {
   constructor(
     private invoiceService: InvoiceService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -240,7 +242,9 @@ export class InvoiceDetailComponent implements OnInit {
         this.invoice.set(invoice);
         this.isLoading.set(false);
       },
-      error: () => {
+      error: (error) => {
+        const message = error.error?.message || 'Erreur lors du chargement de la facture';
+        this.toastService.error(message);
         this.isLoading.set(false);
         this.router.navigate(['/invoices']);
       }
@@ -253,6 +257,10 @@ export class InvoiceDetailComponent implements OnInit {
       this.invoiceService.updateStatus(inv.publicId, status).subscribe({
         next: (updated) => {
           this.invoice.set(updated);
+        },
+        error: (error) => {
+          const message = error.error?.message || 'Erreur lors de la mise à jour du statut';
+          this.toastService.error(message);
         }
       });
     }
@@ -265,6 +273,10 @@ export class InvoiceDetailComponent implements OnInit {
         next: (updated) => {
           this.invoice.set(updated);
           this.paymentAmount = 0;
+        },
+        error: (error) => {
+          const message = error.error?.message || 'Erreur lors de l\'ajout du paiement';
+          this.toastService.error(message);
         }
       });
     }
@@ -277,6 +289,10 @@ export class InvoiceDetailComponent implements OnInit {
         next: (blob) => {
           const url = window.URL.createObjectURL(blob);
           window.open(url, '_blank');
+        },
+        error: (error) => {
+          const message = error.error?.message || 'Erreur lors de l\'impression';
+          this.toastService.error(message);
         }
       });
     }

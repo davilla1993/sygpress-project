@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CompanyService } from '../../../core/services/company.service';
 import { Company } from '../../../core/models';
+import { ToastService } from '../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-company',
@@ -129,7 +130,8 @@ export class CompanyComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private companyService: CompanyService
+    private companyService: CompanyService,
+    private toastService: ToastService
   ) {
     this.form = this.fb.group({
       name: ['', Validators.required],
@@ -165,7 +167,9 @@ export class CompanyComponent implements OnInit {
         });
         this.isLoading.set(false);
       },
-      error: () => {
+      error: (error) => {
+        const message = error.error?.message || 'Erreur lors du chargement des informations';
+        this.toastService.error(message);
         this.isLoading.set(false);
       }
     });
@@ -180,6 +184,10 @@ export class CompanyComponent implements OnInit {
           if (current) {
             this.company.set({ ...current, logoUrl: response.logoUrl });
           }
+        },
+        error: (error) => {
+          const message = error.error?.message || 'Erreur lors du téléchargement du logo';
+          this.toastService.error(message);
         }
       });
     }
@@ -194,7 +202,9 @@ export class CompanyComponent implements OnInit {
         this.company.set(company);
         this.isSubmitting.set(false);
       },
-      error: () => {
+      error: (error) => {
+        const message = error.error?.message || 'Erreur lors de l\'enregistrement';
+        this.toastService.error(message);
         this.isSubmitting.set(false);
       }
     });

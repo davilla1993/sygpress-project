@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
 import { Article, Category } from '../../../../core/models';
+import { ToastService } from '../../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-article-list',
@@ -103,7 +104,10 @@ export class ArticleListComponent implements OnInit {
     categoryPublicId: ''
   };
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private toastService: ToastService
+  ) {}
 
   ngOnInit(): void {
     this.loadArticles();
@@ -116,7 +120,9 @@ export class ArticleListComponent implements OnInit {
         this.articles.set(articles);
         this.isLoading.set(false);
       },
-      error: () => {
+      error: (error) => {
+        const message = error.error?.message || 'Erreur lors du chargement des articles';
+        this.toastService.error(message);
         this.isLoading.set(false);
       }
     });
@@ -146,6 +152,10 @@ export class ArticleListComponent implements OnInit {
       next: () => {
         this.closeModal();
         this.loadArticles();
+      },
+      error: (error) => {
+        const message = error.error?.message || 'Erreur lors de l\'enregistrement';
+        this.toastService.error(message);
       }
     });
   }
@@ -155,6 +165,10 @@ export class ArticleListComponent implements OnInit {
       this.http.delete(`${environment.apiUrl}/articles/${article.publicId}`).subscribe({
         next: () => {
           this.loadArticles();
+        },
+        error: (error) => {
+          const message = error.error?.message || 'Erreur lors de la suppression';
+          this.toastService.error(message);
         }
       });
     }

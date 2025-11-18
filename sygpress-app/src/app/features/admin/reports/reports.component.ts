@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
+import { ToastService } from '../../../shared/services/toast.service';
 
 interface SalesReport {
   totalInvoices: number;
@@ -215,7 +216,10 @@ export class ReportsComponent {
   customerReport = signal<CustomerReport | null>(null);
   serviceReport = signal<ServiceReport[]>([]);
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    private toastService: ToastService
+  ) {
     this.loadSalesReport();
   }
 
@@ -227,7 +231,9 @@ export class ReportsComponent {
         this.salesReport.set(data);
         this.isLoading.set(false);
       },
-      error: () => {
+      error: (error) => {
+        const message = error.error?.message || 'Erreur lors du chargement du rapport des ventes';
+        this.toastService.error(message);
         this.isLoading.set(false);
       }
     });
@@ -241,7 +247,9 @@ export class ReportsComponent {
         this.customerReport.set(data);
         this.isLoading.set(false);
       },
-      error: () => {
+      error: (error) => {
+        const message = error.error?.message || 'Erreur lors du chargement du rapport clients';
+        this.toastService.error(message);
         this.isLoading.set(false);
       }
     });
@@ -255,7 +263,9 @@ export class ReportsComponent {
         this.serviceReport.set(data);
         this.isLoading.set(false);
       },
-      error: () => {
+      error: (error) => {
+        const message = error.error?.message || 'Erreur lors du chargement du rapport des services';
+        this.toastService.error(message);
         this.isLoading.set(false);
       }
     });
@@ -267,6 +277,10 @@ export class ReportsComponent {
       next: (blob) => {
         const url = window.URL.createObjectURL(blob);
         window.open(url, '_blank');
+      },
+      error: (error) => {
+        const message = error.error?.message || 'Erreur lors de l\'impression du rapport';
+        this.toastService.error(message);
       }
     });
   }

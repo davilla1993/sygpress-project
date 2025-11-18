@@ -157,8 +157,9 @@ export class CustomerListComponent implements OnInit {
         this.totalElements.set(response.totalElements);
         this.isLoading.set(false);
       },
-      error: () => {
-        this.toastService.error('Erreur lors du chargement des clients');
+      error: (error) => {
+        const message = error.error?.message || 'Erreur lors du chargement des clients';
+        this.toastService.error(message);
         this.isLoading.set(false);
       }
     });
@@ -192,8 +193,9 @@ export class CustomerListComponent implements OnInit {
         this.customerToDelete = null;
         this.loadCustomers();
       },
-      error: () => {
-        this.toastService.error('Erreur lors de la suppression');
+      error: (error) => {
+        const message = error.error?.message || 'Erreur lors de la suppression';
+        this.toastService.error(message);
         this.showDeleteModal = false;
       }
     });
