@@ -4,6 +4,7 @@ import com.follysitou.sygpress.model.*;
 import com.lowagie.text.*;
 import com.lowagie.text.pdf.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import java.awt.Color;
@@ -19,6 +20,7 @@ public class InvoicePdfService {
 
     private final CompanyService companyService;
     private final InvoiceService invoiceService;
+    private final FileStorageService fileStorageService;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final Color PRIMARY_COLOR = new Color(44, 62, 80);
@@ -51,9 +53,6 @@ public class InvoicePdfService {
             // Add totals
             addTotals(document, invoice);
 
-            // Add payment info
-            companyOpt.ifPresent(company -> addPaymentInfo(document, company));
-
             // Add footer
             companyOpt.ifPresent(company -> addFooter(document, company));
 
@@ -75,9 +74,11 @@ public class InvoicePdfService {
             // Logo cell
             PdfPCell logoCell = new PdfPCell();
             logoCell.setBorder(Rectangle.NO_BORDER);
-            if (company.getLogo() != null && company.getLogo().length > 0) {
+            if (company.getLogoPath() != null && !company.getLogoPath().isEmpty()) {
                 try {
-                    Image logo = Image.getInstance(company.getLogo());
+                    Resource logoResource = fileStorageService.loadFileAsResource(company.getLogoPath());
+                    byte[] logoBytes = logoResource.getInputStream().readAllBytes();
+                    Image logo = Image.getInstance(logoBytes);
                     logo.scaleToFit(100, 80);
                     logoCell.addElement(logo);
                 } catch (Exception e) {
@@ -104,10 +105,8 @@ public class InvoicePdfService {
                 infoCell.addElement(address);
             }
 
-            if (company.getCity() != null || company.getPostalCode() != null) {
-                String cityPostal = (company.getPostalCode() != null ? company.getPostalCode() + " " : "") +
-                        (company.getCity() != null ? company.getCity() : "");
-                Paragraph city = new Paragraph(cityPostal.trim(), infoFont);
+            if (company.getCity() != null) {
+                Paragraph city = new Paragraph(company.getCity(), infoFont);
                 city.setAlignment(Element.ALIGN_RIGHT);
                 infoCell.addElement(city);
             }
@@ -339,55 +338,21 @@ public class InvoicePdfService {
         table.addCell(valueCell);
     }
 
-    private void addPaymentInfo(Document document, Company company) {
-        try {
-            if (company.getPaymentTerms() == null && company.getIban() == null) return;
-
-            Font labelFont = new Font(Font.HELVETICA, 10, Font.BOLD, PRIMARY_COLOR);
-            Font valueFont = new Font(Font.HELVETICA, 9, Font.NORMAL);
-
-            document.add(new Paragraph("Informations de paiement", labelFont));
-            document.add(new Paragraph("\n"));
-
-            if (company.getPaymentTerms() != null) {
-                document.add(new Paragraph(company.getPaymentTerms(), valueFont));
-            }
-
-            if (company.getIban() != null) {
-                document.add(new Paragraph("IBAN: " + company.getIban(), valueFont));
-            }
-
-            if (company.getBic() != null) {
-                document.add(new Paragraph("BIC: " + company.getBic(), valueFont));
-            }
-
-            if (company.getBankName() != null) {
-                document.add(new Paragraph("Banque: " + company.getBankName(), valueFont));
-            }
-
-            document.add(new Paragraph("\n"));
-
-        } catch (DocumentException e) {
-            // Skip payment info if error
-        }
-    }
-
     private void addFooter(Document document, Company company) {
         try {
             Font footerFont = new Font(Font.HELVETICA, 8, Font.NORMAL, Color.GRAY);
 
             StringBuilder footer = new StringBuilder();
 
-            if (company.getRccmNumber() != null) {
-                footer.append("RCCM: ").append(company.getRccmNumber()).append(" | ");
+            if (company.getWebsite() != null) {
+                footer.append(company.getWebsite());
             }
 
-            if (company.getNifNumber() != null) {
-                footer.append("NIF: ").append(company.getNifNumber()).append(" | ");
-            }
-
-            if (company.getLegalMentions() != null) {
-                footer.append(company.getLegalMentions());
+            if (company.getSlogan() != null) {
+                if (footer.length() > 0) {
+                    footer.append(" | ");
+                }
+                footer.append(company.getSlogan());
             }
 
             if (footer.length() > 0) {
