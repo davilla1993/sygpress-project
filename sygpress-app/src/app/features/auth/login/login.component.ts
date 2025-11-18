@@ -9,12 +9,12 @@ import { AuthService } from '../../../core/services/auth.service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   template: `
-    <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-600 to-primary-800 p-4">
+    <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-600 to-slate-800 p-4">
       <div class="w-full max-w-md">
         <!-- Logo/Brand -->
         <div class="text-center mb-8">
           <h1 class="text-4xl font-bold text-white">SygPress</h1>
-          <p class="text-primary-100 mt-2">Gestion de Pressing</p>
+          <p class="text-slate-200 mt-2">Gestion de Pressing</p>
         </div>
 
         <!-- Login Card -->
@@ -99,7 +99,7 @@ import { AuthService } from '../../../core/services/auth.service';
         </div>
 
         <!-- Footer -->
-        <p class="text-center text-primary-100 text-sm mt-6">
+        <p class="text-center text-slate-300 text-sm mt-6">
           © 2024 SygPress. Tous droits réservés.
         </p>
       </div>
