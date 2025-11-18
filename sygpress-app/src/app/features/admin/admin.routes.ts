@@ -15,6 +15,10 @@ export const ADMIN_ROUTES: Routes = [
     loadComponent: () => import('./users/user-list/user-list.component').then(m => m.UserListComponent)
   },
   {
+    path: 'categories',
+    loadComponent: () => import('./categories/category-list/category-list.component').then(m => m.CategoryListComponent)
+  },
+  {
     path: 'articles',
     loadComponent: () => import('./articles/article-list/article-list.component').then(m => m.ArticleListComponent)
   },
