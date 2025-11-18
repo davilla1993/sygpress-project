@@ -27,7 +27,7 @@ public class ServiceMapper {
 
     public ServiceResponse toResponse(Service service) {
         ServiceResponse response = new ServiceResponse();
-        response.setId(service.getId());
+        response.setPublicId(service.getPublicId());
         response.setName(service.getName());
 
         if (service.getPricing() != null) {
@@ -41,7 +41,7 @@ public class ServiceMapper {
 
     private PricingResponse pricingToMinimalResponse(Pricing pricing) {
         PricingResponse response = new PricingResponse();
-        response.setId(pricing.getId());
+        response.setPublicId(pricing.getPublicId());
         response.setPrice(pricing.getPrice());
         return response;
     }

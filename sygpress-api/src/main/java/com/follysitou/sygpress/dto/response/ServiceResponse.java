@@ -7,7 +7,7 @@ import java.util.List;
 @Data
 public class ServiceResponse {
 
-    private Long id;
+    private String publicId;
     private String name;
     private List<PricingResponse> pricing;
 }

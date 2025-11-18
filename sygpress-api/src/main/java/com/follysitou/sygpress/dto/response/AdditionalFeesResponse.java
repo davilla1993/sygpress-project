@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 @Data
 public class AdditionalFeesResponse {
 
-    private Long id;
+    private String publicId;
     private String title;
     private String description;
     private BigDecimal amount;

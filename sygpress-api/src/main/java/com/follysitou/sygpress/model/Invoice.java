@@ -1,5 +1,6 @@
 package com.follysitou.sygpress.model;
 
+import com.follysitou.sygpress.enums.ProcessingStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.FutureOrPresent;
@@ -46,6 +47,10 @@ public class Invoice extends BaseEntity {
     private BigDecimal remainingAmount = BigDecimal.ZERO;
 
     private boolean invoicePaid;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private ProcessingStatus processingStatus = ProcessingStatus.EN_LAVAGE;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id")

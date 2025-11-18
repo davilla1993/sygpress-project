@@ -7,11 +7,11 @@ import com.follysitou.sygpress.model.Pricing;
 import com.follysitou.sygpress.service.PricingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/pricing")
@@ -23,50 +23,50 @@ public class PricingController {
 
     @PostMapping
     public ResponseEntity<PricingResponse> create(@Valid @RequestBody PricingRequest request) {
-        Pricing saved = pricingService.create(request.getPrice(), request.getArticleId(), request.getServiceId());
+        Pricing saved = pricingService.create(request.getPrice(), request.getArticlePublicId(), request.getServicePublicId());
         return new ResponseEntity<>(pricingMapper.toResponse(saved), HttpStatus.CREATED);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<PricingResponse> getById(@PathVariable Long id) {
-        Pricing pricing = pricingService.findById(id);
+    @GetMapping("/{publicId}")
+    public ResponseEntity<PricingResponse> getByPublicId(@PathVariable String publicId) {
+        Pricing pricing = pricingService.findByPublicId(publicId);
         return ResponseEntity.ok(pricingMapper.toResponse(pricing));
     }
 
     @GetMapping
-    public ResponseEntity<List<PricingResponse>> getAll() {
-        List<Pricing> pricings = pricingService.findAll();
-        return ResponseEntity.ok(pricingMapper.toResponseList(pricings));
+    public ResponseEntity<Page<PricingResponse>> getAll(Pageable pageable) {
+        Page<Pricing> pricings = pricingService.findAll(pageable);
+        return ResponseEntity.ok(pricings.map(pricingMapper::toResponse));
     }
 
-    @GetMapping("/article/{articleId}")
-    public ResponseEntity<List<PricingResponse>> getByArticle(@PathVariable Long articleId) {
-        List<Pricing> pricings = pricingService.findByArticle(articleId);
-        return ResponseEntity.ok(pricingMapper.toResponseList(pricings));
+    @GetMapping("/article/{articlePublicId}")
+    public ResponseEntity<Page<PricingResponse>> getByArticle(@PathVariable String articlePublicId, Pageable pageable) {
+        Page<Pricing> pricings = pricingService.findByArticle(articlePublicId, pageable);
+        return ResponseEntity.ok(pricings.map(pricingMapper::toResponse));
     }
 
-    @GetMapping("/service/{serviceId}")
-    public ResponseEntity<List<PricingResponse>> getByService(@PathVariable Long serviceId) {
-        List<Pricing> pricings = pricingService.findByService(serviceId);
-        return ResponseEntity.ok(pricingMapper.toResponseList(pricings));
+    @GetMapping("/service/{servicePublicId}")
+    public ResponseEntity<Page<PricingResponse>> getByService(@PathVariable String servicePublicId, Pageable pageable) {
+        Page<Pricing> pricings = pricingService.findByService(servicePublicId, pageable);
+        return ResponseEntity.ok(pricings.map(pricingMapper::toResponse));
     }
 
-    @GetMapping("/article/{articleId}/service/{serviceId}")
+    @GetMapping("/article/{articlePublicId}/service/{servicePublicId}")
     public ResponseEntity<PricingResponse> getByArticleAndService(
-            @PathVariable Long articleId, @PathVariable Long serviceId) {
-        Pricing pricing = pricingService.findByArticleAndService(articleId, serviceId);
+            @PathVariable String articlePublicId, @PathVariable String servicePublicId) {
+        Pricing pricing = pricingService.findByArticleAndService(articlePublicId, servicePublicId);
         return ResponseEntity.ok(pricingMapper.toResponse(pricing));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<PricingResponse> update(@PathVariable Long id, @Valid @RequestBody PricingRequest request) {
-        Pricing updated = pricingService.update(id, request.getPrice(), request.getArticleId(), request.getServiceId());
+    @PutMapping("/{publicId}")
+    public ResponseEntity<PricingResponse> update(@PathVariable String publicId, @Valid @RequestBody PricingRequest request) {
+        Pricing updated = pricingService.update(publicId, request.getPrice(), request.getArticlePublicId(), request.getServicePublicId());
         return ResponseEntity.ok(pricingMapper.toResponse(updated));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        pricingService.delete(id);
+    @DeleteMapping("/{publicId}")
+    public ResponseEntity<Void> delete(@PathVariable String publicId) {
+        pricingService.delete(publicId);
         return ResponseEntity.noContent().build();
     }
 }

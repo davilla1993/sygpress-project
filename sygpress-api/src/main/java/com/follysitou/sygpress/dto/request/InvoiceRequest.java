@@ -1,6 +1,7 @@
 package com.follysitou.sygpress.dto.request;
 
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -24,8 +25,8 @@ public class InvoiceRequest {
     @DecimalMin(value = "0.0", message = "Le montant payé ne peut pas être négatif")
     private BigDecimal amountPaid;
 
-    @NotNull(message = "Le client est obligatoire")
-    private Long customerId;
+    @NotBlank(message = "Le client est obligatoire")
+    private String customerPublicId;
 
     @NotEmpty(message = "Au moins une ligne de facture est requise")
     private List<InvoiceLineRequest> invoiceLines;

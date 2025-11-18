@@ -7,11 +7,11 @@ import com.follysitou.sygpress.model.Category;
 import com.follysitou.sygpress.service.CategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/categories")
@@ -30,30 +30,30 @@ public class CategoryController {
         return new ResponseEntity<>(categoryMapper.toResponse(saved), HttpStatus.CREATED);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<CategoryResponse> getById(@PathVariable Long id) {
-        Category category = categoryService.findById(id);
+    @GetMapping("/{publicId}")
+    public ResponseEntity<CategoryResponse> getByPublicId(@PathVariable String publicId) {
+        Category category = categoryService.findByPublicId(publicId);
         return ResponseEntity.ok(categoryMapper.toResponse(category));
     }
 
     @GetMapping
-    public ResponseEntity<List<CategoryResponse>> getAll() {
-        List<Category> categories = categoryService.findAll();
-        return ResponseEntity.ok(categoryMapper.toResponseList(categories));
+    public ResponseEntity<Page<CategoryResponse>> getAll(Pageable pageable) {
+        Page<Category> categories = categoryService.findAll(pageable);
+        return ResponseEntity.ok(categories.map(categoryMapper::toResponse));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<CategoryResponse> update(@PathVariable Long id, @Valid @RequestBody CategoryRequest request) {
+    @PutMapping("/{publicId}")
+    public ResponseEntity<CategoryResponse> update(@PathVariable String publicId, @Valid @RequestBody CategoryRequest request) {
         Category categoryDetails = new Category();
         categoryDetails.setName(request.getName());
 
-        Category updated = categoryService.update(id, categoryDetails);
+        Category updated = categoryService.update(publicId, categoryDetails);
         return ResponseEntity.ok(categoryMapper.toResponse(updated));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        categoryService.delete(id);
+    @DeleteMapping("/{publicId}")
+    public ResponseEntity<Void> delete(@PathVariable String publicId) {
+        categoryService.delete(publicId);
         return ResponseEntity.noContent().build();
     }
 }

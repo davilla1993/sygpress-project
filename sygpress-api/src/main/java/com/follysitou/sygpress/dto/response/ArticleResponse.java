@@ -7,7 +7,7 @@ import java.util.List;
 @Data
 public class ArticleResponse {
 
-    private Long id;
+    private String publicId;
     private String name;
     private CategoryResponse category;
     private List<PricingResponse> pricing;

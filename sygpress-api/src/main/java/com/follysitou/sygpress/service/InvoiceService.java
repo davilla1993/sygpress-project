@@ -1,14 +1,16 @@
 package com.follysitou.sygpress.service;
 
+import com.follysitou.sygpress.exception.ResourceNotFoundException;
 import com.follysitou.sygpress.model.Invoice;
 import com.follysitou.sygpress.model.InvoiceLine;
 import com.follysitou.sygpress.repository.InvoiceRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -48,8 +50,9 @@ public class InvoiceService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<Invoice> findById(Long id) {
-        return invoiceRepository.findById(id);
+    public Invoice findByPublicId(String publicId) {
+        return invoiceRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Facture", "publicId", publicId));
     }
 
     @Transactional(readOnly = true)
@@ -58,8 +61,8 @@ public class InvoiceService {
     }
 
     @Transactional(readOnly = true)
-    public List<Invoice> findAll() {
-        return invoiceRepository.findAll();
+    public Page<Invoice> findAll(Pageable pageable) {
+        return invoiceRepository.findAll(pageable);
     }
 
     @Transactional
@@ -78,7 +81,8 @@ public class InvoiceService {
     }
 
     @Transactional
-    public void deleteById(Long id) {
-        invoiceRepository.deleteById(id);
+    public void deleteByPublicId(String publicId) {
+        Invoice invoice = findByPublicId(publicId);
+        invoiceRepository.delete(invoice);
     }
 }

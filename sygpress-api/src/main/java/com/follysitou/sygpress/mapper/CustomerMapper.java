@@ -29,7 +29,7 @@ public class CustomerMapper {
 
     public CustomerResponse toResponse(Customer customer) {
         CustomerResponse response = new CustomerResponse();
-        response.setId(customer.getId());
+        response.setPublicId(customer.getPublicId());
         response.setName(customer.getName());
         response.setPhoneNumber(customer.getPhoneNumber());
         response.setAddress(customer.getAddress());
@@ -46,11 +46,12 @@ public class CustomerMapper {
     // Méthode pour une réponse minimale (évite la récursion)
     private InvoiceResponse invoiceToMinimalResponse(Invoice invoice) {
         InvoiceResponse response = new InvoiceResponse();
-        response.setId(invoice.getId());
+        response.setPublicId(invoice.getPublicId());
         response.setInvoiceNumber(invoice.getInvoiceNumber());
         response.setDepositDate(invoice.getDepositDate());
         response.setDeliveryDate(invoice.getDeliveryDate());
         response.setInvoicePaid(invoice.isInvoicePaid());
+        response.setProcessingStatus(invoice.getProcessingStatus());
         // On ne remonte pas le customer pour éviter la boucle infinie
         return response;
     }

@@ -7,11 +7,11 @@ import com.follysitou.sygpress.model.Customer;
 import com.follysitou.sygpress.service.CustomerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/customers")
@@ -32,38 +32,38 @@ public class CustomerController {
         return new ResponseEntity<>(customerMapper.toResponse(saved), HttpStatus.CREATED);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<CustomerResponse> getById(@PathVariable Long id) {
-        Customer customer = customerService.findById(id);
+    @GetMapping("/{publicId}")
+    public ResponseEntity<CustomerResponse> getByPublicId(@PathVariable String publicId) {
+        Customer customer = customerService.findByPublicId(publicId);
         return ResponseEntity.ok(customerMapper.toResponse(customer));
     }
 
     @GetMapping
-    public ResponseEntity<List<CustomerResponse>> getAll() {
-        List<Customer> customers = customerService.findAll();
-        return ResponseEntity.ok(customerMapper.toResponseList(customers));
+    public ResponseEntity<Page<CustomerResponse>> getAll(Pageable pageable) {
+        Page<Customer> customers = customerService.findAll(pageable);
+        return ResponseEntity.ok(customers.map(customerMapper::toResponse));
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<CustomerResponse>> searchByName(@RequestParam String name) {
-        List<Customer> customers = customerService.searchByName(name);
-        return ResponseEntity.ok(customerMapper.toResponseList(customers));
+    public ResponseEntity<Page<CustomerResponse>> searchByName(@RequestParam String name, Pageable pageable) {
+        Page<Customer> customers = customerService.searchByName(name, pageable);
+        return ResponseEntity.ok(customers.map(customerMapper::toResponse));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<CustomerResponse> update(@PathVariable Long id, @Valid @RequestBody CustomerRequest request) {
+    @PutMapping("/{publicId}")
+    public ResponseEntity<CustomerResponse> update(@PathVariable String publicId, @Valid @RequestBody CustomerRequest request) {
         Customer customerDetails = new Customer();
         customerDetails.setName(request.getName());
         customerDetails.setPhoneNumber(request.getPhoneNumber());
         customerDetails.setAddress(request.getAddress());
 
-        Customer updated = customerService.update(id, customerDetails);
+        Customer updated = customerService.update(publicId, customerDetails);
         return ResponseEntity.ok(customerMapper.toResponse(updated));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        customerService.delete(id);
+    @DeleteMapping("/{publicId}")
+    public ResponseEntity<Void> delete(@PathVariable String publicId) {
+        customerService.delete(publicId);
         return ResponseEntity.noContent().build();
     }
 }

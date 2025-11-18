@@ -8,11 +8,12 @@ import com.follysitou.sygpress.repository.ArticleRepository;
 import com.follysitou.sygpress.repository.PricingRepository;
 import com.follysitou.sygpress.repository.ServiceRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -23,16 +24,16 @@ public class PricingService {
     private final ServiceRepository serviceRepository;
 
     @Transactional
-    public Pricing create(BigDecimal price, Long articleId, Long serviceId) {
-        if (pricingRepository.existsByArticleIdAndServiceId(articleId, serviceId)) {
+    public Pricing create(BigDecimal price, String articlePublicId, String servicePublicId) {
+        if (pricingRepository.existsByArticlePublicIdAndServicePublicId(articlePublicId, servicePublicId)) {
             throw new DuplicateResourceException("Un tarif existe déjà pour cet article et ce service");
         }
 
-        Article article = articleRepository.findById(articleId)
-                .orElseThrow(() -> new ResourceNotFoundException("Article", "id", articleId));
+        Article article = articleRepository.findByPublicId(articlePublicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Article", "publicId", articlePublicId));
 
-        com.follysitou.sygpress.model.Service service = serviceRepository.findById(serviceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Service", "id", serviceId));
+        com.follysitou.sygpress.model.Service service = serviceRepository.findByPublicId(servicePublicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Service", "publicId", servicePublicId));
 
         Pricing pricing = new Pricing();
         pricing.setPrice(price);
@@ -43,50 +44,50 @@ public class PricingService {
     }
 
     @Transactional(readOnly = true)
-    public Pricing findById(Long id) {
-        return pricingRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Tarif", "id", id));
+    public Pricing findByPublicId(String publicId) {
+        return pricingRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Tarif", "publicId", publicId));
     }
 
     @Transactional(readOnly = true)
-    public List<Pricing> findAll() {
-        return pricingRepository.findAll();
+    public Page<Pricing> findAll(Pageable pageable) {
+        return pricingRepository.findAll(pageable);
     }
 
     @Transactional(readOnly = true)
-    public List<Pricing> findByArticle(Long articleId) {
-        return pricingRepository.findByArticleId(articleId);
+    public Page<Pricing> findByArticle(String articlePublicId, Pageable pageable) {
+        return pricingRepository.findByArticlePublicId(articlePublicId, pageable);
     }
 
     @Transactional(readOnly = true)
-    public List<Pricing> findByService(Long serviceId) {
-        return pricingRepository.findByServiceId(serviceId);
+    public Page<Pricing> findByService(String servicePublicId, Pageable pageable) {
+        return pricingRepository.findByServicePublicId(servicePublicId, pageable);
     }
 
     @Transactional(readOnly = true)
-    public Pricing findByArticleAndService(Long articleId, Long serviceId) {
-        return pricingRepository.findByArticleIdAndServiceId(articleId, serviceId)
+    public Pricing findByArticleAndService(String articlePublicId, String servicePublicId) {
+        return pricingRepository.findByArticlePublicIdAndServicePublicId(articlePublicId, servicePublicId)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Tarif non trouvé pour l'article " + articleId + " et le service " + serviceId));
+                        "Tarif non trouvé pour l'article " + articlePublicId + " et le service " + servicePublicId));
     }
 
     @Transactional
-    public Pricing update(Long id, BigDecimal price, Long articleId, Long serviceId) {
-        Pricing pricing = findById(id);
+    public Pricing update(String publicId, BigDecimal price, String articlePublicId, String servicePublicId) {
+        Pricing pricing = findByPublicId(publicId);
 
         // Vérifier si la nouvelle combinaison article/service n'existe pas déjà pour un autre tarif
-        pricingRepository.findByArticleIdAndServiceId(articleId, serviceId)
+        pricingRepository.findByArticlePublicIdAndServicePublicId(articlePublicId, servicePublicId)
                 .ifPresent(existingPricing -> {
-                    if (!existingPricing.getId().equals(id)) {
+                    if (!existingPricing.getPublicId().equals(publicId)) {
                         throw new DuplicateResourceException("Un tarif existe déjà pour cet article et ce service");
                     }
                 });
 
-        Article article = articleRepository.findById(articleId)
-                .orElseThrow(() -> new ResourceNotFoundException("Article", "id", articleId));
+        Article article = articleRepository.findByPublicId(articlePublicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Article", "publicId", articlePublicId));
 
-        com.follysitou.sygpress.model.Service service = serviceRepository.findById(serviceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Service", "id", serviceId));
+        com.follysitou.sygpress.model.Service service = serviceRepository.findByPublicId(servicePublicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Service", "publicId", servicePublicId));
 
         pricing.setPrice(price);
         pricing.setArticle(article);
@@ -96,8 +97,8 @@ public class PricingService {
     }
 
     @Transactional
-    public void delete(Long id) {
-        Pricing pricing = findById(id);
+    public void delete(String publicId) {
+        Pricing pricing = findByPublicId(publicId);
         pricingRepository.delete(pricing);
     }
 }

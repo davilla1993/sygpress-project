@@ -7,11 +7,11 @@ import com.follysitou.sygpress.model.Article;
 import com.follysitou.sygpress.service.ArticleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/articles")
@@ -26,40 +26,40 @@ public class ArticleController {
         Article article = new Article();
         article.setName(request.getName());
 
-        Article saved = articleService.create(article, request.getCategoryId());
+        Article saved = articleService.create(article, request.getCategoryPublicId());
         return new ResponseEntity<>(articleMapper.toResponse(saved), HttpStatus.CREATED);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ArticleResponse> getById(@PathVariable Long id) {
-        Article article = articleService.findById(id);
+    @GetMapping("/{publicId}")
+    public ResponseEntity<ArticleResponse> getByPublicId(@PathVariable String publicId) {
+        Article article = articleService.findByPublicId(publicId);
         return ResponseEntity.ok(articleMapper.toResponse(article));
     }
 
     @GetMapping
-    public ResponseEntity<List<ArticleResponse>> getAll() {
-        List<Article> articles = articleService.findAll();
-        return ResponseEntity.ok(articleMapper.toResponseList(articles));
+    public ResponseEntity<Page<ArticleResponse>> getAll(Pageable pageable) {
+        Page<Article> articles = articleService.findAll(pageable);
+        return ResponseEntity.ok(articles.map(articleMapper::toResponse));
     }
 
-    @GetMapping("/category/{categoryId}")
-    public ResponseEntity<List<ArticleResponse>> getByCategory(@PathVariable Long categoryId) {
-        List<Article> articles = articleService.findByCategory(categoryId);
-        return ResponseEntity.ok(articleMapper.toResponseList(articles));
+    @GetMapping("/category/{categoryPublicId}")
+    public ResponseEntity<Page<ArticleResponse>> getByCategory(@PathVariable String categoryPublicId, Pageable pageable) {
+        Page<Article> articles = articleService.findByCategory(categoryPublicId, pageable);
+        return ResponseEntity.ok(articles.map(articleMapper::toResponse));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ArticleResponse> update(@PathVariable Long id, @Valid @RequestBody ArticleRequest request) {
+    @PutMapping("/{publicId}")
+    public ResponseEntity<ArticleResponse> update(@PathVariable String publicId, @Valid @RequestBody ArticleRequest request) {
         Article articleDetails = new Article();
         articleDetails.setName(request.getName());
 
-        Article updated = articleService.update(id, articleDetails, request.getCategoryId());
+        Article updated = articleService.update(publicId, articleDetails, request.getCategoryPublicId());
         return ResponseEntity.ok(articleMapper.toResponse(updated));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        articleService.delete(id);
+    @DeleteMapping("/{publicId}")
+    public ResponseEntity<Void> delete(@PathVariable String publicId) {
+        articleService.delete(publicId);
         return ResponseEntity.noContent().build();
     }
 }
