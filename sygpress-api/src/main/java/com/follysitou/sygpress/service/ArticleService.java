@@ -7,10 +7,10 @@ import com.follysitou.sygpress.model.Category;
 import com.follysitou.sygpress.repository.ArticleRepository;
 import com.follysitou.sygpress.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -20,48 +20,48 @@ public class ArticleService {
     private final CategoryRepository categoryRepository;
 
     @Transactional
-    public Article create(Article article, Long categoryId) {
+    public Article create(Article article, String categoryPublicId) {
         if (articleRepository.existsByName(article.getName())) {
             throw new DuplicateResourceException("Article", "nom", article.getName());
         }
 
-        Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new ResourceNotFoundException("Catégorie", "id", categoryId));
+        Category category = categoryRepository.findByPublicId(categoryPublicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Catégorie", "publicId", categoryPublicId));
 
         article.setCategory(category);
         return articleRepository.save(article);
     }
 
     @Transactional(readOnly = true)
-    public Article findById(Long id) {
-        return articleRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Article", "id", id));
+    public Article findByPublicId(String publicId) {
+        return articleRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Article", "publicId", publicId));
     }
 
     @Transactional(readOnly = true)
-    public List<Article> findAll() {
-        return articleRepository.findAll();
+    public Page<Article> findAll(Pageable pageable) {
+        return articleRepository.findAll(pageable);
     }
 
     @Transactional(readOnly = true)
-    public List<Article> findByCategory(Long categoryId) {
-        return articleRepository.findByCategoryId(categoryId);
+    public Page<Article> findByCategory(String categoryPublicId, Pageable pageable) {
+        return articleRepository.findByCategoryPublicId(categoryPublicId, pageable);
     }
 
     @Transactional
-    public Article update(Long id, Article articleDetails, Long categoryId) {
-        Article article = findById(id);
+    public Article update(String publicId, Article articleDetails, String categoryPublicId) {
+        Article article = findByPublicId(publicId);
 
         // Vérifier si le nouveau nom n'est pas déjà utilisé par un autre article
         articleRepository.findByName(articleDetails.getName())
                 .ifPresent(existingArticle -> {
-                    if (!existingArticle.getId().equals(id)) {
+                    if (!existingArticle.getPublicId().equals(publicId)) {
                         throw new DuplicateResourceException("Article", "nom", articleDetails.getName());
                     }
                 });
 
-        Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new ResourceNotFoundException("Catégorie", "id", categoryId));
+        Category category = categoryRepository.findByPublicId(categoryPublicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Catégorie", "publicId", categoryPublicId));
 
         article.setName(articleDetails.getName());
         article.setCategory(category);
@@ -70,8 +70,8 @@ public class ArticleService {
     }
 
     @Transactional
-    public void delete(Long id) {
-        Article article = findById(id);
+    public void delete(String publicId) {
+        Article article = findByPublicId(publicId);
         articleRepository.delete(article);
     }
 }

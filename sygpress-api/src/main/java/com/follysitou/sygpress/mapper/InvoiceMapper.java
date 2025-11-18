@@ -27,7 +27,7 @@ public class InvoiceMapper {
 
     public InvoiceResponse toResponse(Invoice invoice) {
         InvoiceResponse response = new InvoiceResponse();
-        response.setId(invoice.getId());
+        response.setPublicId(invoice.getPublicId());
         response.setInvoiceNumber(invoice.getInvoiceNumber());
         response.setDepositDate(invoice.getDepositDate());
         response.setDeliveryDate(invoice.getDeliveryDate());
@@ -36,6 +36,7 @@ public class InvoiceMapper {
         response.setAmountPaid(invoice.getAmountPaid());
         response.setRemainingAmount(invoice.getRemainingAmount());
         response.setInvoicePaid(invoice.isInvoicePaid());
+        response.setProcessingStatus(invoice.getProcessingStatus());
 
         // Calcul du montant total
         response.setTotalAmount(calculateTotalAmount(invoice));
@@ -61,7 +62,7 @@ public class InvoiceMapper {
 
     private InvoiceLineResponse invoiceLineToResponse(InvoiceLine invoiceLine) {
         InvoiceLineResponse response = new InvoiceLineResponse();
-        response.setId(invoiceLine.getId());
+        response.setPublicId(invoiceLine.getPublicId());
         response.setQuantity(invoiceLine.getQuantity());
         response.setAmount(invoiceLine.getAmount());
 
@@ -74,7 +75,7 @@ public class InvoiceMapper {
 
     private AdditionalFeesResponse additionalFeesToResponse(AdditionalFees fees) {
         AdditionalFeesResponse response = new AdditionalFeesResponse();
-        response.setId(fees.getId());
+        response.setPublicId(fees.getPublicId());
         response.setTitle(fees.getTitle());
         response.setDescription(fees.getDescription());
         response.setAmount(fees.getAmount());

@@ -4,9 +4,9 @@ import com.follysitou.sygpress.exception.DuplicateResourceException;
 import com.follysitou.sygpress.exception.ResourceNotFoundException;
 import com.follysitou.sygpress.repository.ServiceRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @org.springframework.stereotype.Service
 @RequiredArgsConstructor
@@ -23,24 +23,24 @@ public class LaundryServiceService {
     }
 
     @Transactional(readOnly = true)
-    public com.follysitou.sygpress.model.Service findById(Long id) {
-        return serviceRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Service", "id", id));
+    public com.follysitou.sygpress.model.Service findByPublicId(String publicId) {
+        return serviceRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Service", "publicId", publicId));
     }
 
     @Transactional(readOnly = true)
-    public List<com.follysitou.sygpress.model.Service> findAll() {
-        return serviceRepository.findAll();
+    public Page<com.follysitou.sygpress.model.Service> findAll(Pageable pageable) {
+        return serviceRepository.findAll(pageable);
     }
 
     @Transactional
-    public com.follysitou.sygpress.model.Service update(Long id, com.follysitou.sygpress.model.Service serviceDetails) {
-        com.follysitou.sygpress.model.Service service = findById(id);
+    public com.follysitou.sygpress.model.Service update(String publicId, com.follysitou.sygpress.model.Service serviceDetails) {
+        com.follysitou.sygpress.model.Service service = findByPublicId(publicId);
 
         // Vérifier si le nouveau nom n'est pas déjà utilisé par un autre service
         serviceRepository.findByName(serviceDetails.getName())
                 .ifPresent(existingService -> {
-                    if (!existingService.getId().equals(id)) {
+                    if (!existingService.getPublicId().equals(publicId)) {
                         throw new DuplicateResourceException("Service", "nom", serviceDetails.getName());
                     }
                 });
@@ -51,8 +51,8 @@ public class LaundryServiceService {
     }
 
     @Transactional
-    public void delete(Long id) {
-        com.follysitou.sygpress.model.Service service = findById(id);
+    public void delete(String publicId) {
+        com.follysitou.sygpress.model.Service service = findByPublicId(publicId);
         serviceRepository.delete(service);
     }
 }

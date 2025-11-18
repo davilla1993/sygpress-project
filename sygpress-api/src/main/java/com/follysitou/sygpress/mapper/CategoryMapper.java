@@ -27,7 +27,7 @@ public class CategoryMapper {
 
     public CategoryResponse toResponse(Category category) {
         CategoryResponse response = new CategoryResponse();
-        response.setId(category.getId());
+        response.setPublicId(category.getPublicId());
         response.setName(category.getName());
 
         if (category.getArticles() != null) {
@@ -41,7 +41,7 @@ public class CategoryMapper {
 
     private ArticleResponse articleToMinimalResponse(Article article) {
         ArticleResponse response = new ArticleResponse();
-        response.setId(article.getId());
+        response.setPublicId(article.getPublicId());
         response.setName(article.getName());
         // On ne remonte pas la catégorie pour éviter la récursion
         return response;

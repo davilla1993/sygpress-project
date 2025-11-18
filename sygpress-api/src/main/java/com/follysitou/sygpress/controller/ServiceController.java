@@ -6,11 +6,11 @@ import com.follysitou.sygpress.mapper.ServiceMapper;
 import com.follysitou.sygpress.service.LaundryServiceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/services")
@@ -29,30 +29,30 @@ public class ServiceController {
         return new ResponseEntity<>(serviceMapper.toResponse(saved), HttpStatus.CREATED);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ServiceResponse> getById(@PathVariable Long id) {
-        com.follysitou.sygpress.model.Service service = laundryServiceService.findById(id);
+    @GetMapping("/{publicId}")
+    public ResponseEntity<ServiceResponse> getByPublicId(@PathVariable String publicId) {
+        com.follysitou.sygpress.model.Service service = laundryServiceService.findByPublicId(publicId);
         return ResponseEntity.ok(serviceMapper.toResponse(service));
     }
 
     @GetMapping
-    public ResponseEntity<List<ServiceResponse>> getAll() {
-        List<com.follysitou.sygpress.model.Service> services = laundryServiceService.findAll();
-        return ResponseEntity.ok(serviceMapper.toResponseList(services));
+    public ResponseEntity<Page<ServiceResponse>> getAll(Pageable pageable) {
+        Page<com.follysitou.sygpress.model.Service> services = laundryServiceService.findAll(pageable);
+        return ResponseEntity.ok(services.map(serviceMapper::toResponse));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ServiceResponse> update(@PathVariable Long id, @Valid @RequestBody ServiceRequest request) {
+    @PutMapping("/{publicId}")
+    public ResponseEntity<ServiceResponse> update(@PathVariable String publicId, @Valid @RequestBody ServiceRequest request) {
         com.follysitou.sygpress.model.Service serviceDetails = new com.follysitou.sygpress.model.Service();
         serviceDetails.setName(request.getName());
 
-        com.follysitou.sygpress.model.Service updated = laundryServiceService.update(id, serviceDetails);
+        com.follysitou.sygpress.model.Service updated = laundryServiceService.update(publicId, serviceDetails);
         return ResponseEntity.ok(serviceMapper.toResponse(updated));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        laundryServiceService.delete(id);
+    @DeleteMapping("/{publicId}")
+    public ResponseEntity<Void> delete(@PathVariable String publicId) {
+        laundryServiceService.delete(publicId);
         return ResponseEntity.noContent().build();
     }
 }

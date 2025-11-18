@@ -29,7 +29,7 @@ public class PricingMapper {
 
     public PricingResponse toResponse(Pricing pricing) {
         PricingResponse response = new PricingResponse();
-        response.setId(pricing.getId());
+        response.setPublicId(pricing.getPublicId());
         response.setPrice(pricing.getPrice());
 
         if (pricing.getArticle() != null) {
@@ -45,14 +45,14 @@ public class PricingMapper {
 
     private ArticleResponse articleToMinimalResponse(Article article) {
         ArticleResponse response = new ArticleResponse();
-        response.setId(article.getId());
+        response.setPublicId(article.getPublicId());
         response.setName(article.getName());
         return response;
     }
 
     private ServiceResponse serviceToMinimalResponse(Service service) {
         ServiceResponse response = new ServiceResponse();
-        response.setId(service.getId());
+        response.setPublicId(service.getPublicId());
         response.setName(service.getName());
         return response;
     }

@@ -12,6 +12,8 @@ import com.follysitou.sygpress.repository.PricingRepository;
 import com.follysitou.sygpress.service.InvoiceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -39,8 +41,8 @@ public class InvoiceController {
         invoice.setAmountPaid(request.getAmountPaid() != null ? request.getAmountPaid() : BigDecimal.ZERO);
 
         // Set customer
-        Customer customer = customerRepository.findById(request.getCustomerId())
-                .orElseThrow(() -> new ResourceNotFoundException("Client", "id", request.getCustomerId()));
+        Customer customer = customerRepository.findByPublicId(request.getCustomerPublicId())
+                .orElseThrow(() -> new ResourceNotFoundException("Client", "publicId", request.getCustomerPublicId()));
         invoice.setCustomer(customer);
 
         // Set invoice lines
@@ -49,8 +51,8 @@ public class InvoiceController {
             InvoiceLine line = new InvoiceLine();
             line.setQuantity(lineRequest.getQuantity());
 
-            Pricing pricing = pricingRepository.findById(lineRequest.getPricingId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Tarif", "id", lineRequest.getPricingId()));
+            Pricing pricing = pricingRepository.findByPublicId(lineRequest.getPricingPublicId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Tarif", "publicId", lineRequest.getPricingPublicId()));
             line.setPricing(pricing);
 
             invoiceLines.add(line);
@@ -74,10 +76,9 @@ public class InvoiceController {
         return new ResponseEntity<>(invoiceMapper.toResponse(saved), HttpStatus.CREATED);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<InvoiceResponse> getById(@PathVariable Long id) {
-        Invoice invoice = invoiceService.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Facture", "id", id));
+    @GetMapping("/{publicId}")
+    public ResponseEntity<InvoiceResponse> getByPublicId(@PathVariable String publicId) {
+        Invoice invoice = invoiceService.findByPublicId(publicId);
         return ResponseEntity.ok(invoiceMapper.toResponse(invoice));
     }
 
@@ -89,14 +90,14 @@ public class InvoiceController {
     }
 
     @GetMapping
-    public ResponseEntity<List<InvoiceResponse>> getAll() {
-        List<Invoice> invoices = invoiceService.findAll();
-        return ResponseEntity.ok(invoiceMapper.toResponseList(invoices));
+    public ResponseEntity<Page<InvoiceResponse>> getAll(Pageable pageable) {
+        Page<Invoice> invoices = invoiceService.findAll(pageable);
+        return ResponseEntity.ok(invoices.map(invoiceMapper::toResponse));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        invoiceService.deleteById(id);
+    @DeleteMapping("/{publicId}")
+    public ResponseEntity<Void> delete(@PathVariable String publicId) {
+        invoiceService.deleteByPublicId(publicId);
         return ResponseEntity.noContent().build();
     }
 }

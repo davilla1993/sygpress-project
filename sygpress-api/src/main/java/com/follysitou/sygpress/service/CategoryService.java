@@ -5,10 +5,10 @@ import com.follysitou.sygpress.exception.ResourceNotFoundException;
 import com.follysitou.sygpress.model.Category;
 import com.follysitou.sygpress.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -25,24 +25,24 @@ public class CategoryService {
     }
 
     @Transactional(readOnly = true)
-    public Category findById(Long id) {
-        return categoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Catégorie", "id", id));
+    public Category findByPublicId(String publicId) {
+        return categoryRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Catégorie", "publicId", publicId));
     }
 
     @Transactional(readOnly = true)
-    public List<Category> findAll() {
-        return categoryRepository.findAll();
+    public Page<Category> findAll(Pageable pageable) {
+        return categoryRepository.findAll(pageable);
     }
 
     @Transactional
-    public Category update(Long id, Category categoryDetails) {
-        Category category = findById(id);
+    public Category update(String publicId, Category categoryDetails) {
+        Category category = findByPublicId(publicId);
 
         // Vérifier si le nouveau nom n'est pas déjà utilisé par une autre catégorie
         categoryRepository.findByName(categoryDetails.getName())
                 .ifPresent(existingCategory -> {
-                    if (!existingCategory.getId().equals(id)) {
+                    if (!existingCategory.getPublicId().equals(publicId)) {
                         throw new DuplicateResourceException("Catégorie", "nom", categoryDetails.getName());
                     }
                 });
@@ -53,8 +53,8 @@ public class CategoryService {
     }
 
     @Transactional
-    public void delete(Long id) {
-        Category category = findById(id);
+    public void delete(String publicId) {
+        Category category = findByPublicId(publicId);
         categoryRepository.delete(category);
     }
 }
