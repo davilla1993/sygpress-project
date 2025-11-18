@@ -7,6 +7,7 @@ import { CustomerService } from '../../../core/services/customer.service';
 import { Customer, Pricing } from '../../../core/models';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
+import { ToastService } from '../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-invoice-form',
@@ -137,7 +138,8 @@ export class InvoiceFormComponent implements OnInit {
     private customerService: CustomerService,
     private http: HttpClient,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private toastService: ToastService
   ) {
     this.form = this.fb.group({
       customerPublicId: ['', Validators.required],
@@ -232,7 +234,9 @@ export class InvoiceFormComponent implements OnInit {
       next: () => {
         this.router.navigate(['/invoices']);
       },
-      error: () => {
+      error: (error) => {
+        const message = error.error?.message || 'Erreur lors de l\'enregistrement de la facture';
+        this.toastService.error(message);
         this.isSubmitting.set(false);
       }
     });

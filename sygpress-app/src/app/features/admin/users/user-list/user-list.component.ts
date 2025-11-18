@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
+import { ToastService } from '../../../../shared/services/toast.service';
 
 interface User {
   publicId: string;
@@ -149,7 +150,10 @@ export class UserListComponent implements OnInit {
     role: 'USER'
   };
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private toastService: ToastService
+  ) {}
 
   ngOnInit(): void {
     this.loadUsers();
@@ -161,7 +165,9 @@ export class UserListComponent implements OnInit {
         this.users.set(users);
         this.isLoading.set(false);
       },
-      error: () => {
+      error: (error) => {
+        const message = error.error?.message || 'Erreur lors du chargement des utilisateurs';
+        this.toastService.error(message);
         this.isLoading.set(false);
       }
     });
@@ -173,6 +179,10 @@ export class UserListComponent implements OnInit {
         this.showAddModal = false;
         this.newUser = { fullName: '', username: '', email: '', password: '', role: 'USER' };
         this.loadUsers();
+      },
+      error: (error) => {
+        const message = error.error?.message || 'Erreur lors de la création de l\'utilisateur';
+        this.toastService.error(message);
       }
     });
   }
@@ -181,6 +191,10 @@ export class UserListComponent implements OnInit {
     this.http.patch<User>(`${environment.apiUrl}/users/${user.publicId}/status`, {}).subscribe({
       next: () => {
         this.loadUsers();
+      },
+      error: (error) => {
+        const message = error.error?.message || 'Erreur lors de la mise à jour du statut';
+        this.toastService.error(message);
       }
     });
   }
@@ -190,6 +204,10 @@ export class UserListComponent implements OnInit {
       this.http.delete(`${environment.apiUrl}/users/${user.publicId}`).subscribe({
         next: () => {
           this.loadUsers();
+        },
+        error: (error) => {
+          const message = error.error?.message || 'Erreur lors de la suppression';
+          this.toastService.error(message);
         }
       });
     }

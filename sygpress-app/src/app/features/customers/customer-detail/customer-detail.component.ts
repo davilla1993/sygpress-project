@@ -207,8 +207,9 @@ export class CustomerDetailComponent implements OnInit {
         this.customer.set(customer);
         this.isLoading.set(false);
       },
-      error: () => {
-        this.toastService.error('Erreur lors du chargement du client');
+      error: (error) => {
+        const message = error.error?.message || 'Erreur lors du chargement du client';
+        this.toastService.error(message);
         this.isLoading.set(false);
         this.router.navigate(['/customers']);
       }
@@ -235,8 +236,9 @@ export class CustomerDetailComponent implements OnInit {
         this.toastService.success('Client supprimé avec succès');
         this.router.navigate(['/customers']);
       },
-      error: () => {
-        this.toastService.error('Erreur lors de la suppression');
+      error: (error) => {
+        const message = error.error?.message || 'Erreur lors de la suppression';
+        this.toastService.error(message);
         this.showDeleteModal = false;
       }
     });
