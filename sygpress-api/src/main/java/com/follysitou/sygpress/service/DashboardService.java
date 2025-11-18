@@ -291,13 +291,13 @@ public class DashboardService {
         }
 
         // Info: Nombre de factures en traitement
-        int inProcessing = invoiceRepository.countByProcessingStatusAndDeletedFalse(ProcessingStatus.LAVAGE)
-                + invoiceRepository.countByProcessingStatusAndDeletedFalse(ProcessingStatus.REPASSAGE);
+        int inProcessing = invoiceRepository.countByProcessingStatusAndDeletedFalse(ProcessingStatus.EN_LAVAGE)
+                + invoiceRepository.countByProcessingStatusAndDeletedFalse(ProcessingStatus.EN_REPASSAGE);
         if (inProcessing > 0) {
             alerts.add(UserDashboardResponse.Alert.builder()
                     .type("INFO")
                     .message(inProcessing + " article(s) en cours de traitement")
-                    .link("/invoices?status=LAVAGE,REPASSAGE")
+                    .link("/invoices?status=EN_LAVAGE,EN_REPASSAGE")
                     .build());
         }
 
@@ -331,12 +331,12 @@ public class DashboardService {
 
     private String getStatusLabel(ProcessingStatus status) {
         return switch (status) {
-            case DEPOT -> "Dépôt";
             case COLLECTE -> "Collecte";
-            case LAVAGE -> "Lavage";
-            case REPASSAGE -> "Repassage";
+            case EN_LAVAGE -> "En Lavage";
+            case EN_REPASSAGE -> "En Repassage";
             case PRET -> "Prêt";
             case LIVRE -> "Livré";
+            case RECUPERE -> "Récupéré";
         };
     }
 }
