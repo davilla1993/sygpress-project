@@ -26,7 +26,6 @@
             ],
             "styles": [
               "src/styles.css"
-              "src/styles.scss"
             ]
           },
           "configurations": {
@@ -76,8 +75,6 @@
               "zone.js/testing"
             ],
             "tsConfig": "tsconfig.spec.json",
-            "tsConfig": "tsconfig.spec.json",
-            "inlineStyleLanguage": "scss",
             "assets": [
               {
                 "glob": "**/*",
@@ -86,7 +83,6 @@
             ],
             "styles": [
               "src/styles.css"
-              "src/styles.scss"
             ]
           }
         }

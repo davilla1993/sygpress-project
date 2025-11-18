@@ -1,6 +1,18 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+/* Define custom theme colors for Tailwind v4 */
+@theme {
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+}
 
 /* Custom global styles */
 body {
@@ -26,6 +38,10 @@ body {
 }
 
 /* Form styles */
+.input {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-colors;
+}
+
 .form-input {
   @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-colors;
 }
@@ -39,24 +55,20 @@ body {
 }
 
 /* Button styles */
-.btn {
-  @apply px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2;
-}
-
 .btn-primary {
-  @apply btn bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500;
+  @apply px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 inline-flex items-center;
 }
 
 .btn-secondary {
-  @apply btn bg-gray-200 text-gray-700 hover:bg-gray-300 focus:ring-gray-500;
+  @apply px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 bg-gray-200 text-gray-700 hover:bg-gray-300 focus:ring-gray-500 inline-flex items-center;
 }
 
 .btn-danger {
-  @apply btn bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+  @apply px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 inline-flex items-center;
 }
 
 .btn-success {
-  @apply btn bg-green-600 text-white hover:bg-green-700 focus:ring-green-500;
+  @apply px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 bg-green-600 text-white hover:bg-green-700 focus:ring-green-500 inline-flex items-center;
 }
 
 /* Card styles */
