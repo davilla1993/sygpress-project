@@ -22,9 +22,6 @@ public class CompanyRequest {
     @Size(max = 100, message = "La ville ne peut pas dépasser 100 caractères")
     private String city;
 
-    @Size(max = 20, message = "Le code postal ne peut pas dépasser 20 caractères")
-    private String postalCode;
-
     @Size(max = 100, message = "Le pays ne peut pas dépasser 100 caractères")
     private String country;
 
@@ -38,29 +35,8 @@ public class CompanyRequest {
     @Size(max = 255, message = "Le site web ne peut pas dépasser 255 caractères")
     private String website;
 
-    @Size(max = 50, message = "Le numéro RCCM ne peut pas dépasser 50 caractères")
-    private String rccmNumber;
-
-    @Size(max = 50, message = "Le NIF ne peut pas dépasser 50 caractères")
-    private String nifNumber;
-
-    @Size(max = 100, message = "L'IBAN ne peut pas dépasser 100 caractères")
-    private String iban;
-
-    @Size(max = 50, message = "Le BIC ne peut pas dépasser 50 caractères")
-    private String bic;
-
-    @Size(max = 100, message = "Le nom de la banque ne peut pas dépasser 100 caractères")
-    private String bankName;
-
     @Size(max = 500, message = "Le slogan ne peut pas dépasser 500 caractères")
     private String slogan;
-
-    @Size(max = 1000, message = "Les mentions légales ne peuvent pas dépasser 1000 caractères")
-    private String legalMentions;
-
-    @Size(max = 500, message = "Les conditions de paiement ne peuvent pas dépasser 500 caractères")
-    private String paymentTerms;
 
     private Double vatRate;
 }

@@ -4,8 +4,6 @@ import com.follysitou.sygpress.dto.response.CompanyResponse;
 import com.follysitou.sygpress.model.Company;
 import org.springframework.stereotype.Component;
 
-import java.util.Base64;
-
 @Component
 public class CompanyMapper {
 
@@ -14,9 +12,9 @@ public class CompanyMapper {
             return null;
         }
 
-        String logoBase64 = null;
-        if (company.getLogo() != null && company.getLogo().length > 0) {
-            logoBase64 = Base64.getEncoder().encodeToString(company.getLogo());
+        String logoUrl = null;
+        if (company.getLogoPath() != null && !company.getLogoPath().isEmpty()) {
+            logoUrl = "/api/company/logo";
         }
 
         return CompanyResponse.builder()
@@ -28,7 +26,7 @@ public class CompanyMapper {
                 .phoneNumber(company.getPhoneNumber())
                 .email(company.getEmail())
                 .website(company.getWebsite())
-                .logoBase64(logoBase64)
+                .logoUrl(logoUrl)
                 .slogan(company.getSlogan())
                 .vatRate(company.getVatRate())
                 .createdAt(company.getCreatedAt())

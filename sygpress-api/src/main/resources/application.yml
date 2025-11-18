@@ -22,3 +22,10 @@ spring:
 jwt:
   secret: c3lncHJlc3Mtc2VjcmV0LWtleS1mb3Itand0LXRva2VuLWdlbmVyYXRpb24tMjAyNA==
   expiration: 86400000
+
+file:
+  upload-dir: uploads
+
+spring.servlet.multipart:
+  max-file-size: 10MB
+  max-request-size: 10MB
