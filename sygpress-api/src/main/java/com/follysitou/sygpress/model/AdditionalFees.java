@@ -1,7 +1,7 @@
 package com.follysitou.sygpress.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -9,11 +9,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-public class AdditionalFees {
+public class AdditionalFees extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -26,11 +28,12 @@ public class AdditionalFees {
     @Size(max = 255, message = "La description ne peut pas dépasser 255 caractères")
     private String description;                             // Livraison dans 24H, livraison dans 72H
 
-
-    @Min(value = 0, message = "Le montant ne peut pas être négatif")
+    @DecimalMin(value = "0.0", message = "Le montant ne peut pas être négatif")
     @NotNull(message = "Le montant est obligatoire")
-    private double amount;
+    @Column(precision = 10, scale = 2)
+    private BigDecimal amount;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "invoice_id")
     private Invoice invoice;
 }

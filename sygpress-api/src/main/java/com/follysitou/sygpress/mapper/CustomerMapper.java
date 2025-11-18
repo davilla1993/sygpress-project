@@ -7,10 +7,17 @@ import com.follysitou.sygpress.model.Customer;
 import com.follysitou.sygpress.model.Invoice;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
 public class CustomerMapper {
+
+    public List<CustomerResponse> toResponseList(List<Customer> customers) {
+        return customers.stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
 
     public Customer toEntity(CustomerRequest request) {
         Customer customer = new Customer();

@@ -8,13 +8,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-public class Customer {
+public class Customer extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -32,6 +33,6 @@ public class Customer {
     @Size(max = 255, message = "L'adresse ne peut pas dépasser 255 caractères")
     private String address;
 
-    @OneToMany(mappedBy = "customer")
-    private List<Invoice> invoices;
+    @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
+    private List<Invoice> invoices = new ArrayList<>();
 }

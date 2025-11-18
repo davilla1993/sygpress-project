@@ -7,13 +7,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-public class Article {
+public class Article extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -24,9 +25,10 @@ public class Article {
     @Column(unique = true)
     private String name;  // T-shirt, Chemise, Drap, Serviette
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
     private Category category; // Vêtements, Drap, Serviette, Chaussures
 
-    @OneToMany(mappedBy = "article")
-    private List<Pricing> pricing;
+    @OneToMany(mappedBy = "article", fetch = FetchType.LAZY)
+    private List<Pricing> pricing = new ArrayList<>();
 }

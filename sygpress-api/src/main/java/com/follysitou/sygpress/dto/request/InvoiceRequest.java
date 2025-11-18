@@ -1,10 +1,11 @@
 package com.follysitou.sygpress.dto.request;
 
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -17,13 +18,11 @@ public class InvoiceRequest {
     @NotNull(message = "La date de livraison est obligatoire")
     private LocalDate deliveryDate;
 
-    @Min(0)
-    private double discount;
+    @DecimalMin(value = "0.0", message = "La remise ne peut pas être négative")
+    private BigDecimal discount;
 
-    @Min(0)
-    private double amountPaid;
-
-    private boolean invoicePaid;
+    @DecimalMin(value = "0.0", message = "Le montant payé ne peut pas être négatif")
+    private BigDecimal amountPaid;
 
     @NotNull(message = "Le client est obligatoire")
     private Long customerId;

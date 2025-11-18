@@ -1,11 +1,13 @@
 package com.follysitou.sygpress.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
 
 @Data
 @Entity
@@ -13,21 +15,24 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Table(uniqueConstraints =
 @UniqueConstraint(columnNames = {"article_id","service_id"}))
-public class Pricing {
+public class Pricing extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @NotNull(message = "Le prix est obligatoire")
-    @Min(value = 0, message = "Le prix ne peut pas être négatif")
-    private double price;
+    @DecimalMin(value = "0.0", message = "Le prix ne peut pas être négatif")
+    @Column(precision = 10, scale = 2)
+    private BigDecimal price;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "article_id")
     @NotNull(message = "L'article est obligatoire")
     private Article article;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "service_id")
     @NotNull(message = "Le service est obligatoire")
     private Service service;
 }
