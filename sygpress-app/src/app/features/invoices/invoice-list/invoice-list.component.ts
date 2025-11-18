@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { InvoiceService } from '../../../core/services/invoice.service';
 import { PageResponse } from '../../../core/services/customer.service';
 import { Invoice, ProcessingStatus } from '../../../core/models';
+import { ToastService } from '../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-invoice-list',
@@ -26,21 +27,24 @@ import { Invoice, ProcessingStatus } from '../../../core/models';
         </a>
       </div>
 
-      <!-- Filters -->
+      <!-- Advanced Filters -->
       <div class="card p-4 mb-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Search -->
           <div class="relative">
             <input
               type="text"
               [(ngModel)]="searchTerm"
               (ngModelChange)="onSearch()"
-              placeholder="Rechercher par numéro ou client..."
+              placeholder="N° facture ou client..."
               class="input pl-10"
             />
             <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
+
+          <!-- Status Filter -->
           <select [(ngModel)]="statusFilter" (ngModelChange)="onSearch()" class="input">
             <option value="">Tous les statuts</option>
             <option value="COLLECTE">Collecté</option>
@@ -50,6 +54,42 @@ import { Invoice, ProcessingStatus } from '../../../core/models';
             <option value="LIVRE">Livré</option>
             <option value="RECUPERE">Récupéré</option>
           </select>
+
+          <!-- Payment Filter -->
+          <select [(ngModel)]="paymentFilter" (ngModelChange)="onSearch()" class="input">
+            <option value="">Tous paiements</option>
+            <option value="paid">Payé</option>
+            <option value="unpaid">Impayé</option>
+          </select>
+
+          <!-- Date Range -->
+          <div class="flex gap-2">
+            <input
+              type="date"
+              [(ngModel)]="startDate"
+              (ngModelChange)="onSearch()"
+              class="input text-sm"
+              placeholder="Date début"
+            />
+            <input
+              type="date"
+              [(ngModel)]="endDate"
+              (ngModelChange)="onSearch()"
+              class="input text-sm"
+              placeholder="Date fin"
+            />
+          </div>
+        </div>
+
+        <!-- Quick Filters -->
+        <div class="flex gap-2 mt-3">
+          <button (click)="setToday()" class="text-sm text-primary-600 hover:text-primary-800">Aujourd'hui</button>
+          <span class="text-gray-300">|</span>
+          <button (click)="setThisWeek()" class="text-sm text-primary-600 hover:text-primary-800">Cette semaine</button>
+          <span class="text-gray-300">|</span>
+          <button (click)="setThisMonth()" class="text-sm text-primary-600 hover:text-primary-800">Ce mois</button>
+          <span class="text-gray-300">|</span>
+          <button (click)="clearFilters()" class="text-sm text-gray-600 hover:text-gray-800">Réinitialiser</button>
         </div>
       </div>
 
@@ -147,12 +187,18 @@ export class InvoiceListComponent implements OnInit {
   isLoading = signal(true);
   searchTerm = '';
   statusFilter = '';
+  paymentFilter = '';
+  startDate = '';
+  endDate = '';
   currentPage = signal(0);
   totalPages = signal(0);
   totalElements = signal(0);
   private searchTimeout: any;
 
-  constructor(private invoiceService: InvoiceService) {}
+  constructor(
+    private invoiceService: InvoiceService,
+    private toastService: ToastService
+  ) {}
 
   ngOnInit(): void {
     this.loadInvoices();
@@ -163,12 +209,34 @@ export class InvoiceListComponent implements OnInit {
     const status = this.statusFilter ? this.statusFilter as ProcessingStatus : undefined;
     this.invoiceService.getInvoices(this.currentPage(), 10, this.searchTerm || undefined, status).subscribe({
       next: (response) => {
-        this.invoices.set(response.content);
+        let filtered = response.content;
+
+        // Client-side filtering for payment status and dates (ideally this should be backend)
+        if (this.paymentFilter) {
+          filtered = filtered.filter(inv =>
+            this.paymentFilter === 'paid' ? inv.invoicePaid : !inv.invoicePaid
+          );
+        }
+
+        if (this.startDate) {
+          filtered = filtered.filter(inv =>
+            new Date(inv.depositDate) >= new Date(this.startDate)
+          );
+        }
+
+        if (this.endDate) {
+          filtered = filtered.filter(inv =>
+            new Date(inv.depositDate) <= new Date(this.endDate + 'T23:59:59')
+          );
+        }
+
+        this.invoices.set(filtered);
         this.totalPages.set(response.totalPages);
         this.totalElements.set(response.totalElements);
         this.isLoading.set(false);
       },
       error: () => {
+        this.toastService.error('Erreur lors du chargement des factures');
         this.isLoading.set(false);
       }
     });
@@ -187,11 +255,48 @@ export class InvoiceListComponent implements OnInit {
     this.loadInvoices();
   }
 
+  setToday(): void {
+    const today = new Date().toISOString().split('T')[0];
+    this.startDate = today;
+    this.endDate = today;
+    this.onSearch();
+  }
+
+  setThisWeek(): void {
+    const today = new Date();
+    const firstDay = new Date(today.setDate(today.getDate() - today.getDay() + 1));
+    const lastDay = new Date(today.setDate(today.getDate() - today.getDay() + 7));
+    this.startDate = firstDay.toISOString().split('T')[0];
+    this.endDate = lastDay.toISOString().split('T')[0];
+    this.onSearch();
+  }
+
+  setThisMonth(): void {
+    const today = new Date();
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    this.startDate = firstDay.toISOString().split('T')[0];
+    this.endDate = lastDay.toISOString().split('T')[0];
+    this.onSearch();
+  }
+
+  clearFilters(): void {
+    this.searchTerm = '';
+    this.statusFilter = '';
+    this.paymentFilter = '';
+    this.startDate = '';
+    this.endDate = '';
+    this.onSearch();
+  }
+
   printInvoice(invoice: Invoice): void {
     this.invoiceService.printInvoice(invoice.publicId).subscribe({
       next: (blob) => {
         const url = window.URL.createObjectURL(blob);
         window.open(url, '_blank');
+      },
+      error: () => {
+        this.toastService.error('Erreur lors de l\'impression');
       }
     });
   }

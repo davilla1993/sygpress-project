@@ -4,11 +4,13 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CustomerService, PageResponse } from '../../../core/services/customer.service';
 import { Customer } from '../../../core/models';
+import { ToastService } from '../../../shared/services/toast.service';
+import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 
 @Component({
   selector: 'app-customer-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, ConfirmModalComponent],
   template: `
     <div>
       <!-- Header -->
@@ -71,7 +73,7 @@ import { Customer } from '../../../core/models';
                   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <a [routerLink]="[customer.publicId]" class="text-primary-600 hover:text-primary-900 mr-3">Voir</a>
                     <a [routerLink]="[customer.publicId, 'edit']" class="text-gray-600 hover:text-gray-900 mr-3">Modifier</a>
-                    <button (click)="deleteCustomer(customer)" class="text-red-600 hover:text-red-900">Supprimer</button>
+                    <button (click)="confirmDelete(customer)" class="text-red-600 hover:text-red-900">Supprimer</button>
                   </td>
                 </tr>
               } @empty {
@@ -112,6 +114,17 @@ import { Customer } from '../../../core/models';
           </div>
         }
       }
+
+      <!-- Confirm Delete Modal -->
+      <app-confirm-modal
+        [isOpen]="showDeleteModal"
+        title="Supprimer le client"
+        [message]="'Êtes-vous sûr de vouloir supprimer le client \\'' + (customerToDelete?.name || '') + '\\' ?'"
+        confirmText="Supprimer"
+        type="danger"
+        (confirm)="deleteCustomer()"
+        (cancel)="showDeleteModal = false"
+      />
     </div>
   `
 })
@@ -122,9 +135,14 @@ export class CustomerListComponent implements OnInit {
   currentPage = signal(0);
   totalPages = signal(0);
   totalElements = signal(0);
+  showDeleteModal = false;
+  customerToDelete: Customer | null = null;
   private searchTimeout: any;
 
-  constructor(private customerService: CustomerService) {}
+  constructor(
+    private customerService: CustomerService,
+    private toastService: ToastService
+  ) {}
 
   ngOnInit(): void {
     this.loadCustomers();
@@ -140,6 +158,7 @@ export class CustomerListComponent implements OnInit {
         this.isLoading.set(false);
       },
       error: () => {
+        this.toastService.error('Erreur lors du chargement des clients');
         this.isLoading.set(false);
       }
     });
@@ -158,14 +177,26 @@ export class CustomerListComponent implements OnInit {
     this.loadCustomers();
   }
 
-  deleteCustomer(customer: Customer): void {
-    if (confirm(`Êtes-vous sûr de vouloir supprimer le client "${customer.name}" ?`)) {
-      this.customerService.deleteCustomer(customer.publicId).subscribe({
-        next: () => {
-          this.loadCustomers();
-        }
-      });
-    }
+  confirmDelete(customer: Customer): void {
+    this.customerToDelete = customer;
+    this.showDeleteModal = true;
+  }
+
+  deleteCustomer(): void {
+    if (!this.customerToDelete) return;
+
+    this.customerService.deleteCustomer(this.customerToDelete.publicId).subscribe({
+      next: () => {
+        this.toastService.success('Client supprimé avec succès');
+        this.showDeleteModal = false;
+        this.customerToDelete = null;
+        this.loadCustomers();
+      },
+      error: () => {
+        this.toastService.error('Erreur lors de la suppression');
+        this.showDeleteModal = false;
+      }
+    });
   }
 
   formatDate(date: string): string {
