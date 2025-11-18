@@ -9,16 +9,22 @@ import com.follysitou.sygpress.mapper.InvoiceMapper;
 import com.follysitou.sygpress.model.*;
 import com.follysitou.sygpress.repository.CustomerRepository;
 import com.follysitou.sygpress.repository.PricingRepository;
+import com.follysitou.sygpress.service.InvoicePdfService;
 import com.follysitou.sygpress.service.InvoiceService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,12 +32,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/invoices")
 @RequiredArgsConstructor
+@Tag(name = "Invoices", description = "Gestion des factures")
 public class InvoiceController {
 
     private final InvoiceService invoiceService;
     private final InvoiceMapper invoiceMapper;
     private final CustomerRepository customerRepository;
     private final PricingRepository pricingRepository;
+    private final InvoicePdfService invoicePdfService;
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
@@ -105,5 +113,20 @@ public class InvoiceController {
     public ResponseEntity<Void> delete(@PathVariable String publicId) {
         invoiceService.deleteByPublicId(publicId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{publicId}/pdf")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @Operation(summary = "Télécharger la facture en PDF")
+    public ResponseEntity<byte[]> downloadPdf(@PathVariable String publicId) throws IOException {
+        Invoice invoice = invoiceService.findByPublicId(publicId);
+        byte[] pdfContent = invoicePdfService.generateInvoicePdf(publicId);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", "facture-" + invoice.getInvoiceNumber() + ".pdf");
+        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+
+        return new ResponseEntity<>(pdfContent, headers, HttpStatus.OK);
     }
 }
