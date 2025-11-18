@@ -1,0 +1,91 @@
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+@Component({
+  selector: 'app-confirm-modal',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
+    @if (isOpen) {
+      <div class="fixed inset-0 z-50 overflow-y-auto">
+        <!-- Backdrop -->
+        <div
+          class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+          (click)="onCancel()"
+        ></div>
+
+        <!-- Modal -->
+        <div class="flex min-h-full items-center justify-center p-4">
+          <div class="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <!-- Icon -->
+            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full"
+              [ngClass]="{
+                'bg-red-100': type === 'danger',
+                'bg-yellow-100': type === 'warning',
+                'bg-blue-100': type === 'info'
+              }"
+            >
+              @if (type === 'danger') {
+                <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              } @else if (type === 'warning') {
+                <svg class="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              } @else {
+                <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              }
+            </div>
+
+            <!-- Content -->
+            <div class="mt-3 text-center">
+              <h3 class="text-lg font-semibold text-gray-900">{{ title }}</h3>
+              <p class="mt-2 text-sm text-gray-500">{{ message }}</p>
+            </div>
+
+            <!-- Actions -->
+            <div class="mt-5 flex gap-3 justify-center">
+              <button
+                (click)="onCancel()"
+                class="btn-secondary"
+              >
+                {{ cancelText }}
+              </button>
+              <button
+                (click)="onConfirm()"
+                [ngClass]="{
+                  'btn-danger': type === 'danger',
+                  'btn-primary': type !== 'danger'
+                }"
+              >
+                {{ confirmText }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  `
+})
+export class ConfirmModalComponent {
+  @Input() isOpen = false;
+  @Input() title = 'Confirmer';
+  @Input() message = 'Êtes-vous sûr ?';
+  @Input() confirmText = 'Confirmer';
+  @Input() cancelText = 'Annuler';
+  @Input() type: 'danger' | 'warning' | 'info' = 'danger';
+
+  @Output() confirm = new EventEmitter<void>();
+  @Output() cancel = new EventEmitter<void>();
+
+  onConfirm(): void {
+    this.confirm.emit();
+  }
+
+  onCancel(): void {
+    this.cancel.emit();
+  }
+}

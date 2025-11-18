@@ -1,0 +1,280 @@
+import { Component, OnInit, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { CustomerService } from '../../../core/services/customer.service';
+import { InvoiceService } from '../../../core/services/invoice.service';
+import { Customer, Invoice } from '../../../core/models';
+import { ToastService } from '../../../shared/services/toast.service';
+import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
+import { environment } from '../../../../environments/environment';
+
+@Component({
+  selector: 'app-customer-detail',
+  standalone: true,
+  imports: [CommonModule, RouterModule, ConfirmModalComponent],
+  template: `
+    <div>
+      @if (isLoading()) {
+        <div class="flex items-center justify-center py-12">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        </div>
+      } @else if (customer()) {
+        <!-- Header -->
+        <div class="flex justify-between items-start mb-6">
+          <div>
+            <h1 class="text-2xl font-bold text-gray-800">{{ customer()!.name }}</h1>
+            <p class="text-gray-600">Détails du client</p>
+          </div>
+          <div class="flex gap-2">
+            <a [routerLink]="['edit']" class="btn-secondary">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              Modifier
+            </a>
+            <button (click)="showDeleteModal = true" class="btn-danger">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              Supprimer
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Main Info -->
+          <div class="lg:col-span-2 space-y-6">
+            <!-- Info Card -->
+            <div class="card p-6">
+              <h3 class="text-lg font-semibold text-gray-800 mb-4">Informations</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-sm font-medium text-gray-500">Nom</label>
+                  <p class="mt-1 text-gray-900">{{ customer()!.name }}</p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-500">Téléphone</label>
+                  <p class="mt-1 text-gray-900">{{ customer()!.phoneNumber }}</p>
+                </div>
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-medium text-gray-500">Adresse</label>
+                  <p class="mt-1 text-gray-900">{{ customer()!.address || '-' }}</p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-500">Date de création</label>
+                  <p class="mt-1 text-gray-900">{{ formatDate(customer()!.createdAt) }}</p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-500">Dernière modification</label>
+                  <p class="mt-1 text-gray-900">{{ formatDate(customer()!.updatedAt) }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Invoice History -->
+            <div class="card p-6">
+              <h3 class="text-lg font-semibold text-gray-800 mb-4">Historique des factures</h3>
+              @if (invoices().length === 0) {
+                <p class="text-gray-500 text-center py-4">Aucune facture pour ce client</p>
+              } @else {
+                <div class="overflow-x-auto">
+                  <table class="w-full">
+                    <thead>
+                      <tr class="text-left text-sm text-gray-500 border-b">
+                        <th class="pb-2">N° Facture</th>
+                        <th class="pb-2">Date</th>
+                        <th class="pb-2">Statut</th>
+                        <th class="pb-2 text-right">Montant</th>
+                        <th class="pb-2 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y">
+                      @for (invoice of invoices(); track invoice.publicId) {
+                        <tr class="hover:bg-gray-50">
+                          <td class="py-3 font-medium">{{ invoice.invoiceNumber }}</td>
+                          <td class="py-3 text-gray-500">{{ formatShortDate(invoice.depositDate) }}</td>
+                          <td class="py-3">
+                            <span
+                              class="px-2 py-1 text-xs font-medium rounded-full"
+                              [class.bg-green-100]="invoice.invoicePaid"
+                              [class.text-green-700]="invoice.invoicePaid"
+                              [class.bg-red-100]="!invoice.invoicePaid"
+                              [class.text-red-700]="!invoice.invoicePaid"
+                            >
+                              {{ invoice.invoicePaid ? 'Payé' : 'Impayé' }}
+                            </span>
+                          </td>
+                          <td class="py-3 text-right font-medium">{{ formatMoney(getInvoiceTotal(invoice)) }}</td>
+                          <td class="py-3 text-right">
+                            <a [routerLink]="['/invoices', invoice.publicId]" class="text-primary-600 hover:text-primary-900">Voir</a>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Stats Sidebar -->
+          <div class="space-y-6">
+            <!-- Statistics -->
+            <div class="card p-6">
+              <h3 class="text-lg font-semibold text-gray-800 mb-4">Statistiques</h3>
+              <div class="space-y-4">
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Total factures</span>
+                  <span class="font-semibold">{{ invoices().length }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Total dépensé</span>
+                  <span class="font-semibold">{{ formatMoney(getTotalSpent()) }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Total payé</span>
+                  <span class="font-semibold text-green-600">{{ formatMoney(getTotalPaid()) }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Reste à payer</span>
+                  <span class="font-semibold text-red-600">{{ formatMoney(getTotalUnpaid()) }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card p-6">
+              <h3 class="text-lg font-semibold text-gray-800 mb-4">Actions rapides</h3>
+              <div class="space-y-2">
+                <a routerLink="/invoices/new" class="btn-primary w-full justify-center">
+                  Nouvelle facture
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Back button -->
+        <div class="mt-6">
+          <a routerLink="/customers" class="text-primary-600 hover:text-primary-800 flex items-center">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Retour à la liste
+          </a>
+        </div>
+
+        <!-- Confirm Delete Modal -->
+        <app-confirm-modal
+          [isOpen]="showDeleteModal"
+          title="Supprimer le client"
+          [message]="'Êtes-vous sûr de vouloir supprimer le client \\'' + customer()!.name + '\\' ?'"
+          confirmText="Supprimer"
+          type="danger"
+          (confirm)="deleteCustomer()"
+          (cancel)="showDeleteModal = false"
+        />
+      }
+    </div>
+  `
+})
+export class CustomerDetailComponent implements OnInit {
+  customer = signal<Customer | null>(null);
+  invoices = signal<Invoice[]>([]);
+  isLoading = signal(true);
+  showDeleteModal = false;
+
+  constructor(
+    private customerService: CustomerService,
+    private http: HttpClient,
+    private toastService: ToastService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.loadCustomer(id);
+      this.loadInvoices(id);
+    }
+  }
+
+  loadCustomer(id: string): void {
+    this.customerService.getCustomer(id).subscribe({
+      next: (customer) => {
+        this.customer.set(customer);
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.toastService.error('Erreur lors du chargement du client');
+        this.isLoading.set(false);
+        this.router.navigate(['/customers']);
+      }
+    });
+  }
+
+  loadInvoices(customerId: string): void {
+    this.http.get<Invoice[]>(`${environment.apiUrl}/customers/${customerId}/invoices`).subscribe({
+      next: (invoices) => {
+        this.invoices.set(invoices);
+      },
+      error: () => {
+        // Silent fail for invoices
+      }
+    });
+  }
+
+  deleteCustomer(): void {
+    const customer = this.customer();
+    if (!customer) return;
+
+    this.customerService.deleteCustomer(customer.publicId).subscribe({
+      next: () => {
+        this.toastService.success('Client supprimé avec succès');
+        this.router.navigate(['/customers']);
+      },
+      error: () => {
+        this.toastService.error('Erreur lors de la suppression');
+        this.showDeleteModal = false;
+      }
+    });
+  }
+
+  getInvoiceTotal(invoice: Invoice): number {
+    const linesTotal = invoice.invoiceLines.reduce((sum, line) => sum + line.amount, 0);
+    const feesTotal = invoice.additionalFees.reduce((sum, fee) => sum + fee.amount, 0);
+    return linesTotal + feesTotal - (invoice.discount || 0) + (invoice.vatAmount || 0);
+  }
+
+  getTotalSpent(): number {
+    return this.invoices().reduce((sum, inv) => sum + this.getInvoiceTotal(inv), 0);
+  }
+
+  getTotalPaid(): number {
+    return this.invoices().reduce((sum, inv) => sum + inv.amountPaid, 0);
+  }
+
+  getTotalUnpaid(): number {
+    return this.invoices().reduce((sum, inv) => sum + inv.remainingAmount, 0);
+  }
+
+  formatDate(date: string): string {
+    return new Date(date).toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  formatShortDate(date: string): string {
+    return new Date(date).toLocaleDateString('fr-FR');
+  }
+
+  formatMoney(amount: number): string {
+    return new Intl.NumberFormat('fr-FR').format(amount) + ' FCFA';
+  }
+}
