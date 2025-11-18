@@ -7,13 +7,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-public class Service {
+public class Service extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -24,6 +25,6 @@ public class Service {
     @Size(max = 50, message = "Le nom ne peut pas dépasser 50 caractères")
     private String name;                    // "Lavage", "Repassage", "Lavage&Repassage
 
-    @OneToMany(mappedBy = "service")
-    private List<Pricing> pricing;
+    @OneToMany(mappedBy = "service", fetch = FetchType.LAZY)
+    private List<Pricing> pricing = new ArrayList<>();
 }

@@ -4,6 +4,8 @@ import com.follysitou.sygpress.dto.response.*;
 import com.follysitou.sygpress.model.*;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
@@ -15,6 +17,12 @@ public class InvoiceMapper {
     public InvoiceMapper(CustomerMapper customerMapper, PricingMapper pricingMapper) {
         this.customerMapper = customerMapper;
         this.pricingMapper = pricingMapper;
+    }
+
+    public List<InvoiceResponse> toResponseList(List<Invoice> invoices) {
+        return invoices.stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
     }
 
     public InvoiceResponse toResponse(Invoice invoice) {
@@ -73,13 +81,19 @@ public class InvoiceMapper {
         return response;
     }
 
-    private double calculateTotalAmount(Invoice invoice) {
-        double totalLines = invoice.getInvoiceLines().stream()
-                .mapToDouble(InvoiceLine::getAmount)
-                .sum();
-        double totalFees = invoice.getAdditionalFees().stream()
-                .mapToDouble(AdditionalFees::getAmount)
-                .sum();
-        return totalLines + totalFees - invoice.getDiscount();
+    private BigDecimal calculateTotalAmount(Invoice invoice) {
+        BigDecimal totalLines = invoice.getInvoiceLines().stream()
+                .map(InvoiceLine::getAmount)
+                .filter(amount -> amount != null)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal totalFees = invoice.getAdditionalFees().stream()
+                .map(AdditionalFees::getAmount)
+                .filter(amount -> amount != null)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal discount = invoice.getDiscount() != null ? invoice.getDiscount() : BigDecimal.ZERO;
+
+        return totalLines.add(totalFees).subtract(discount);
     }
 }

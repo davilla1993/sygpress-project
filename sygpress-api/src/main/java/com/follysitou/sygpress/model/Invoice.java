@@ -1,22 +1,23 @@
 package com.follysitou.sygpress.model;
 
-import com.follysitou.sygpress.service.InvoiceNumberGeneratorService;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-public class Invoice {
+public class Invoice extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -29,41 +30,48 @@ public class Invoice {
     private LocalDate depositDate;
 
     @NotNull(message = "La date de livraison est obligatoire")
-    @Future(message = "La date de livraison doit être dans le futur")
+    @FutureOrPresent(message = "La date de livraison doit être aujourd'hui ou dans le futur")
     private LocalDate deliveryDate;
 
-    @Min(value = 0, message = "La remise ne peut pas être négative")
-    private double discount;
+    @DecimalMin(value = "0.0", message = "La remise ne peut pas être négative")
+    @Column(precision = 10, scale = 2)
+    private BigDecimal discount = BigDecimal.ZERO;
 
-    @Min(value = 0, message = "Le montant de TVA ne peut pas être négatif")
-    private double vatAmount;
+    @DecimalMin(value = "0.0", message = "Le montant de TVA ne peut pas être négatif")
+    @Column(precision = 10, scale = 2)
+    private BigDecimal vatAmount = BigDecimal.ZERO;
 
-    @Min(value = 0, message = "Le montant payé ne peut pas être négatif")
-    private double amountPaid;
+    @DecimalMin(value = "0.0", message = "Le montant payé ne peut pas être négatif")
+    @Column(precision = 10, scale = 2)
+    private BigDecimal amountPaid = BigDecimal.ZERO;
 
-    @Min(value = 0, message = "Le montant restant ne peut pas être négatif")
-    private double remainingAmount;
+    @DecimalMin(value = "0.0", message = "Le montant restant ne peut pas être négatif")
+    @Column(precision = 10, scale = 2)
+    private BigDecimal remainingAmount = BigDecimal.ZERO;
 
     private boolean invoicePaid;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id")
     private Customer customer;
 
-    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL)
-    private List<InvoiceLine> invoiceLines;
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<InvoiceLine> invoiceLines = new ArrayList<>();
 
-    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL)
-    private List<AdditionalFees> additionalFees;
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AdditionalFees> additionalFees = new ArrayList<>();
 
-    @Transient
-    private InvoiceNumberGeneratorService numberGeneratorService;
+    // Méthode utilitaire pour calculer le montant total
+    public BigDecimal calculateTotalAmount() {
+        BigDecimal totalLines = invoiceLines.stream()
+                .map(InvoiceLine::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-    @PrePersist
-    public void generateInvoiceNumber() {
-        // S'assurer que le service est disponible et que le numéro n'a pas déjà été défini
-        if (this.invoiceNumber == null && numberGeneratorService != null) {
-            this.invoiceNumber = numberGeneratorService.getNextInvoiceNumber();
-        }
+        BigDecimal totalFees = additionalFees.stream()
+                .map(AdditionalFees::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return totalLines.add(totalFees).subtract(discount != null ? discount : BigDecimal.ZERO);
     }
 
     /*public double calculerMontantTotal(Facture facture) {

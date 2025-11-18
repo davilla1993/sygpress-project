@@ -9,8 +9,17 @@ import com.follysitou.sygpress.model.Pricing;
 import com.follysitou.sygpress.model.Service;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Component
 public class PricingMapper {
+
+    public List<PricingResponse> toResponseList(List<Pricing> pricings) {
+        return pricings.stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
 
     public Pricing toEntity(PricingRequest request) {
         Pricing pricing = new Pricing();

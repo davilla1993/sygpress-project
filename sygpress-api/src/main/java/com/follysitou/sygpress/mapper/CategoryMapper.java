@@ -7,10 +7,17 @@ import com.follysitou.sygpress.model.Article;
 import com.follysitou.sygpress.model.Category;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
 public class CategoryMapper {
+
+    public List<CategoryResponse> toResponseList(List<Category> categories) {
+        return categories.stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
 
     public Category toEntity(CategoryRequest request) {
         Category category = new Category();

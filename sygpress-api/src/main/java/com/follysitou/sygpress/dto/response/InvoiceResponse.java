@@ -2,6 +2,7 @@ package com.follysitou.sygpress.dto.response;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -12,13 +13,13 @@ public class InvoiceResponse {
     private String invoiceNumber;
     private LocalDate depositDate;
     private LocalDate deliveryDate;
-    private double discount;
-    private double vatAmount;
-    private double amountPaid;
-    private double remainingAmount;
+    private BigDecimal discount;
+    private BigDecimal vatAmount;
+    private BigDecimal amountPaid;
+    private BigDecimal remainingAmount;
     private boolean invoicePaid;
     private CustomerResponse customer;
     private List<InvoiceLineResponse> invoiceLines;
     private List<AdditionalFeesResponse> additionalFees;
-    private double totalAmount; // Champ calculé
+    private BigDecimal totalAmount; // Champ calculé
 }
