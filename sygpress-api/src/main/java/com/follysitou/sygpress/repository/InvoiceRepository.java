@@ -32,4 +32,26 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 
     @Query("SELECT COUNT(DISTINCT c.id) FROM Invoice i JOIN i.customer c WHERE i.depositDate BETWEEN :startDate AND :endDate AND i.deleted = false AND c.createdAt >= :startDateTime")
     int countNewCustomersByDateRange(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate, @Param("startDateTime") java.time.LocalDateTime startDateTime);
+
+    // Dashboard queries
+    @Query("SELECT COUNT(i) FROM Invoice i WHERE i.deleted = false")
+    int countAllInvoices();
+
+    @Query("SELECT COALESCE(SUM(i.amountPaid), 0) FROM Invoice i WHERE i.deleted = false")
+    java.math.BigDecimal sumAllPaidAmount();
+
+    @Query("SELECT i FROM Invoice i WHERE i.deliveryDate = :date AND i.deleted = false ORDER BY i.createdAt DESC")
+    List<Invoice> findByDeliveryDateAndDeletedFalse(@Param("date") LocalDate date);
+
+    @Query("SELECT i FROM Invoice i WHERE i.deleted = false AND i.invoicePaid = false ORDER BY i.depositDate ASC")
+    List<Invoice> findAllUnpaidInvoices();
+
+    @Query("SELECT i FROM Invoice i WHERE i.processingStatus = :status AND i.deleted = false")
+    List<Invoice> findByProcessingStatusAndDeletedFalse(@Param("status") ProcessingStatus status);
+
+    @Query("SELECT COUNT(i) FROM Invoice i WHERE i.processingStatus = :status AND i.deleted = false")
+    int countByProcessingStatusAndDeletedFalse(@Param("status") ProcessingStatus status);
+
+    @Query("SELECT i FROM Invoice i WHERE i.deleted = false ORDER BY i.createdAt DESC")
+    List<Invoice> findAllOrderByCreatedAtDesc();
 }
