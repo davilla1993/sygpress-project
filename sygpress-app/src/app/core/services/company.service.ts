@@ -20,9 +20,9 @@ export class CompanyService {
     return this.http.put<Company>(this.apiUrl, company);
   }
 
-  uploadLogo(file: File): Observable<{ logoUrl: string }> {
+  uploadLogo(file: File): Observable<Company> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post<{ logoUrl: string }>(`${this.apiUrl}/logo`, formData);
+    return this.http.post<Company>(`${this.apiUrl}/logo`, formData);
   }
 }

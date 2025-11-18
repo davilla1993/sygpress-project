@@ -178,15 +178,31 @@ export class CompanyComponent implements OnInit {
   onLogoChange(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
-      this.companyService.uploadLogo(input.files[0]).subscribe({
-        next: (response) => {
-          const current = this.company();
-          if (current) {
-            this.company.set({ ...current, logoUrl: response.logoUrl });
-          }
+      const file = input.files[0];
+
+      // Validation côté client
+      if (!file.type.startsWith('image/')) {
+        this.toastService.error('Le fichier doit être une image (PNG, JPG, etc.)');
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) { // 5MB max
+        this.toastService.error('Le fichier ne doit pas dépasser 5 Mo');
+        return;
+      }
+
+      this.companyService.uploadLogo(file).subscribe({
+        next: (company) => {
+          this.company.set(company);
+          this.toastService.success('Logo téléchargé avec succès');
         },
         error: (error) => {
-          const message = error.error?.message || 'Erreur lors du téléchargement du logo';
+          let message = 'Erreur lors du téléchargement du logo';
+          if (error.status === 400) {
+            message = 'Fichier invalide. Veuillez sélectionner une image.';
+          } else if (error.error?.message) {
+            message = error.error.message;
+          }
           this.toastService.error(message);
         }
       });
@@ -200,6 +216,7 @@ export class CompanyComponent implements OnInit {
     this.companyService.updateCompany(this.form.value).subscribe({
       next: (company) => {
         this.company.set(company);
+        this.toastService.success('Informations enregistrées avec succès');
         this.isSubmitting.set(false);
       },
       error: (error) => {
