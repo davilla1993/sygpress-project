@@ -50,6 +50,9 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private Boolean credentialsNonExpired = true;
 
+    @Column(nullable = false)
+    private Boolean mustChangePassword = true;
+
     @PrePersist
     @Override
     protected void onCreate() {
@@ -68,6 +71,9 @@ public class User extends BaseEntity {
         }
         if (role == null) {
             role = Role.USER;
+        }
+        if (mustChangePassword == null) {
+            mustChangePassword = true;
         }
     }
 }
