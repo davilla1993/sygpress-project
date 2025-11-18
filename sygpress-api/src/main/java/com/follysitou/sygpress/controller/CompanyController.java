@@ -74,9 +74,6 @@ public class CompanyController {
         return companyService.getCompany()
                 .filter(company -> company.getLogo() != null && company.getLogo().length > 0)
                 .map(company -> ResponseEntity.ok()
-                        .contentType(MediaType.parseMediaType(company.getLogoContentType() != null
-                                ? company.getLogoContentType()
-                                : "image/png"))
                         .body(company.getLogo()))
                 .orElse(ResponseEntity.notFound().build());
     }

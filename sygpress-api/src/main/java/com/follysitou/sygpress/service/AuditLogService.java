@@ -20,7 +20,7 @@ public class AuditLogService {
     @Transactional
     public void log(String action, String entityType, String entityId, String details,
                     AuditLog.ActionStatus status, String errorMessage, HttpServletRequest request) {
-        String username = getCurrentUsername();
+       String username = getCurrentUsername();
         String ipAddress = request != null ? getClientIp(request) : "N/A";
         String userAgent = request != null ? request.getHeader("User-Agent") : "N/A";
 

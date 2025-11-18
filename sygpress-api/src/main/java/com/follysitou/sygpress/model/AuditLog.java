@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "audit_logs", indexes = {
-        @Index(name = "idx_user_email", columnList = "userEmail"),
+        @Index(name = "idx_user_name", columnList = "username"),
         @Index(name = "idx_action_date", columnList = "actionDate"),
         @Index(name = "idx_entity_type", columnList = "entityType"),
         @Index(name = "idx_action_status", columnList = "status")
@@ -20,8 +20,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class AuditLog extends BaseEntity {
 
-    @Column(name = "userEmail", length = 255)
-    private String userEmail;
+    @Column(name = "username", length = 255)
+    private String username;
 
     @Column(nullable = false, length = 100)
     private String action;

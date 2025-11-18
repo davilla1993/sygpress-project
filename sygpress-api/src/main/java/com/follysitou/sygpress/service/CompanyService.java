@@ -49,7 +49,6 @@ public class CompanyService {
         Company company = getCompanyOrThrow();
 
         company.setLogo(file.getBytes());
-        company.setLogoContentType(file.getContentType());
 
         return companyRepository.save(company);
     }
@@ -58,7 +57,6 @@ public class CompanyService {
     public void deleteLogo() {
         Company company = getCompanyOrThrow();
         company.setLogo(null);
-        company.setLogoContentType(null);
         companyRepository.save(company);
     }
 
@@ -66,19 +64,11 @@ public class CompanyService {
         company.setName(request.getName());
         company.setAddress(request.getAddress());
         company.setCity(request.getCity());
-        company.setPostalCode(request.getPostalCode());
         company.setCountry(request.getCountry());
         company.setPhoneNumber(request.getPhoneNumber());
         company.setEmail(request.getEmail());
         company.setWebsite(request.getWebsite());
-        company.setRccmNumber(request.getRccmNumber());
-        company.setNifNumber(request.getNifNumber());
-        company.setIban(request.getIban());
-        company.setBic(request.getBic());
-        company.setBankName(request.getBankName());
         company.setSlogan(request.getSlogan());
-        company.setLegalMentions(request.getLegalMentions());
-        company.setPaymentTerms(request.getPaymentTerms());
         company.setVatRate(request.getVatRate());
     }
 }
