@@ -20,8 +20,8 @@ public class OpenApiConfig {
         devServer.setDescription("Serveur de développement");
 
         Contact contact = new Contact();
-        contact.setName("Folly Sitou");
-        contact.setEmail("contact@follysitou.com");
+        contact.setName("GBOSSOU Folly S. Carlo");
+        contact.setEmail("carlogbossou93@gmail.com");
 
         License license = new License()
                 .name("MIT License")

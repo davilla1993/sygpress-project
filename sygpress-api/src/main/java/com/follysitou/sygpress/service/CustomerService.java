@@ -18,7 +18,7 @@ public class CustomerService {
 
     @Transactional
     public Customer create(Customer customer) {
-        if (customerRepository.findByPhone(customer.getPhoneNumber()).isPresent()) {
+        if (customerRepository.findByPhoneNumber(customer.getPhoneNumber()).isPresent()) {
             throw new DuplicateResourceException("Client", "téléphone", customer.getPhoneNumber());
         }
         return customerRepository.save(customer);
@@ -45,7 +45,7 @@ public class CustomerService {
         Customer customer = findById(id);
 
         // Vérifier si le nouveau numéro de téléphone n'est pas déjà utilisé par un autre client
-        customerRepository.findByPhone(customerDetails.getPhoneNumber())
+        customerRepository.findByPhoneNumber(customerDetails.getPhoneNumber())
                 .ifPresent(existingCustomer -> {
                     if (!existingCustomer.getId().equals(id)) {
                         throw new DuplicateResourceException("Client", "téléphone", customerDetails.getPhoneNumber());

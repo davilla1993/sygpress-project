@@ -4,24 +4,20 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
+
 @Entity
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Invoice extends BaseEntity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private Long id;
 
     @Column(unique = true, nullable = false)
     private String invoiceNumber;
@@ -73,17 +69,4 @@ public class Invoice extends BaseEntity {
 
         return totalLines.add(totalFees).subtract(discount != null ? discount : BigDecimal.ZERO);
     }
-
-    /*public double calculerMontantTotal(Facture facture) {
-        double totalArticles = facture.getLignes().stream()
-                .mapToDouble(LigneFacture::getMontant)
-                .sum();
-
-        double totalFrais = facture.getFraisSupplements().stream()
-                .mapToDouble(FraisSupplementaire::getMontant)
-                .sum();
-
-        return totalArticles + totalFrais - facture.getRemise();
-    }*/
-
 }
