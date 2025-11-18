@@ -30,8 +30,8 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(request, httpRequest));
     }
 
-    @PostMapping("/admin/users")
     @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/admin/users")
     public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest request,
                                                   HttpServletRequest httpRequest) {
         return new ResponseEntity<>(authService.register(request, httpRequest), HttpStatus.CREATED);
@@ -44,34 +44,34 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/admin/users")
     @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/users")
     public ResponseEntity<Page<UserResponse>> getAllUsers(Pageable pageable) {
         return ResponseEntity.ok(authService.getAllUsers(pageable));
     }
 
-    @GetMapping("/admin/users/{publicId}")
     @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/users/{publicId}")
     public ResponseEntity<UserResponse> getUserByPublicId(@PathVariable String publicId) {
         return ResponseEntity.ok(authService.getUserByPublicId(publicId));
     }
 
-    @PutMapping("/admin/users/{publicId}/disable")
     @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/admin/users/{publicId}/disable")
     public ResponseEntity<Void> disableUser(@PathVariable String publicId, HttpServletRequest httpRequest) {
         authService.disableUser(publicId, httpRequest);
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/admin/users/{publicId}/enable")
     @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/admin/users/{publicId}/enable")
     public ResponseEntity<Void> enableUser(@PathVariable String publicId, HttpServletRequest httpRequest) {
         authService.enableUser(publicId, httpRequest);
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/admin/users/{publicId}/reset-password")
     @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/admin/users/{publicId}/reset-password")
     public ResponseEntity<Void> resetPassword(@PathVariable String publicId,
                                                @Valid @RequestBody ResetPasswordRequest request,
                                                HttpServletRequest httpRequest) {
@@ -79,8 +79,8 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/admin/users/{publicId}")
     @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/admin/users/{publicId}")
     public ResponseEntity<Void> deleteUser(@PathVariable String publicId, HttpServletRequest httpRequest) {
         authService.deleteUser(publicId, httpRequest);
         return ResponseEntity.noContent().build();

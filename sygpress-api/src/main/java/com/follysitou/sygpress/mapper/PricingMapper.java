@@ -6,7 +6,7 @@ import com.follysitou.sygpress.dto.response.PricingResponse;
 import com.follysitou.sygpress.dto.response.ServiceResponse;
 import com.follysitou.sygpress.model.Article;
 import com.follysitou.sygpress.model.Pricing;
-import com.follysitou.sygpress.model.Service;
+import com.follysitou.sygpress.model.LaundryService;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -50,7 +50,7 @@ public class PricingMapper {
         return response;
     }
 
-    private ServiceResponse serviceToMinimalResponse(Service service) {
+    private ServiceResponse serviceToMinimalResponse(LaundryService service) {
         ServiceResponse response = new ServiceResponse();
         response.setPublicId(service.getPublicId());
         response.setName(service.getName());

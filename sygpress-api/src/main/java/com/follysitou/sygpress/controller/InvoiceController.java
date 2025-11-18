@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -33,6 +34,7 @@ public class InvoiceController {
     private final PricingRepository pricingRepository;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<InvoiceResponse> create(@Valid @RequestBody InvoiceRequest request) {
         Invoice invoice = new Invoice();
         invoice.setDepositDate(request.getDepositDate());
@@ -77,12 +79,14 @@ public class InvoiceController {
     }
 
     @GetMapping("/{publicId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<InvoiceResponse> getByPublicId(@PathVariable String publicId) {
         Invoice invoice = invoiceService.findByPublicId(publicId);
         return ResponseEntity.ok(invoiceMapper.toResponse(invoice));
     }
 
     @GetMapping("/number/{invoiceNumber}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<InvoiceResponse> getByInvoiceNumber(@PathVariable String invoiceNumber) {
         Invoice invoice = invoiceService.findByInvoiceNumber(invoiceNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("Facture", "numéro", invoiceNumber));
@@ -90,12 +94,14 @@ public class InvoiceController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<Page<InvoiceResponse>> getAll(Pageable pageable) {
         Page<Invoice> invoices = invoiceService.findAll(pageable);
         return ResponseEntity.ok(invoices.map(invoiceMapper::toResponse));
     }
 
     @DeleteMapping("/{publicId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable String publicId) {
         invoiceService.deleteByPublicId(publicId);
         return ResponseEntity.noContent().build();

@@ -3,6 +3,7 @@ package com.follysitou.sygpress.service;
 import com.follysitou.sygpress.exception.DuplicateResourceException;
 import com.follysitou.sygpress.exception.ResourceNotFoundException;
 import com.follysitou.sygpress.model.Article;
+import com.follysitou.sygpress.model.LaundryService;
 import com.follysitou.sygpress.model.Pricing;
 import com.follysitou.sygpress.repository.ArticleRepository;
 import com.follysitou.sygpress.repository.PricingRepository;
@@ -32,7 +33,7 @@ public class PricingService {
         Article article = articleRepository.findByPublicId(articlePublicId)
                 .orElseThrow(() -> new ResourceNotFoundException("Article", "publicId", articlePublicId));
 
-        com.follysitou.sygpress.model.Service service = serviceRepository.findByPublicId(servicePublicId)
+        LaundryService service = serviceRepository.findByPublicId(servicePublicId)
                 .orElseThrow(() -> new ResourceNotFoundException("Service", "publicId", servicePublicId));
 
         Pricing pricing = new Pricing();
@@ -86,7 +87,7 @@ public class PricingService {
         Article article = articleRepository.findByPublicId(articlePublicId)
                 .orElseThrow(() -> new ResourceNotFoundException("Article", "publicId", articlePublicId));
 
-        com.follysitou.sygpress.model.Service service = serviceRepository.findByPublicId(servicePublicId)
+        LaundryService service = serviceRepository.findByPublicId(servicePublicId)
                 .orElseThrow(() -> new ResourceNotFoundException("Service", "publicId", servicePublicId));
 
         pricing.setPrice(price);

@@ -14,7 +14,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Service extends BaseEntity {
+public class LaundryService extends BaseEntity {
 
     @Column(unique = true)
     @NotBlank(message = "Le nom est obligatoire")

@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -22,6 +23,7 @@ public class ArticleController {
     private final ArticleMapper articleMapper;
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ArticleResponse> create(@Valid @RequestBody ArticleRequest request) {
         Article article = new Article();
         article.setName(request.getName());
@@ -31,24 +33,29 @@ public class ArticleController {
     }
 
     @GetMapping("/{publicId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ArticleResponse> getByPublicId(@PathVariable String publicId) {
         Article article = articleService.findByPublicId(publicId);
         return ResponseEntity.ok(articleMapper.toResponse(article));
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<ArticleResponse>> getAll(Pageable pageable) {
         Page<Article> articles = articleService.findAll(pageable);
         return ResponseEntity.ok(articles.map(articleMapper::toResponse));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/category/{categoryPublicId}")
     public ResponseEntity<Page<ArticleResponse>> getByCategory(@PathVariable String categoryPublicId, Pageable pageable) {
         Page<Article> articles = articleService.findByCategory(categoryPublicId, pageable);
         return ResponseEntity.ok(articles.map(articleMapper::toResponse));
     }
 
+
     @PutMapping("/{publicId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ArticleResponse> update(@PathVariable String publicId, @Valid @RequestBody ArticleRequest request) {
         Article articleDetails = new Article();
         articleDetails.setName(request.getName());
@@ -58,6 +65,7 @@ public class ArticleController {
     }
 
     @DeleteMapping("/{publicId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable String publicId) {
         articleService.delete(publicId);
         return ResponseEntity.noContent().build();

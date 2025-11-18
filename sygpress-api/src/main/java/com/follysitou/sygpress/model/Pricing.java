@@ -29,5 +29,5 @@ public class Pricing extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "service_id")
     @NotNull(message = "Le service est obligatoire")
-    private Service service;
+    private LaundryService service;
 }

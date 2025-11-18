@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -22,6 +23,7 @@ public class CustomerController {
     private final CustomerMapper customerMapper;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<CustomerResponse> create(@Valid @RequestBody CustomerRequest request) {
         Customer customer = new Customer();
         customer.setName(request.getName());
@@ -33,24 +35,28 @@ public class CustomerController {
     }
 
     @GetMapping("/{publicId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<CustomerResponse> getByPublicId(@PathVariable String publicId) {
         Customer customer = customerService.findByPublicId(publicId);
         return ResponseEntity.ok(customerMapper.toResponse(customer));
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<Page<CustomerResponse>> getAll(Pageable pageable) {
         Page<Customer> customers = customerService.findAll(pageable);
         return ResponseEntity.ok(customers.map(customerMapper::toResponse));
     }
 
     @GetMapping("/search")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<Page<CustomerResponse>> searchByName(@RequestParam String name, Pageable pageable) {
         Page<Customer> customers = customerService.searchByName(name, pageable);
         return ResponseEntity.ok(customers.map(customerMapper::toResponse));
     }
 
     @PutMapping("/{publicId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<CustomerResponse> update(@PathVariable String publicId, @Valid @RequestBody CustomerRequest request) {
         Customer customerDetails = new Customer();
         customerDetails.setName(request.getName());
@@ -62,6 +68,7 @@ public class CustomerController {
     }
 
     @DeleteMapping("/{publicId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable String publicId) {
         customerService.delete(publicId);
         return ResponseEntity.noContent().build();

@@ -2,6 +2,7 @@ package com.follysitou.sygpress.service;
 
 import com.follysitou.sygpress.exception.DuplicateResourceException;
 import com.follysitou.sygpress.exception.ResourceNotFoundException;
+import com.follysitou.sygpress.model.LaundryService;
 import com.follysitou.sygpress.repository.ServiceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -15,7 +16,7 @@ public class LaundryServiceService {
     private final ServiceRepository serviceRepository;
 
     @Transactional
-    public com.follysitou.sygpress.model.Service create(com.follysitou.sygpress.model.Service service) {
+    public LaundryService create(LaundryService service) {
         if (serviceRepository.existsByName(service.getName())) {
             throw new DuplicateResourceException("Service", "nom", service.getName());
         }
@@ -23,19 +24,19 @@ public class LaundryServiceService {
     }
 
     @Transactional(readOnly = true)
-    public com.follysitou.sygpress.model.Service findByPublicId(String publicId) {
+    public LaundryService findByPublicId(String publicId) {
         return serviceRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new ResourceNotFoundException("Service", "publicId", publicId));
     }
 
     @Transactional(readOnly = true)
-    public Page<com.follysitou.sygpress.model.Service> findAll(Pageable pageable) {
+    public Page<LaundryService> findAll(Pageable pageable) {
         return serviceRepository.findAll(pageable);
     }
 
     @Transactional
-    public com.follysitou.sygpress.model.Service update(String publicId, com.follysitou.sygpress.model.Service serviceDetails) {
-        com.follysitou.sygpress.model.Service service = findByPublicId(publicId);
+    public LaundryService update(String publicId, LaundryService serviceDetails) {
+        LaundryService service = findByPublicId(publicId);
 
         // Vérifier si le nouveau nom n'est pas déjà utilisé par un autre service
         serviceRepository.findByName(serviceDetails.getName())
@@ -52,7 +53,7 @@ public class LaundryServiceService {
 
     @Transactional
     public void delete(String publicId) {
-        com.follysitou.sygpress.model.Service service = findByPublicId(publicId);
+        LaundryService service = findByPublicId(publicId);
         serviceRepository.delete(service);
     }
 }
