@@ -5,18 +5,19 @@ import com.follysitou.sygpress.dto.response.CompanyResponse;
 import com.follysitou.sygpress.mapper.CompanyMapper;
 import com.follysitou.sygpress.model.Company;
 import com.follysitou.sygpress.service.CompanyService;
+import com.follysitou.sygpress.service.FileStorageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/company")
@@ -26,6 +27,7 @@ public class CompanyController {
 
     private final CompanyService companyService;
     private final CompanyMapper companyMapper;
+    private final FileStorageService fileStorageService;
 
     @GetMapping
     @Operation(summary = "Récupérer la configuration entreprise")
@@ -46,7 +48,7 @@ public class CompanyController {
     @PostMapping(value = "/logo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Télécharger le logo de l'entreprise")
-    public ResponseEntity<CompanyResponse> uploadLogo(@RequestParam("file") MultipartFile file) throws IOException {
+    public ResponseEntity<CompanyResponse> uploadLogo(@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
@@ -70,11 +72,18 @@ public class CompanyController {
 
     @GetMapping("/logo")
     @Operation(summary = "Récupérer le logo de l'entreprise")
-    public ResponseEntity<byte[]> getLogo() {
+    public ResponseEntity<Resource> getLogo() {
         return companyService.getCompany()
-                .filter(company -> company.getLogo() != null && company.getLogo().length > 0)
-                .map(company -> ResponseEntity.ok()
-                        .body(company.getLogo()))
+                .filter(company -> company.getLogoPath() != null && !company.getLogoPath().isEmpty())
+                .map(company -> {
+                    Resource resource = fileStorageService.loadFileAsResource(company.getLogoPath());
+                    String contentType = fileStorageService.getContentType(company.getLogoPath());
+
+                    return ResponseEntity.ok()
+                            .contentType(MediaType.parseMediaType(contentType))
+                            .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"logo\"")
+                            .body(resource);
+                })
                 .orElse(ResponseEntity.notFound().build());
     }
 }

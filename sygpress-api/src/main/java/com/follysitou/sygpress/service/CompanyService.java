@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.Optional;
 
 @Service
@@ -17,6 +16,7 @@ import java.util.Optional;
 public class CompanyService {
 
     private final CompanyRepository companyRepository;
+    private final FileStorageService fileStorageService;
 
     @Transactional(readOnly = true)
     public Optional<Company> getCompany() {
@@ -45,10 +45,17 @@ public class CompanyService {
     }
 
     @Transactional
-    public Company updateLogo(MultipartFile file) throws IOException {
+    public Company updateLogo(MultipartFile file) {
         Company company = getCompanyOrThrow();
 
-        company.setLogo(file.getBytes());
+        // Supprimer l'ancien logo s'il existe
+        if (company.getLogoPath() != null && !company.getLogoPath().isEmpty()) {
+            fileStorageService.deleteFile(company.getLogoPath());
+        }
+
+        // Stocker le nouveau fichier
+        String logoPath = fileStorageService.storeFile(file, "logos");
+        company.setLogoPath(logoPath);
 
         return companyRepository.save(company);
     }
@@ -56,8 +63,12 @@ public class CompanyService {
     @Transactional
     public void deleteLogo() {
         Company company = getCompanyOrThrow();
-        company.setLogo(null);
-        companyRepository.save(company);
+
+        if (company.getLogoPath() != null && !company.getLogoPath().isEmpty()) {
+            fileStorageService.deleteFile(company.getLogoPath());
+            company.setLogoPath(null);
+            companyRepository.save(company);
+        }
     }
 
     private void updateCompanyFromRequest(Company company, CompanyRequest request) {

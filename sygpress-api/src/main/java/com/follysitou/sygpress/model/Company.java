@@ -1,6 +1,8 @@
 package com.follysitou.sygpress.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -48,9 +50,9 @@ public class Company extends BaseEntity {
     @Column(length = 255)
     private String website;
 
-    @Lob
-    @Column(name = "logo", columnDefinition = "BYTEA")
-    private byte[] logo;
+    @Size(max = 500, message = "Le chemin du logo ne peut pas dépasser 500 caractères")
+    @Column(name = "logo_path", length = 500)
+    private String logoPath;
 
     @Size(max = 500, message = "Le slogan ne peut pas dépasser 500 caractères")
     @Column(length = 500)
