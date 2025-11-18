@@ -156,8 +156,16 @@ export class LoginComponent {
       },
       error: (error) => {
         this.isLoading.set(false);
-        if (error.status === 401) {
+        // Utiliser le message du backend s'il existe
+        const backendMessage = error.error?.message;
+        if (backendMessage) {
+          this.errorMessage.set(backendMessage);
+        } else if (error.status === 401) {
           this.errorMessage.set('Nom d\'utilisateur ou mot de passe incorrect');
+        } else if (error.status === 403) {
+          this.errorMessage.set('Accès refusé');
+        } else if (error.status === 0) {
+          this.errorMessage.set('Impossible de contacter le serveur. Vérifiez votre connexion.');
         } else {
           this.errorMessage.set('Une erreur est survenue. Veuillez réessayer.');
         }

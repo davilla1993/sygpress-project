@@ -10,7 +10,11 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (error.status === 401) {
+      // Ne pas déconnecter si c'est une erreur sur la route de login
+      const isLoginRequest = req.url.includes('/auth/login');
+
+      if (error.status === 401 && !isLoginRequest) {
+        // Déconnecter uniquement si ce n'est pas une tentative de connexion
         authService.logout();
         router.navigate(['/login']);
       } else if (error.status === 403) {
