@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.format.TextStyle;
 import java.time.temporal.ChronoUnit;
@@ -297,7 +296,7 @@ public class DashboardService {
             alerts.add(UserDashboardResponse.Alert.builder()
                     .type("INFO")
                     .message(inProcessing + " article(s) en cours de traitement")
-                    .link("/invoices?status=EN_LAVAGE,EN_REPASSAGE")
+                    .link("/invoices?status=LAVAGE,REPASSAGE")
                     .build());
         }
 
@@ -331,9 +330,9 @@ public class DashboardService {
 
     private String getStatusLabel(ProcessingStatus status) {
         return switch (status) {
-            case COLLECTE -> "Collecte";
-            case EN_LAVAGE -> "En Lavage";
-            case EN_REPASSAGE -> "En Repassage";
+            case DEPOT -> "Dépôt";
+            case EN_LAVAGE -> "Lavage";
+            case EN_REPASSAGE -> "Repassage";
             case PRET -> "Prêt";
             case LIVRE -> "Livré";
             case RECUPERE -> "Récupéré";

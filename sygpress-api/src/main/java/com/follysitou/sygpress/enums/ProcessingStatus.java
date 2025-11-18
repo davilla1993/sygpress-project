@@ -1,7 +1,7 @@
 package com.follysitou.sygpress.enums;
 
 public enum ProcessingStatus {
-    COLLECTE,
+    DEPOT,
     EN_LAVAGE,
     EN_REPASSAGE,
     PRET,

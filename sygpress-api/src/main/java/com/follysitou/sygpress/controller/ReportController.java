@@ -30,7 +30,7 @@ public class ReportController {
 
     // Sales Report endpoints
     @GetMapping("/sales")
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Générer le rapport des ventes")
     public ResponseEntity<SalesReportResponse> getSalesReport(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -47,7 +47,7 @@ public class ReportController {
     }
 
     @GetMapping("/sales/pdf")
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Télécharger le rapport des ventes en PDF")
     public ResponseEntity<byte[]> downloadSalesReportPdf(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -64,7 +64,7 @@ public class ReportController {
 
     // Customer Report endpoints
     @GetMapping("/customers")
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Générer le rapport clients")
     public ResponseEntity<CustomerReportResponse> getCustomerReport(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -73,7 +73,7 @@ public class ReportController {
     }
 
     @GetMapping("/customers/today")
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Générer le rapport clients d'aujourd'hui")
     public ResponseEntity<CustomerReportResponse> getCustomerReportToday() {
         LocalDate today = LocalDate.now();
@@ -81,7 +81,7 @@ public class ReportController {
     }
 
     @GetMapping("/customers/pdf")
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Télécharger le rapport clients en PDF")
     public ResponseEntity<byte[]> downloadCustomerReportPdf(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -98,7 +98,7 @@ public class ReportController {
 
     // Invoice Status Report endpoints
     @GetMapping("/invoices-status")
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Générer le rapport état des factures")
     public ResponseEntity<InvoiceStatusReportResponse> getInvoiceStatusReport(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -115,7 +115,7 @@ public class ReportController {
     }
 
     @GetMapping("/invoices-status/pdf")
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Télécharger le rapport état des factures en PDF")
     public ResponseEntity<byte[]> downloadInvoiceStatusReportPdf(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
