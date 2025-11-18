@@ -235,8 +235,9 @@ export class InvoiceListComponent implements OnInit {
         this.totalElements.set(response.totalElements);
         this.isLoading.set(false);
       },
-      error: () => {
-        this.toastService.error('Erreur lors du chargement des factures');
+      error: (error) => {
+        const message = error.error?.message || 'Erreur lors du chargement des factures';
+        this.toastService.error(message);
         this.isLoading.set(false);
       }
     });
@@ -295,8 +296,9 @@ export class InvoiceListComponent implements OnInit {
         const url = window.URL.createObjectURL(blob);
         window.open(url, '_blank');
       },
-      error: () => {
-        this.toastService.error('Erreur lors de l\'impression');
+      error: (error) => {
+        const message = error.error?.message || 'Erreur lors de l\'impression';
+        this.toastService.error(message);
       }
     });
   }

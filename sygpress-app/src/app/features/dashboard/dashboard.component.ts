@@ -6,6 +6,7 @@ import { ChartConfiguration, ChartData } from 'chart.js';
 import { AuthService } from '../../core/services/auth.service';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { AdminDashboard, UserDashboard } from '../../core/models';
+import { ToastService } from '../../shared/services/toast.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -424,7 +425,8 @@ export class DashboardComponent implements OnInit {
 
   constructor(
     public authService: AuthService,
-    private dashboardService: DashboardService
+    private dashboardService: DashboardService,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -438,7 +440,9 @@ export class DashboardComponent implements OnInit {
           this.adminDashboard.set(data);
           this.isLoading.set(false);
         },
-        error: () => {
+        error: (error) => {
+          const message = error.error?.message || 'Erreur lors du chargement du tableau de bord';
+          this.toastService.error(message);
           this.isLoading.set(false);
         }
       });
@@ -448,7 +452,9 @@ export class DashboardComponent implements OnInit {
           this.userDashboard.set(data);
           this.isLoading.set(false);
         },
-        error: () => {
+        error: (error) => {
+          const message = error.error?.message || 'Erreur lors du chargement du tableau de bord';
+          this.toastService.error(message);
           this.isLoading.set(false);
         }
       });

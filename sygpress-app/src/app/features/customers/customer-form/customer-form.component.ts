@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CustomerService } from '../../../core/services/customer.service';
+import { ToastService } from '../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-customer-form',
@@ -88,6 +89,7 @@ export class CustomerFormComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private customerService: CustomerService,
+    private toastService: ToastService,
     private route: ActivatedRoute,
     private router: Router
   ) {
@@ -115,6 +117,11 @@ export class CustomerFormComponent implements OnInit {
             phoneNumber: customer.phoneNumber,
             address: customer.address
           });
+        },
+        error: (error) => {
+          const message = error.error?.message || 'Erreur lors du chargement du client';
+          this.toastService.error(message);
+          this.router.navigate(['/customers']);
         }
       });
     }
@@ -132,9 +139,12 @@ export class CustomerFormComponent implements OnInit {
 
     request$.subscribe({
       next: () => {
+        this.toastService.success(this.isEditMode() ? 'Client modifié avec succès' : 'Client créé avec succès');
         this.router.navigate(['/customers']);
       },
-      error: () => {
+      error: (error) => {
+        const message = error.error?.message || 'Erreur lors de l\'enregistrement';
+        this.toastService.error(message);
         this.isSubmitting.set(false);
       }
     });

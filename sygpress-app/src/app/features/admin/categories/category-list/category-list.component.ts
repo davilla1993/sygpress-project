@@ -124,8 +124,9 @@ export class CategoryListComponent implements OnInit {
         this.categories.set(categories);
         this.isLoading.set(false);
       },
-      error: () => {
-        this.toastService.error('Erreur lors du chargement des catégories');
+      error: (error) => {
+        const message = error.error?.message || 'Erreur lors du chargement des catégories';
+        this.toastService.error(message);
         this.isLoading.set(false);
       }
     });
@@ -152,8 +153,9 @@ export class CategoryListComponent implements OnInit {
         this.closeModal();
         this.loadCategories();
       },
-      error: () => {
-        this.toastService.error('Erreur lors de l\'enregistrement');
+      error: (error) => {
+        const message = error.error?.message || 'Erreur lors de l\'enregistrement';
+        this.toastService.error(message);
       }
     });
   }
@@ -173,8 +175,9 @@ export class CategoryListComponent implements OnInit {
         this.categoryToDelete = null;
         this.loadCategories();
       },
-      error: () => {
-        this.toastService.error('Erreur lors de la suppression');
+      error: (error) => {
+        const message = error.error?.message || 'Erreur lors de la suppression';
+        this.toastService.error(message);
         this.showDeleteModal = false;
       }
     });

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
 import { Pricing, Article, Service } from '../../../../core/models';
+import { ToastService } from '../../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-pricing-list',
@@ -116,7 +117,10 @@ export class PricingListComponent implements OnInit {
     price: 0
   };
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private toastService: ToastService
+  ) {}
 
   ngOnInit(): void {
     this.loadPricings();
@@ -130,7 +134,9 @@ export class PricingListComponent implements OnInit {
         this.pricings.set(pricings);
         this.isLoading.set(false);
       },
-      error: () => {
+      error: (error) => {
+        const message = error.error?.message || 'Erreur lors du chargement des tarifs';
+        this.toastService.error(message);
         this.isLoading.set(false);
       }
     });
@@ -167,6 +173,10 @@ export class PricingListComponent implements OnInit {
       next: () => {
         this.closeModal();
         this.loadPricings();
+      },
+      error: (error) => {
+        const message = error.error?.message || 'Erreur lors de l\'enregistrement';
+        this.toastService.error(message);
       }
     });
   }
@@ -176,6 +186,10 @@ export class PricingListComponent implements OnInit {
       this.http.delete(`${environment.apiUrl}/pricing/${pricing.publicId}`).subscribe({
         next: () => {
           this.loadPricings();
+        },
+        error: (error) => {
+          const message = error.error?.message || 'Erreur lors de la suppression';
+          this.toastService.error(message);
         }
       });
     }
