@@ -45,8 +45,8 @@ public class CompanyController {
         return ResponseEntity.status(HttpStatus.OK).body(companyMapper.toResponse(company));
     }
 
-    @PostMapping(value = "/logo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping(value = "/logo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Télécharger le logo de l'entreprise")
     public ResponseEntity<CompanyResponse> uploadLogo(@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
