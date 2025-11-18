@@ -3,6 +3,7 @@ package com.follysitou.sygpress.controller;
 import com.follysitou.sygpress.dto.request.ChangePasswordRequest;
 import com.follysitou.sygpress.dto.request.LoginRequest;
 import com.follysitou.sygpress.dto.request.RegisterRequest;
+import com.follysitou.sygpress.dto.request.ResetPasswordRequest;
 import com.follysitou.sygpress.dto.response.AuthResponse;
 import com.follysitou.sygpress.dto.response.UserResponse;
 import com.follysitou.sygpress.service.AuthService;
@@ -66,6 +67,15 @@ public class AuthController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> enableUser(@PathVariable String publicId, HttpServletRequest httpRequest) {
         authService.enableUser(publicId, httpRequest);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/admin/users/{publicId}/reset-password")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> resetPassword(@PathVariable String publicId,
+                                               @Valid @RequestBody ResetPasswordRequest request,
+                                               HttpServletRequest httpRequest) {
+        authService.resetPassword(publicId, request.getNewPassword(), httpRequest);
         return ResponseEntity.ok().build();
     }
 

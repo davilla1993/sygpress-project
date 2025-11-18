@@ -149,6 +149,19 @@ public class AuthService {
     }
 
     @Transactional
+    public void resetPassword(String publicId, String newPassword, HttpServletRequest httpRequest) {
+        User user = userRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur", "publicId", publicId));
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setMustChangePassword(true);
+        userRepository.save(user);
+
+        auditLogService.logSuccess("RESET_PASSWORD", "User", publicId,
+                "Réinitialisation mot de passe pour: " + user.getUsername(), httpRequest);
+    }
+
+    @Transactional
     public void deleteUser(String publicId, HttpServletRequest httpRequest) {
         User user = userRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur", "publicId", publicId));
