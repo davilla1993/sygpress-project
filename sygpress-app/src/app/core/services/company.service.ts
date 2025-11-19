@@ -17,7 +17,7 @@ export class CompanyService {
   }
 
   updateCompany(company: CompanyRequest): Observable<Company> {
-    return this.http.put<Company>(this.apiUrl, company);
+    return this.http.post<Company>(this.apiUrl, company);
   }
 
   uploadLogo(file: File): Observable<Company> {
