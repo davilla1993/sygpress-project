@@ -64,13 +64,15 @@ export class InvoiceFormComponent implements OnInit {
 
   loadCustomers(): void {
     this.customerService.getAllCustomers().subscribe({
-      next: (customers) => this.customers.set(customers)
+      next: (customers) => this.customers.set(Array.isArray(customers) ? customers : []),
+      error: () => this.customers.set([])
     });
   }
 
   loadPricings(): void {
     this.http.get<Pricing[]>(`${environment.apiUrl}/pricing/all`).subscribe({
-      next: (pricings) => this.pricings.set(pricings)
+      next: (pricings) => this.pricings.set(Array.isArray(pricings) ? pricings : []),
+      error: () => this.pricings.set([])
     });
   }
 
