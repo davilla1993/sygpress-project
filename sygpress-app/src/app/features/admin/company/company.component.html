@@ -17,8 +17,8 @@
           <div class="md:col-span-2">
             <label class="block text-sm font-medium text-gray-700 mb-2">Logo</label>
             <div class="flex items-center gap-4">
-              @if (logoFullUrl()) {
-                <img [src]="logoFullUrl()" alt="Logo" class="h-20 w-20 object-contain border rounded" />
+              @if (logoDataUrl()) {
+                <img [src]="logoDataUrl()" alt="Logo" class="h-20 w-20 object-contain border rounded" />
               } @else {
                 <div class="h-20 w-20 bg-gray-100 rounded flex items-center justify-center">
                   <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
