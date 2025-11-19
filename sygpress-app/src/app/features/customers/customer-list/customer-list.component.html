@@ -59,7 +59,9 @@
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <a [routerLink]="[customer.publicId]" class="text-primary-600 hover:text-primary-900 mr-3">Voir</a>
                 <a [routerLink]="[customer.publicId, 'edit']" class="text-gray-600 hover:text-gray-900 mr-3">Modifier</a>
-                <button (click)="confirmDelete(customer)" class="text-red-600 hover:text-red-900">Supprimer</button>
+                @if (isAdmin) {
+                  <button (click)="confirmDelete(customer)" class="text-red-600 hover:text-red-900">Supprimer</button>
+                }
               </td>
             </tr>
           } @empty {
