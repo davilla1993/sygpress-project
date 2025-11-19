@@ -13,6 +13,23 @@
     </button>
   </div>
 
+  <!-- Filtres -->
+  <div class="card mb-6">
+    <div class="flex items-center gap-4">
+      <label class="text-sm font-medium text-gray-700">Filtrer par service :</label>
+      <select
+        [value]="selectedServiceFilter()"
+        (change)="onServiceFilterChange($any($event.target).value)"
+        class="input max-w-xs"
+      >
+        <option value="">Tous les services</option>
+        @for (service of services(); track service.publicId) {
+          <option [value]="service.publicId">{{ service.name }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
   @if (isLoading()) {
     <div class="flex items-center justify-center py-12">
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>

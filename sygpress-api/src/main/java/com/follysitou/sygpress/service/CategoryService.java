@@ -32,7 +32,7 @@ public class CategoryService {
 
     @Transactional(readOnly = true)
     public Page<Category> findAll(Pageable pageable) {
-        return categoryRepository.findAll(pageable);
+        return categoryRepository.findAllBy(pageable);
     }
 
     @Transactional

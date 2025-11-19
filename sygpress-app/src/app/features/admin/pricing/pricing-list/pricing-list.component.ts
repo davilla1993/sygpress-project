@@ -21,6 +21,7 @@ export class PricingListComponent implements OnInit {
   currentPage = signal(0);
   totalPages = signal(0);
   totalElements = signal(0);
+  selectedServiceFilter = signal<string>('');
   showAddModal = false;
   editingPricing: Pricing | null = null;
   formData = {
@@ -42,7 +43,12 @@ export class PricingListComponent implements OnInit {
 
   loadPricings(): void {
     this.isLoading.set(true);
-    this.http.get<any>(`${environment.apiUrl}/pricing?page=${this.currentPage()}&size=15`).subscribe({
+    const serviceFilter = this.selectedServiceFilter();
+    const baseUrl = serviceFilter
+      ? `${environment.apiUrl}/pricing/service/${serviceFilter}`
+      : `${environment.apiUrl}/pricing`;
+
+    this.http.get<any>(`${baseUrl}?page=${this.currentPage()}&size=15`).subscribe({
       next: (response) => {
         const pricings = response.content || response;
         this.pricings.set(Array.isArray(pricings) ? pricings : []);
@@ -56,6 +62,12 @@ export class PricingListComponent implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+
+  onServiceFilterChange(servicePublicId: string): void {
+    this.selectedServiceFilter.set(servicePublicId);
+    this.currentPage.set(0);
+    this.loadPricings();
   }
 
   goToPage(page: number): void {
