@@ -50,6 +50,31 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Pagination -->
+    <div class="flex justify-between items-center mt-4">
+      <p class="text-sm text-gray-500">
+        Page {{ currentPage() + 1 }} sur {{ totalPages() }} ({{ totalElements() }} tarifs)
+      </p>
+      <div class="flex gap-2">
+        <button
+          (click)="goToPage(currentPage() - 1)"
+          [disabled]="currentPage() === 0"
+          class="btn-secondary"
+          [class.opacity-50]="currentPage() === 0"
+        >
+          Précédent
+        </button>
+        <button
+          (click)="goToPage(currentPage() + 1)"
+          [disabled]="currentPage() >= totalPages() - 1"
+          class="btn-secondary"
+          [class.opacity-50]="currentPage() >= totalPages() - 1"
+        >
+          Suivant
+        </button>
+      </div>
+    </div>
   }
 
   <!-- Add/Edit Modal -->

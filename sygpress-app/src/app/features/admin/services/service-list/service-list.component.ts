@@ -16,6 +16,9 @@ import { ToastService } from '../../../../shared/services/toast.service';
 export class ServiceListComponent implements OnInit {
   services = signal<Service[]>([]);
   isLoading = signal(true);
+  currentPage = signal(0);
+  totalPages = signal(0);
+  totalElements = signal(0);
   showAddModal = false;
   editingService: Service | null = null;
   formData = {
@@ -32,11 +35,13 @@ export class ServiceListComponent implements OnInit {
   }
 
   loadServices(): void {
-    this.http.get<any>(`${environment.apiUrl}/services`).subscribe({
+    this.isLoading.set(true);
+    this.http.get<any>(`${environment.apiUrl}/services?page=${this.currentPage()}&size=15`).subscribe({
       next: (response) => {
-        // Handle paginated response from backend
         const services = response.content || response;
         this.services.set(Array.isArray(services) ? services : []);
+        this.totalPages.set(response.totalPages || 1);
+        this.totalElements.set(response.totalElements || services.length);
         this.isLoading.set(false);
       },
       error: (error) => {
@@ -45,6 +50,11 @@ export class ServiceListComponent implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+
+  goToPage(page: number): void {
+    this.currentPage.set(page);
+    this.loadServices();
   }
 
   editService(service: Service): void {

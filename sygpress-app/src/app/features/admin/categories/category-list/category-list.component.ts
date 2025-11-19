@@ -17,6 +17,9 @@ import { ConfirmModalComponent } from '../../../../shared/components/confirm-mod
 export class CategoryListComponent implements OnInit {
   categories = signal<(Category & { articleCount?: number })[]>([]);
   isLoading = signal(true);
+  currentPage = signal(0);
+  totalPages = signal(0);
+  totalElements = signal(0);
   showAddModal = false;
   showDeleteModal = false;
   editingCategory: Category | null = null;
@@ -35,11 +38,13 @@ export class CategoryListComponent implements OnInit {
   }
 
   loadCategories(): void {
-    this.http.get<any>(`${environment.apiUrl}/categories`).subscribe({
+    this.isLoading.set(true);
+    this.http.get<any>(`${environment.apiUrl}/categories?page=${this.currentPage()}&size=15`).subscribe({
       next: (response) => {
-        // Handle paginated response from backend
         const categories = response.content || response;
         this.categories.set(Array.isArray(categories) ? categories : []);
+        this.totalPages.set(response.totalPages || 1);
+        this.totalElements.set(response.totalElements || categories.length);
         this.isLoading.set(false);
       },
       error: (error) => {
@@ -48,6 +53,11 @@ export class CategoryListComponent implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+
+  goToPage(page: number): void {
+    this.currentPage.set(page);
+    this.loadCategories();
   }
 
   editCategory(category: Category): void {
