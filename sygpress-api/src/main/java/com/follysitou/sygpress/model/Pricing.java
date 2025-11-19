@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(uniqueConstraints =
-@UniqueConstraint(columnNames = {"article_id","service_id"}))
+@UniqueConstraint(columnNames = {"article_id","laundry_service_id"}))
 public class Pricing extends BaseEntity {
 
     @NotNull(message = "Le prix est obligatoire")
@@ -27,7 +27,7 @@ public class Pricing extends BaseEntity {
     private Article article;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "service_id")
+    @JoinColumn(name = "laundry_service_id")
     @NotNull(message = "Le service est obligatoire")
     private LaundryService service;
 }
