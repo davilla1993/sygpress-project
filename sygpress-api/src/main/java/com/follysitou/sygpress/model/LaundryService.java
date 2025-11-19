@@ -14,6 +14,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "service")
 public class LaundryService extends BaseEntity {
 
     @Column(unique = true)
