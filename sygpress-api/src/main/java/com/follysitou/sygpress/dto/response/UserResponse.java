@@ -12,9 +12,11 @@ public class UserResponse {
     private String email;
     private String firstName;
     private String lastName;
+    private String fullName;
     private String phone;
     private Role role;
     private Boolean enabled;
+    private Boolean active;
     private Boolean mustChangePassword;
     private LocalDateTime createdAt;
 }
