@@ -1,6 +1,9 @@
 package com.follysitou.sygpress.repository;
 
 import com.follysitou.sygpress.model.Category;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -12,4 +15,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     Optional<Category> findByPublicId(String publicId);
     Optional<Category> findByName(String name);
     boolean existsByName(String name);
+
+    @EntityGraph(attributePaths = {"articles"})
+    Page<Category> findAllBy(Pageable pageable);
 }

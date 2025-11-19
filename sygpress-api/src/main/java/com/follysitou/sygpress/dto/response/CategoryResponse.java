@@ -9,5 +9,6 @@ public class CategoryResponse {
 
     private String publicId;
     private String name;
+    private int articleCount;
     private List<ArticleResponse> articles;
 }

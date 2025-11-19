@@ -31,9 +31,12 @@ public class CategoryMapper {
         response.setName(category.getName());
 
         if (category.getArticles() != null) {
+            response.setArticleCount(category.getArticles().size());
             response.setArticles(category.getArticles().stream()
                     .map(this::articleToMinimalResponse)
                     .collect(Collectors.toList()));
+        } else {
+            response.setArticleCount(0);
         }
 
         return response;
