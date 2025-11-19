@@ -2,9 +2,13 @@ package com.follysitou.sygpress.controller;
 
 import com.follysitou.sygpress.dto.request.CustomerRequest;
 import com.follysitou.sygpress.dto.response.CustomerResponse;
+import com.follysitou.sygpress.dto.response.InvoiceResponse;
 import com.follysitou.sygpress.mapper.CustomerMapper;
+import com.follysitou.sygpress.mapper.InvoiceMapper;
 import com.follysitou.sygpress.model.Customer;
+import com.follysitou.sygpress.model.Invoice;
 import com.follysitou.sygpress.service.CustomerService;
+import com.follysitou.sygpress.service.InvoiceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -21,6 +25,8 @@ public class CustomerController {
 
     private final CustomerService customerService;
     private final CustomerMapper customerMapper;
+    private final InvoiceService invoiceService;
+    private final InvoiceMapper invoiceMapper;
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
@@ -72,5 +78,12 @@ public class CustomerController {
     public ResponseEntity<Void> delete(@PathVariable String publicId) {
         customerService.delete(publicId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{publicId}/invoices")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public ResponseEntity<Page<InvoiceResponse>> getCustomerInvoices(@PathVariable String publicId, Pageable pageable) {
+        Page<Invoice> invoices = invoiceService.findByCustomerPublicId(publicId, pageable);
+        return ResponseEntity.ok(invoices.map(invoiceMapper::toResponse));
     }
 }

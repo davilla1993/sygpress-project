@@ -65,6 +65,11 @@ public class InvoiceService {
         return invoiceRepository.findAll(pageable);
     }
 
+    @Transactional(readOnly = true)
+    public Page<Invoice> findByCustomerPublicId(String customerPublicId, Pageable pageable) {
+        return invoiceRepository.findByCustomerPublicIdAndDeletedFalse(customerPublicId, pageable);
+    }
+
     @Transactional
     public Invoice updateInvoice(Invoice invoice) {
         // Recalculer les montants
