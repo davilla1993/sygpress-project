@@ -18,6 +18,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @RestController
 @RequestMapping("/api/customers")
 @RequiredArgsConstructor
@@ -40,6 +43,16 @@ public class CustomerController {
         return new ResponseEntity<>(customerMapper.toResponse(saved), HttpStatus.CREATED);
     }
 
+    @GetMapping("/all")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public ResponseEntity<List<CustomerResponse>> getAllCustomers() {
+        List<Customer> customers = customerService.findAllList();
+        List<CustomerResponse> response = customers.stream()
+                .map(customerMapper::toResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/{publicId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<CustomerResponse> getByPublicId(@PathVariable String publicId) {
@@ -49,8 +62,15 @@ public class CustomerController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<Page<CustomerResponse>> getAll(Pageable pageable) {
-        Page<Customer> customers = customerService.findAll(pageable);
+    public ResponseEntity<Page<CustomerResponse>> getAll(
+            @RequestParam(required = false) String search,
+            Pageable pageable) {
+        Page<Customer> customers;
+        if (search != null && !search.trim().isEmpty()) {
+            customers = customerService.searchByName(search.trim(), pageable);
+        } else {
+            customers = customerService.findAll(pageable);
+        }
         return ResponseEntity.ok(customers.map(customerMapper::toResponse));
     }
 

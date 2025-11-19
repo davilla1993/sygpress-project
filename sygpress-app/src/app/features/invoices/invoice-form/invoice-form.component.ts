@@ -1,7 +1,7 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { InvoiceService } from '../../../core/services/invoice.service';
 import { CustomerService } from '../../../core/services/customer.service';
 import { Customer, Pricing } from '../../../core/models';
@@ -12,7 +12,7 @@ import { ToastService } from '../../../shared/services/toast.service';
 @Component({
   selector: 'app-invoice-form',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule],
   templateUrl: './invoice-form.component.html',
   styleUrls: ['./invoice-form.component.css']
 })
@@ -22,7 +22,19 @@ export class InvoiceFormComponent implements OnInit {
   isSubmitting = signal(false);
   customers = signal<Customer[]>([]);
   pricings = signal<Pricing[]>([]);
+  customerSearch = signal('');
   private invoiceId: string | null = null;
+
+  filteredCustomers = computed(() => {
+    const search = this.customerSearch().toLowerCase().trim();
+    if (!search) {
+      return this.customers();
+    }
+    return this.customers().filter(c =>
+      c.name.toLowerCase().includes(search) ||
+      c.phoneNumber.includes(search)
+    );
+  });
 
   constructor(
     private fb: FormBuilder,
@@ -64,13 +76,15 @@ export class InvoiceFormComponent implements OnInit {
 
   loadCustomers(): void {
     this.customerService.getAllCustomers().subscribe({
-      next: (customers) => this.customers.set(customers)
+      next: (customers) => this.customers.set(Array.isArray(customers) ? customers : []),
+      error: () => this.customers.set([])
     });
   }
 
   loadPricings(): void {
-    this.http.get<Pricing[]>(`${environment.apiUrl}/pricing`).subscribe({
-      next: (pricings) => this.pricings.set(pricings)
+    this.http.get<Pricing[]>(`${environment.apiUrl}/pricing/all`).subscribe({
+      next: (pricings) => this.pricings.set(Array.isArray(pricings) ? pricings : []),
+      error: () => this.pricings.set([])
     });
   }
 
