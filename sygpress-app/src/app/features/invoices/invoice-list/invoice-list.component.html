@@ -1,0 +1,168 @@
+<div>
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800">Factures</h1>
+      <p class="text-gray-600">Gerez vos factures</p>
+    </div>
+    <a routerLink="new" class="btn-primary">
+      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+      Nouvelle facture
+    </a>
+  </div>
+
+  <!-- Advanced Filters -->
+  <div class="card p-4 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Search -->
+      <div class="relative">
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="onSearch()"
+          placeholder="N° facture ou client..."
+          class="input pl-10"
+        />
+        <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+
+      <!-- Status Filter -->
+      <select [(ngModel)]="statusFilter" (ngModelChange)="onSearch()" class="input">
+        <option value="">Tous les statuts</option>
+        <option value="COLLECTE">Collecte</option>
+        <option value="EN_LAVAGE">En lavage</option>
+        <option value="EN_REPASSAGE">En repassage</option>
+        <option value="PRET">Pret</option>
+        <option value="LIVRE">Livre</option>
+        <option value="RECUPERE">Recupere</option>
+      </select>
+
+      <!-- Payment Filter -->
+      <select [(ngModel)]="paymentFilter" (ngModelChange)="onSearch()" class="input">
+        <option value="">Tous paiements</option>
+        <option value="paid">Paye</option>
+        <option value="unpaid">Impaye</option>
+      </select>
+
+      <!-- Date Range -->
+      <div class="flex gap-2">
+        <input
+          type="date"
+          [(ngModel)]="startDate"
+          (ngModelChange)="onSearch()"
+          class="input text-sm"
+          placeholder="Date debut"
+        />
+        <input
+          type="date"
+          [(ngModel)]="endDate"
+          (ngModelChange)="onSearch()"
+          class="input text-sm"
+          placeholder="Date fin"
+        />
+      </div>
+    </div>
+
+    <!-- Quick Filters -->
+    <div class="flex gap-2 mt-3">
+      <button (click)="setToday()" class="text-sm text-primary-600 hover:text-primary-800">Aujourd'hui</button>
+      <span class="text-gray-300">|</span>
+      <button (click)="setThisWeek()" class="text-sm text-primary-600 hover:text-primary-800">Cette semaine</button>
+      <span class="text-gray-300">|</span>
+      <button (click)="setThisMonth()" class="text-sm text-primary-600 hover:text-primary-800">Ce mois</button>
+      <span class="text-gray-300">|</span>
+      <button (click)="clearFilters()" class="text-sm text-gray-600 hover:text-gray-800">Reinitialiser</button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  @if (isLoading()) {
+    <div class="flex items-center justify-center py-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+    </div>
+  } @else {
+    <!-- Table -->
+    <div class="card overflow-hidden">
+      <table class="w-full">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">N° Facture</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date depot</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Montant</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paiement</th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          @for (invoice of invoices(); track invoice.publicId) {
+            <tr class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{{ invoice.invoiceNumber }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-gray-500">{{ invoice.customer.name }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-gray-500">{{ formatDate(invoice.depositDate) }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 text-xs font-medium rounded-full" [ngClass]="getStatusClass(invoice.processingStatus)">
+                  {{ getStatusLabel(invoice.processingStatus) }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap font-medium">{{ formatMoney(getInvoiceTotal(invoice)) }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span
+                  class="px-2 py-1 text-xs font-medium rounded-full"
+                  [class.bg-green-100]="invoice.invoicePaid"
+                  [class.text-green-700]="invoice.invoicePaid"
+                  [class.bg-red-100]="!invoice.invoicePaid"
+                  [class.text-red-700]="!invoice.invoicePaid"
+                >
+                  {{ invoice.invoicePaid ? 'Paye' : 'Impaye' }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <a [routerLink]="[invoice.publicId]" class="text-primary-600 hover:text-primary-900 mr-3">Voir</a>
+                <button (click)="printInvoice(invoice)" class="text-gray-600 hover:text-gray-900 mr-3">Imprimer</button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                Aucune facture trouvee
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    @if (totalPages() > 1) {
+      <div class="flex justify-between items-center mt-4">
+        <p class="text-sm text-gray-500">
+          Page {{ currentPage() + 1 }} sur {{ totalPages() }} ({{ totalElements() }} factures)
+        </p>
+        <div class="flex gap-2">
+          <button
+            (click)="goToPage(currentPage() - 1)"
+            [disabled]="currentPage() === 0"
+            class="btn-secondary"
+            [class.opacity-50]="currentPage() === 0"
+          >
+            Precedent
+          </button>
+          <button
+            (click)="goToPage(currentPage() + 1)"
+            [disabled]="currentPage() >= totalPages() - 1"
+            class="btn-secondary"
+            [class.opacity-50]="currentPage() >= totalPages() - 1"
+          >
+            Suivant
+          </button>
+        </div>
+      </div>
+    }
+  }
+</div>
