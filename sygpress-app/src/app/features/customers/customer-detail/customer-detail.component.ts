@@ -54,9 +54,10 @@ export class CustomerDetailComponent implements OnInit {
   }
 
   loadInvoices(customerId: string): void {
-    this.http.get<Invoice[]>(`${environment.apiUrl}/customers/${customerId}/invoices`).subscribe({
-      next: (invoices) => {
-        this.invoices.set(invoices);
+    this.http.get<any>(`${environment.apiUrl}/customers/${customerId}/invoices`).subscribe({
+      next: (response) => {
+        const invoices = response.content || response;
+        this.invoices.set(Array.isArray(invoices) ? invoices : []);
       },
       error: () => {
         // Silent fail for invoices
