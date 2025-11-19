@@ -11,10 +11,16 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 @Repository
 public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     Optional<Invoice> findByPublicId(String publicId);
     Optional<Invoice> findByInvoiceNumber(String invoiceNumber);
+
+    // Find invoices by customer
+    Page<Invoice> findByCustomerPublicIdAndDeletedFalse(String customerPublicId, Pageable pageable);
 
     // Report queries
     List<Invoice> findByDepositDateBetweenAndDeletedFalse(LocalDate startDate, LocalDate endDate);
