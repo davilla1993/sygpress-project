@@ -17,6 +17,9 @@ export class ArticleListComponent implements OnInit {
   articles = signal<Article[]>([]);
   categories = signal<Category[]>([]);
   isLoading = signal(true);
+  currentPage = signal(0);
+  totalPages = signal(0);
+  totalElements = signal(0);
   showAddModal = false;
   editingArticle: Article | null = null;
   formData = {
@@ -35,10 +38,13 @@ export class ArticleListComponent implements OnInit {
   }
 
   loadArticles(): void {
-    this.http.get<any>(`${environment.apiUrl}/articles`).subscribe({
+    this.isLoading.set(true);
+    this.http.get<any>(`${environment.apiUrl}/articles?page=${this.currentPage()}&size=15`).subscribe({
       next: (response) => {
         const articles = response.content || response;
         this.articles.set(Array.isArray(articles) ? articles : []);
+        this.totalPages.set(response.totalPages || 1);
+        this.totalElements.set(response.totalElements || articles.length);
         this.isLoading.set(false);
       },
       error: (error) => {
@@ -47,6 +53,11 @@ export class ArticleListComponent implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+
+  goToPage(page: number): void {
+    this.currentPage.set(page);
+    this.loadArticles();
   }
 
   loadCategories(): void {
