@@ -198,7 +198,7 @@ public class GlobalExceptionHandler {
 
         if (exMessage.contains("duplicate") || exMessage.contains("unique") || exMessage.contains("constraint")) {
             // Check for specific constraints
-            if (exMessage.contains("article_id") && exMessage.contains("service_id")) {
+            if (exMessage.contains("article_id") && (exMessage.contains("service_id") || exMessage.contains("laundry_service_id"))) {
                 message = "Un tarif existe déjà pour cette combinaison article/service";
             } else if (exMessage.contains("phone")) {
                 message = "Ce numéro de téléphone est déjà utilisé";
@@ -209,6 +209,13 @@ public class GlobalExceptionHandler {
             } else {
                 message = "Une ressource avec ces données existe déjà";
             }
+        } else if (exMessage.contains("foreign key") || exMessage.contains("fk_") || exMessage.contains("references")) {
+            message = "Référence invalide : l'élément référencé n'existe pas ou a été supprimé";
+        } else if (exMessage.contains("not null") || exMessage.contains("null")) {
+            message = "Un champ obligatoire est manquant";
+        } else {
+            // Include part of the actual error for debugging
+            message = "Erreur d'intégrité des données: " + ex.getMostSpecificCause().getMessage();
         }
 
         ErrorResponse error = ErrorResponse.builder()
