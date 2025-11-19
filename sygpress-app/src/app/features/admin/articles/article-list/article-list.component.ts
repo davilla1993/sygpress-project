@@ -35,9 +35,10 @@ export class ArticleListComponent implements OnInit {
   }
 
   loadArticles(): void {
-    this.http.get<Article[]>(`${environment.apiUrl}/articles`).subscribe({
-      next: (articles) => {
-        this.articles.set(articles);
+    this.http.get<any>(`${environment.apiUrl}/articles`).subscribe({
+      next: (response) => {
+        const articles = response.content || response;
+        this.articles.set(Array.isArray(articles) ? articles : []);
         this.isLoading.set(false);
       },
       error: (error) => {
@@ -49,8 +50,15 @@ export class ArticleListComponent implements OnInit {
   }
 
   loadCategories(): void {
-    this.http.get<Category[]>(`${environment.apiUrl}/categories`).subscribe({
-      next: (categories) => this.categories.set(categories)
+    this.http.get<any>(`${environment.apiUrl}/categories`).subscribe({
+      next: (response) => {
+        const categories = response.content || response;
+        this.categories.set(Array.isArray(categories) ? categories : []);
+      },
+      error: (error) => {
+        const message = error.error?.message || 'Erreur lors du chargement des catégories';
+        this.toastService.error(message);
+      }
     });
   }
 
