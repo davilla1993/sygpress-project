@@ -209,6 +209,13 @@ public class GlobalExceptionHandler {
             } else {
                 message = "Une ressource avec ces données existe déjà";
             }
+        } else if (exMessage.contains("foreign key") || exMessage.contains("fk_") || exMessage.contains("references")) {
+            message = "Référence invalide : l'élément référencé n'existe pas ou a été supprimé";
+        } else if (exMessage.contains("not null") || exMessage.contains("null")) {
+            message = "Un champ obligatoire est manquant";
+        } else {
+            // Include part of the actual error for debugging
+            message = "Erreur d'intégrité des données: " + ex.getMostSpecificCause().getMessage();
         }
 
         ErrorResponse error = ErrorResponse.builder()
