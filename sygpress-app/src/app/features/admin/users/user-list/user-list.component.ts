@@ -44,9 +44,11 @@ export class UserListComponent implements OnInit {
   }
 
   loadUsers(): void {
-    this.http.get<User[]>(`${environment.apiUrl}/users`).subscribe({
-      next: (users) => {
-        this.users.set(users);
+    this.http.get<any>(`${environment.apiUrl}/users`).subscribe({
+      next: (response) => {
+        // Handle paginated response from backend
+        const users = response.content || response;
+        this.users.set(Array.isArray(users) ? users : []);
         this.isLoading.set(false);
       },
       error: (error) => {

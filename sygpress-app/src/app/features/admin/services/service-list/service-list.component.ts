@@ -32,9 +32,11 @@ export class ServiceListComponent implements OnInit {
   }
 
   loadServices(): void {
-    this.http.get<Service[]>(`${environment.apiUrl}/services`).subscribe({
-      next: (services) => {
-        this.services.set(services);
+    this.http.get<any>(`${environment.apiUrl}/services`).subscribe({
+      next: (response) => {
+        // Handle paginated response from backend
+        const services = response.content || response;
+        this.services.set(Array.isArray(services) ? services : []);
         this.isLoading.set(false);
       },
       error: (error) => {
