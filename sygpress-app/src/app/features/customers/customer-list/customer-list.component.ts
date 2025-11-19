@@ -88,6 +88,9 @@ export class CustomerListComponent implements OnInit {
   }
 
   formatDate(date: string): string {
-    return new Date(date).toLocaleDateString('fr-FR');
+    if (!date) return '-';
+    const parsedDate = new Date(date);
+    if (isNaN(parsedDate.getTime())) return '-';
+    return parsedDate.toLocaleDateString('fr-FR');
   }
 }
