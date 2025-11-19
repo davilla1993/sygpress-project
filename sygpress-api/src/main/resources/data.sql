@@ -1,3 +1,4 @@
+/*
 -- Insertion des utilisateurs par défaut
 -- Mot de passe Admin: Admin@123
 -- Mot de passe User: User@123
@@ -96,3 +97,4 @@ INSERT INTO users (
 
 -- Mise à jour de la séquence pour éviter les conflits d'ID
 ALTER SEQUENCE users_seq RESTART WITH 3;
+*/

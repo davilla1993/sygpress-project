@@ -52,9 +52,24 @@ HttpClient + Interceptors
 ng2-charts (graphiques)
 Estimation totale : ~25-30h
 
+État actuel - Toutes les phases sont terminées !
+Le planning frontend est complet. Voici les options pour la suite :
 
-1) Ajoutes la configuration cors. Le frontend va tourner sur http://localhost:4200
-2) Ajoutes une table  de configuration "companie" qui contiendra les informations de l'entreprise, 
-   lesquelles informations s'afficheront sur les factures. N'oublie pas le champ logo.
-3) Ajoutes la fonctionnalité pour imprimer les factures (invoices)
-4) Implémentes les rapports: pour chaque rapport, possibilité de filtrer par date début & date fin; aujourd'hui. Chaque rapport peut être imprimé. 
+1. Tester l'application
+Lancer le backend (mvn spring-boot:run dans sygpress-api)
+Lancer le frontend (npm start dans sygpress-app)
+Tester les fonctionnalités créées
+2. Améliorations possibles
+Ajouter un CRUD pour les Catégories (manquant dans Admin)
+Améliorer la gestion des erreurs (notifications toast)
+Ajouter une confirmation avant suppression (modal)
+Ajouter des graphiques au dashboard (ng2-charts)
+3. Fonctionnalités avancées
+Export Excel pour les rapports
+Recherche avancée multi-critères
+Historique des factures par client
+Statistiques détaillées
+4. Déploiement
+Configuration pour production
+Dockerisation de l'application
+CI/CD pipeline
