@@ -198,7 +198,7 @@ public class GlobalExceptionHandler {
 
         if (exMessage.contains("duplicate") || exMessage.contains("unique") || exMessage.contains("constraint")) {
             // Check for specific constraints
-            if (exMessage.contains("article_id") && exMessage.contains("service_id")) {
+            if (exMessage.contains("article_id") && (exMessage.contains("service_id") || exMessage.contains("laundry_service_id"))) {
                 message = "Un tarif existe déjà pour cette combinaison article/service";
             } else if (exMessage.contains("phone")) {
                 message = "Ce numéro de téléphone est déjà utilisé";
