@@ -4,9 +4,11 @@ import com.follysitou.sygpress.dto.request.AdditionalFeesRequest;
 import com.follysitou.sygpress.dto.request.InvoiceLineRequest;
 import com.follysitou.sygpress.dto.request.InvoiceRequest;
 import com.follysitou.sygpress.dto.response.InvoiceResponse;
+import com.follysitou.sygpress.enums.ProcessingStatus;
 import com.follysitou.sygpress.exception.ResourceNotFoundException;
 import com.follysitou.sygpress.mapper.InvoiceMapper;
 import com.follysitou.sygpress.model.*;
+import java.util.Map;
 import com.follysitou.sygpress.repository.CustomerRepository;
 import com.follysitou.sygpress.repository.PricingRepository;
 import com.follysitou.sygpress.service.InvoicePdfService;
@@ -128,5 +130,40 @@ public class InvoiceController {
         headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
 
         return new ResponseEntity<>(pdfContent, headers, HttpStatus.OK);
+    }
+
+    @GetMapping("/{publicId}/print")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @Operation(summary = "Imprimer la facture en PDF")
+    public ResponseEntity<byte[]> printPdf(@PathVariable String publicId) throws IOException {
+        Invoice invoice = invoiceService.findByPublicId(publicId);
+        byte[] pdfContent = invoicePdfService.generateInvoicePdf(publicId);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("inline", "facture-" + invoice.getInvoiceNumber() + ".pdf");
+        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+
+        return new ResponseEntity<>(pdfContent, headers, HttpStatus.OK);
+    }
+
+    @PatchMapping("/{publicId}/status")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @Operation(summary = "Changer le statut d'une facture")
+    public ResponseEntity<InvoiceResponse> updateStatus(
+            @PathVariable String publicId,
+            @RequestBody Map<String, String> statusUpdate) {
+        Invoice invoice = invoiceService.findByPublicId(publicId);
+
+        String statusStr = statusUpdate.get("status");
+        if (statusStr == null) {
+            throw new IllegalArgumentException("Le statut est requis");
+        }
+
+        ProcessingStatus newStatus = ProcessingStatus.valueOf(statusStr);
+        invoice.setProcessingStatus(newStatus);
+
+        Invoice updated = invoiceService.updateInvoice(invoice);
+        return ResponseEntity.ok(invoiceMapper.toResponse(updated));
     }
 }
