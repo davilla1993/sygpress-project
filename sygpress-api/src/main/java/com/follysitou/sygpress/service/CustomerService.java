@@ -38,6 +38,11 @@ public class CustomerService {
     }
 
     @Transactional(readOnly = true)
+    public List<Customer> findAllList() {
+        return customerRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
     public Page<Customer> searchByName(String name, Pageable pageable) {
         return customerRepository.findByNameContainingIgnoreCase(name, pageable);
     }

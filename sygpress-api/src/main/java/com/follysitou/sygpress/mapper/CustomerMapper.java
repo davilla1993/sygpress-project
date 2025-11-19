@@ -33,6 +33,7 @@ public class CustomerMapper {
         response.setName(customer.getName());
         response.setPhoneNumber(customer.getPhoneNumber());
         response.setAddress(customer.getAddress());
+        response.setCreatedAt(customer.getCreatedAt());
 
         if (customer.getInvoices() != null) {
             response.setInvoices(customer.getInvoices().stream()
