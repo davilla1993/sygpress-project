@@ -6,5 +6,5 @@ public enum ProcessingStatus {
     EN_REPASSAGE,
     PRET,
     LIVRE,
-    RECUPERE
+    COLLECTE
 }

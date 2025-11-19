@@ -50,7 +50,7 @@ public class Invoice extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
-    private ProcessingStatus processingStatus = ProcessingStatus.EN_LAVAGE;
+    private ProcessingStatus processingStatus = ProcessingStatus.DEPOT;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id")
