@@ -25,6 +25,9 @@ interface User {
 export class UserListComponent implements OnInit {
   users = signal<User[]>([]);
   isLoading = signal(true);
+  currentPage = signal(0);
+  totalPages = signal(0);
+  totalElements = signal(0);
   showAddModal = false;
   newUser = {
     fullName: '',
@@ -44,11 +47,13 @@ export class UserListComponent implements OnInit {
   }
 
   loadUsers(): void {
-    this.http.get<any>(`${environment.apiUrl}/users`).subscribe({
+    this.isLoading.set(true);
+    this.http.get<any>(`${environment.apiUrl}/users?page=${this.currentPage()}&size=15`).subscribe({
       next: (response) => {
-        // Handle paginated response from backend
         const users = response.content || response;
         this.users.set(Array.isArray(users) ? users : []);
+        this.totalPages.set(response.totalPages || 1);
+        this.totalElements.set(response.totalElements || users.length);
         this.isLoading.set(false);
       },
       error: (error) => {
@@ -57,6 +62,11 @@ export class UserListComponent implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+
+  goToPage(page: number): void {
+    this.currentPage.set(page);
+    this.loadUsers();
   }
 
   createUser(): void {
