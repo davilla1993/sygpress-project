@@ -168,6 +168,11 @@ export class CompanyComponent implements OnInit {
         this.isLoading.set(false);
       },
       error: (error) => {
+        // 404 = pas encore d'entreprise, afficher le formulaire vide
+        if (error.status === 404) {
+          this.isLoading.set(false);
+          return;
+        }
         const message = error.error?.message || 'Erreur lors du chargement des informations';
         this.toastService.error(message);
         this.isLoading.set(false);
