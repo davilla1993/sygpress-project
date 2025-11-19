@@ -77,6 +77,42 @@
         </div>
       </div>
 
+      <!-- Additional Fees -->
+      <div class="mb-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold text-gray-800">Frais supplementaires</h3>
+          <button type="button" (click)="addFee()" class="btn-secondary text-sm">
+            + Ajouter frais
+          </button>
+        </div>
+
+        <div formArrayName="additionalFees" class="space-y-3">
+          @for (fee of additionalFeesArray.controls; track $index; let i = $index) {
+            <div [formGroupName]="i" class="flex gap-4 items-start p-4 bg-blue-50 rounded-lg">
+              <div class="flex-1">
+                <label class="block text-sm text-gray-500 mb-1">Titre *</label>
+                <input type="text" formControlName="title" placeholder="Ex: Livraison express" class="input text-sm" />
+              </div>
+              <div class="flex-1">
+                <label class="block text-sm text-gray-500 mb-1">Description</label>
+                <input type="text" formControlName="description" placeholder="Ex: Livraison dans 24H" class="input text-sm" />
+              </div>
+              <div class="w-32">
+                <label class="block text-sm text-gray-500 mb-1">Montant (FCFA)</label>
+                <input type="number" formControlName="amount" min="0" class="input text-sm" />
+              </div>
+              <button type="button" (click)="removeFee(i)" class="mt-6 text-red-600 hover:text-red-800">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
+          } @empty {
+            <p class="text-sm text-gray-500 italic">Aucun frais supplementaire ajoute</p>
+          }
+        </div>
+      </div>
+
       <!-- Additional Options -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div>
@@ -97,6 +133,49 @@
       <div class="mb-6">
         <label class="block text-sm font-medium text-gray-700 mb-2">Observations</label>
         <textarea formControlName="observations" rows="3" class="input"></textarea>
+      </div>
+
+      <!-- Total Summary -->
+      <div class="mb-6 bg-gray-100 rounded-lg p-4">
+        <h3 class="text-lg font-semibold text-gray-800 mb-3">Recapitulatif</h3>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span class="text-gray-600">Sous-total articles:</span>
+            <span class="font-medium">{{ formatMoney(calculatedSubtotal()) }}</span>
+          </div>
+          @if (calculatedFeesTotal() > 0) {
+            <div class="flex justify-between">
+              <span class="text-gray-600">Frais supplementaires:</span>
+              <span class="font-medium">{{ formatMoney(calculatedFeesTotal()) }}</span>
+            </div>
+          }
+          @if (calculatedVat() > 0) {
+            <div class="flex justify-between">
+              <span class="text-gray-600">TVA ({{ form.get('vatRate')?.value || 0 }}%):</span>
+              <span class="font-medium">{{ formatMoney(calculatedVat()) }}</span>
+            </div>
+          }
+          @if (form.get('discount')?.value > 0) {
+            <div class="flex justify-between text-red-600">
+              <span>Remise:</span>
+              <span class="font-medium">-{{ formatMoney(form.get('discount')?.value) }}</span>
+            </div>
+          }
+          <div class="flex justify-between pt-2 border-t border-gray-300 text-lg font-bold">
+            <span>Total:</span>
+            <span class="text-primary-600">{{ formatMoney(calculatedTotal()) }}</span>
+          </div>
+          @if (form.get('amountPaid')?.value > 0) {
+            <div class="flex justify-between text-green-600">
+              <span>Acompte:</span>
+              <span class="font-medium">-{{ formatMoney(form.get('amountPaid')?.value) }}</span>
+            </div>
+            <div class="flex justify-between font-bold">
+              <span>Reste a payer:</span>
+              <span class="text-orange-600">{{ formatMoney(calculatedTotal() - (form.get('amountPaid')?.value || 0)) }}</span>
+            </div>
+          }
+        </div>
       </div>
 
       <!-- Actions -->

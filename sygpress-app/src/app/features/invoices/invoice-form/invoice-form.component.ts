@@ -36,6 +36,12 @@ export class InvoiceFormComponent implements OnInit {
     );
   });
 
+  // Calcul du total dynamique
+  calculatedTotal = signal(0);
+  calculatedSubtotal = signal(0);
+  calculatedFeesTotal = signal(0);
+  calculatedVat = signal(0);
+
   constructor(
     private fb: FormBuilder,
     private invoiceService: InvoiceService,
@@ -50,10 +56,16 @@ export class InvoiceFormComponent implements OnInit {
       depositDate: [this.getToday(), Validators.required],
       deliveryDate: ['', Validators.required],
       invoiceLines: this.fb.array([]),
+      additionalFees: this.fb.array([]),
       discount: [0],
       amountPaid: [0],
       vatRate: [0],
       observations: ['']
+    });
+
+    // Écouter les changements pour recalculer le total
+    this.form.valueChanges.subscribe(() => {
+      this.updateCalculatedTotal();
     });
   }
 
@@ -74,6 +86,10 @@ export class InvoiceFormComponent implements OnInit {
     return this.form.get('invoiceLines') as FormArray;
   }
 
+  get additionalFeesArray(): FormArray {
+    return this.form.get('additionalFees') as FormArray;
+  }
+
   loadCustomers(): void {
     this.customerService.getAllCustomers().subscribe({
       next: (customers) => this.customers.set(Array.isArray(customers) ? customers : []),
@@ -83,7 +99,10 @@ export class InvoiceFormComponent implements OnInit {
 
   loadPricings(): void {
     this.http.get<Pricing[]>(`${environment.apiUrl}/pricing/all`).subscribe({
-      next: (pricings) => this.pricings.set(Array.isArray(pricings) ? pricings : []),
+      next: (pricings) => {
+        this.pricings.set(Array.isArray(pricings) ? pricings : []);
+        this.updateCalculatedTotal();
+      },
       error: () => this.pricings.set([])
     });
   }
@@ -124,6 +143,49 @@ export class InvoiceFormComponent implements OnInit {
     if (this.invoiceLinesArray.length > 1) {
       this.invoiceLinesArray.removeAt(index);
     }
+  }
+
+  addFee(): void {
+    this.additionalFeesArray.push(this.fb.group({
+      title: ['', Validators.required],
+      description: [''],
+      amount: [0, [Validators.required, Validators.min(0)]]
+    }));
+  }
+
+  removeFee(index: number): void {
+    this.additionalFeesArray.removeAt(index);
+  }
+
+  updateCalculatedTotal(): void {
+    const formValue = this.form.value;
+    const pricingsMap = new Map(this.pricings().map(p => [p.publicId, p.price]));
+
+    // Calcul du sous-total des lignes
+    let subtotal = 0;
+    for (const line of formValue.invoiceLines || []) {
+      const price = pricingsMap.get(line.pricingPublicId) || 0;
+      subtotal += price * (line.quantity || 0);
+    }
+
+    // Calcul des frais supplémentaires
+    let feesTotal = 0;
+    for (const fee of formValue.additionalFees || []) {
+      feesTotal += fee.amount || 0;
+    }
+
+    // Calcul de la TVA
+    const vatRate = formValue.vatRate || 0;
+    const vatAmount = (subtotal + feesTotal) * (vatRate / 100);
+
+    // Calcul du total
+    const discount = formValue.discount || 0;
+    const total = subtotal + feesTotal + vatAmount - discount;
+
+    this.calculatedSubtotal.set(subtotal);
+    this.calculatedFeesTotal.set(feesTotal);
+    this.calculatedVat.set(vatAmount);
+    this.calculatedTotal.set(total);
   }
 
   onSubmit(): void {
