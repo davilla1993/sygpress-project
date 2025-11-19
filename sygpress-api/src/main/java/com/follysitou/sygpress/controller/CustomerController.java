@@ -18,6 +18,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @RestController
 @RequestMapping("/api/customers")
 @RequiredArgsConstructor
@@ -38,6 +41,16 @@ public class CustomerController {
 
         Customer saved = customerService.create(customer);
         return new ResponseEntity<>(customerMapper.toResponse(saved), HttpStatus.CREATED);
+    }
+
+    @GetMapping("/all")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public ResponseEntity<List<CustomerResponse>> getAllCustomers() {
+        List<Customer> customers = customerService.findAllList();
+        List<CustomerResponse> response = customers.stream()
+                .map(customerMapper::toResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{publicId}")

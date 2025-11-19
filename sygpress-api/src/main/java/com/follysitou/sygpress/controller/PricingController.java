@@ -14,6 +14,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @RestController
 @RequestMapping("/api/pricing")
 @RequiredArgsConstructor
@@ -27,6 +30,16 @@ public class PricingController {
     public ResponseEntity<PricingResponse> create(@Valid @RequestBody PricingRequest request) {
         Pricing saved = pricingService.create(request.getPrice(), request.getArticlePublicId(), request.getServicePublicId());
         return new ResponseEntity<>(pricingMapper.toResponse(saved), HttpStatus.CREATED);
+    }
+
+    @GetMapping("/all")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public ResponseEntity<List<PricingResponse>> getAllPricings() {
+        List<Pricing> pricings = pricingService.findAllList();
+        List<PricingResponse> response = pricings.stream()
+                .map(pricingMapper::toResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{publicId}")

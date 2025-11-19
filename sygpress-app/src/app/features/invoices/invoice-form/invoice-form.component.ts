@@ -69,7 +69,7 @@ export class InvoiceFormComponent implements OnInit {
   }
 
   loadPricings(): void {
-    this.http.get<Pricing[]>(`${environment.apiUrl}/pricing`).subscribe({
+    this.http.get<Pricing[]>(`${environment.apiUrl}/pricing/all`).subscribe({
       next: (pricings) => this.pricings.set(pricings)
     });
   }

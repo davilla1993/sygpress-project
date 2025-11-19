@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -53,6 +54,11 @@ public class PricingService {
     @Transactional(readOnly = true)
     public Page<Pricing> findAll(Pageable pageable) {
         return pricingRepository.findAll(pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Pricing> findAllList() {
+        return pricingRepository.findAll();
     }
 
     @Transactional(readOnly = true)
