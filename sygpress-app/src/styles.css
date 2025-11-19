@@ -62,17 +62,17 @@ body {
   border-radius: 0.5rem;
   font-weight: 500;
   transition: all 0.15s ease;
-  background-color: var(--color-primary-600);
+  background-color: #2563eb;
   color: white;
 }
 
 .btn-primary:hover {
-  background-color: var(--color-primary-700);
+  background-color: #1d4ed8;
 }
 
 .btn-primary:focus {
   outline: none;
-  box-shadow: 0 0 0 2px white, 0 0 0 4px var(--color-primary-500);
+  box-shadow: 0 0 0 2px white, 0 0 0 4px #3b82f6;
 }
 
 .btn-primary:disabled {
