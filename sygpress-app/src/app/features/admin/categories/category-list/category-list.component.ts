@@ -35,9 +35,11 @@ export class CategoryListComponent implements OnInit {
   }
 
   loadCategories(): void {
-    this.http.get<(Category & { articleCount?: number })[]>(`${environment.apiUrl}/categories`).subscribe({
-      next: (categories) => {
-        this.categories.set(categories);
+    this.http.get<any>(`${environment.apiUrl}/categories`).subscribe({
+      next: (response) => {
+        // Handle paginated response from backend
+        const categories = response.content || response;
+        this.categories.set(Array.isArray(categories) ? categories : []);
         this.isLoading.set(false);
       },
       error: (error) => {
