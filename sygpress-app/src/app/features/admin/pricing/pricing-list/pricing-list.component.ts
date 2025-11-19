@@ -38,9 +38,11 @@ export class PricingListComponent implements OnInit {
   }
 
   loadPricings(): void {
-    this.http.get<Pricing[]>(`${environment.apiUrl}/pricing`).subscribe({
-      next: (pricings) => {
-        this.pricings.set(pricings);
+    this.http.get<any>(`${environment.apiUrl}/pricing`).subscribe({
+      next: (response) => {
+        // Handle paginated response from backend
+        const pricings = response.content || response;
+        this.pricings.set(Array.isArray(pricings) ? pricings : []);
         this.isLoading.set(false);
       },
       error: (error) => {
@@ -52,14 +54,20 @@ export class PricingListComponent implements OnInit {
   }
 
   loadArticles(): void {
-    this.http.get<Article[]>(`${environment.apiUrl}/articles`).subscribe({
-      next: (articles) => this.articles.set(articles)
+    this.http.get<any>(`${environment.apiUrl}/articles`).subscribe({
+      next: (response) => {
+        const articles = response.content || response;
+        this.articles.set(Array.isArray(articles) ? articles : []);
+      }
     });
   }
 
   loadServices(): void {
-    this.http.get<Service[]>(`${environment.apiUrl}/services`).subscribe({
-      next: (services) => this.services.set(services)
+    this.http.get<any>(`${environment.apiUrl}/services`).subscribe({
+      next: (response) => {
+        const services = response.content || response;
+        this.services.set(Array.isArray(services) ? services : []);
+      }
     });
   }
 

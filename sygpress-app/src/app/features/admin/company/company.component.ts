@@ -1,6 +1,7 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { CompanyService } from '../../../core/services/company.service';
 import { Company } from '../../../core/models';
 import { ToastService } from '../../../shared/services/toast.service';
@@ -16,26 +17,13 @@ import { environment } from '../../../../environments/environment';
 export class CompanyComponent implements OnInit {
   form: FormGroup;
   company = signal<Company | null>(null);
+  logoDataUrl = signal<string | null>(null);
   isLoading = signal(true);
   isSubmitting = signal(false);
 
-  // Computed pour construire l'URL complète du logo
-  logoFullUrl = computed(() => {
-    const comp = this.company();
-    if (comp?.logoUrl) {
-      // Si c'est déjà une URL complète, la retourner
-      if (comp.logoUrl.startsWith('http')) {
-        return comp.logoUrl;
-      }
-      // Sinon construire l'URL complète avec timestamp pour éviter le cache
-      const baseUrl = environment.apiUrl.replace('/api', '');
-      return `${baseUrl}${comp.logoUrl}?t=${Date.now()}`;
-    }
-    return null;
-  });
-
   constructor(
     private fb: FormBuilder,
+    private http: HttpClient,
     private companyService: CompanyService,
     private toastService: ToastService
   ) {
@@ -71,6 +59,10 @@ export class CompanyComponent implements OnInit {
           website: company.website,
           vatRate: company.vatRate
         });
+        // Charger le logo via HttpClient pour inclure le token
+        if (company.logoUrl) {
+          this.loadLogo();
+        }
         this.isLoading.set(false);
       },
       error: (error) => {
@@ -82,6 +74,22 @@ export class CompanyComponent implements OnInit {
         const message = error.error?.message || 'Erreur lors du chargement des informations';
         this.toastService.error(message);
         this.isLoading.set(false);
+      }
+    });
+  }
+
+  loadLogo(): void {
+    this.http.get(`${environment.apiUrl}/company/logo`, { responseType: 'blob' }).subscribe({
+      next: (blob) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          this.logoDataUrl.set(reader.result as string);
+        };
+        reader.readAsDataURL(blob);
+      },
+      error: () => {
+        // Silently fail - logo not found or not accessible
+        this.logoDataUrl.set(null);
       }
     });
   }
@@ -105,6 +113,7 @@ export class CompanyComponent implements OnInit {
       this.companyService.uploadLogo(file).subscribe({
         next: (company) => {
           this.company.set(company);
+          this.loadLogo(); // Recharger le logo
           this.toastService.success('Logo téléchargé avec succès');
         },
         error: (error) => {
