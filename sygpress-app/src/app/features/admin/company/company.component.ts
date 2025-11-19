@@ -1,9 +1,10 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CompanyService } from '../../../core/services/company.service';
 import { Company } from '../../../core/models';
 import { ToastService } from '../../../shared/services/toast.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-company',
@@ -17,6 +18,21 @@ export class CompanyComponent implements OnInit {
   company = signal<Company | null>(null);
   isLoading = signal(true);
   isSubmitting = signal(false);
+
+  // Computed pour construire l'URL complète du logo
+  logoFullUrl = computed(() => {
+    const comp = this.company();
+    if (comp?.logoUrl) {
+      // Si c'est déjà une URL complète, la retourner
+      if (comp.logoUrl.startsWith('http')) {
+        return comp.logoUrl;
+      }
+      // Sinon construire l'URL complète avec timestamp pour éviter le cache
+      const baseUrl = environment.apiUrl.replace('/api', '');
+      return `${baseUrl}${comp.logoUrl}?t=${Date.now()}`;
+    }
+    return null;
+  });
 
   constructor(
     private fb: FormBuilder,
