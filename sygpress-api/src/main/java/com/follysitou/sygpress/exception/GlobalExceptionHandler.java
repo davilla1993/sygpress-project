@@ -194,8 +194,21 @@ public class GlobalExceptionHandler {
             DataIntegrityViolationException ex, WebRequest request) {
 
         String message = "Erreur d'intégrité des données";
-        if (ex.getMessage().contains("duplicate key") || ex.getMessage().contains("unique constraint")) {
-            message = "Une ressource avec ces données existe déjà";
+        String exMessage = ex.getMostSpecificCause().getMessage().toLowerCase();
+
+        if (exMessage.contains("duplicate") || exMessage.contains("unique") || exMessage.contains("constraint")) {
+            // Check for specific constraints
+            if (exMessage.contains("article_id") && exMessage.contains("service_id")) {
+                message = "Un tarif existe déjà pour cette combinaison article/service";
+            } else if (exMessage.contains("phone")) {
+                message = "Ce numéro de téléphone est déjà utilisé";
+            } else if (exMessage.contains("email")) {
+                message = "Cette adresse email est déjà utilisée";
+            } else if (exMessage.contains("username")) {
+                message = "Ce nom d'utilisateur est déjà utilisé";
+            } else {
+                message = "Une ressource avec ces données existe déjà";
+            }
         }
 
         ErrorResponse error = ErrorResponse.builder()
