@@ -22,6 +22,9 @@ public class InvoiceRequest {
     @DecimalMin(value = "0.0", message = "La remise ne peut pas être négative")
     private BigDecimal discount;
 
+    @DecimalMin(value = "0.0", message = "Le taux de TVA ne peut pas être négatif")
+    private BigDecimal vatRate;  // Taux de TVA en % (ex: 18 pour 18%)
+
     @DecimalMin(value = "0.0", message = "Le montant payé ne peut pas être négatif")
     private BigDecimal amountPaid;
 

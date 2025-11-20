@@ -55,6 +55,7 @@ public class InvoiceController {
         invoice.setDepositDate(request.getDepositDate());
         invoice.setDeliveryDate(request.getDeliveryDate());
         invoice.setDiscount(request.getDiscount() != null ? request.getDiscount() : BigDecimal.ZERO);
+        invoice.setVatRate(request.getVatRate() != null ? request.getVatRate() : BigDecimal.ZERO);
         invoice.setAmountPaid(request.getAmountPaid() != null ? request.getAmountPaid() : BigDecimal.ZERO);
 
         // Set customer
@@ -114,6 +115,7 @@ public class InvoiceController {
         invoice.setDepositDate(request.getDepositDate());
         invoice.setDeliveryDate(request.getDeliveryDate());
         invoice.setDiscount(request.getDiscount() != null ? request.getDiscount() : BigDecimal.ZERO);
+        invoice.setVatRate(request.getVatRate() != null ? request.getVatRate() : BigDecimal.ZERO);
         invoice.setAmountPaid(request.getAmountPaid() != null ? request.getAmountPaid() : BigDecimal.ZERO);
 
         // Update customer
