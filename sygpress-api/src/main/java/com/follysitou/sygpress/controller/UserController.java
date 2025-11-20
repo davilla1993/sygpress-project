@@ -1,9 +1,12 @@
 package com.follysitou.sygpress.controller;
 
+import com.follysitou.sygpress.dto.request.UserUpdateRequest;
+import com.follysitou.sygpress.dto.response.PasswordResetResponse;
 import com.follysitou.sygpress.dto.response.UserResponse;
 import com.follysitou.sygpress.mapper.UserMapper;
 import com.follysitou.sygpress.model.User;
 import com.follysitou.sygpress.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -33,11 +36,35 @@ public class UserController {
         return ResponseEntity.ok(userMapper.toResponse(user));
     }
 
+    @PutMapping("/{publicId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserResponse> update(
+            @PathVariable String publicId,
+            @Valid @RequestBody UserUpdateRequest request) {
+        User user = userService.update(publicId, request);
+        return ResponseEntity.ok(userMapper.toResponse(user));
+    }
+
     @PatchMapping("/{publicId}/status")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserResponse> toggleStatus(@PathVariable String publicId) {
         User user = userService.toggleStatus(publicId);
         return ResponseEntity.ok(userMapper.toResponse(user));
+    }
+
+    @PostMapping("/{publicId}/reset-password")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<PasswordResetResponse> resetPassword(@PathVariable String publicId) {
+        User user = userService.findByPublicId(publicId);
+        String temporaryPassword = userService.resetPassword(publicId);
+
+        PasswordResetResponse response = new PasswordResetResponse(
+                "Mot de passe réinitialisé avec succès",
+                temporaryPassword,
+                user.getUsername()
+        );
+
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{publicId}")

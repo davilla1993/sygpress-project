@@ -29,6 +29,8 @@ export class UserListComponent implements OnInit {
   totalPages = signal(0);
   totalElements = signal(0);
   showAddModal = false;
+  showEditModal = false;
+  showPasswordModal = false;
   newUser = {
     fullName: '',
     username: '',
@@ -36,6 +38,8 @@ export class UserListComponent implements OnInit {
     password: '',
     role: 'USER'
   };
+  editUser: any = null;
+  passwordResetData: any = null;
 
   constructor(
     private http: HttpClient,
@@ -95,17 +99,62 @@ export class UserListComponent implements OnInit {
     });
   }
 
-  deleteUser(user: User): void {
-    if (confirm(`Êtes-vous sûr de vouloir supprimer l'utilisateur "${user.fullName}" ?`)) {
-      this.http.delete(`${environment.apiUrl}/users/${user.publicId}`).subscribe({
-        next: () => {
-          this.loadUsers();
-        },
-        error: (error) => {
-          const message = error.error?.message || 'Erreur lors de la suppression';
-          this.toastService.error(message);
-        }
-      });
+  openEditModal(user: User): void {
+    this.editUser = {
+      publicId: user.publicId,
+      fullName: user.fullName,
+      username: user.username,
+      email: user.email,
+      role: user.role
+    };
+    this.showEditModal = true;
+  }
+
+  updateUser(): void {
+    if (!this.editUser) return;
+
+    this.http.put<User>(`${environment.apiUrl}/users/${this.editUser.publicId}`, this.editUser).subscribe({
+      next: () => {
+        this.showEditModal = false;
+        this.editUser = null;
+        this.toastService.success('Utilisateur modifié avec succès');
+        this.loadUsers();
+      },
+      error: (error) => {
+        const message = error.error?.message || 'Erreur lors de la modification de l\'utilisateur';
+        this.toastService.error(message);
+      }
+    });
+  }
+
+  resetPassword(user: User): void {
+    if (!confirm(`Êtes-vous sûr de vouloir réinitialiser le mot de passe de "${user.fullName}" ?`)) {
+      return;
     }
+
+    this.http.post<any>(`${environment.apiUrl}/users/${user.publicId}/reset-password`, {}).subscribe({
+      next: (response) => {
+        this.passwordResetData = response;
+        this.showPasswordModal = true;
+        this.toastService.success('Mot de passe réinitialisé avec succès');
+      },
+      error: (error) => {
+        const message = error.error?.message || 'Erreur lors de la réinitialisation du mot de passe';
+        this.toastService.error(message);
+      }
+    });
+  }
+
+  copyToClipboard(text: string): void {
+    navigator.clipboard.writeText(text).then(() => {
+      this.toastService.success('Mot de passe copié dans le presse-papiers');
+    }).catch(() => {
+      this.toastService.error('Impossible de copier le mot de passe');
+    });
+  }
+
+  closePasswordModal(): void {
+    this.showPasswordModal = false;
+    this.passwordResetData = null;
   }
 }

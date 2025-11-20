@@ -2,11 +2,23 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { BaseChartDirective } from 'ng2-charts';
-import { ChartConfiguration, ChartData } from 'chart.js';
+import { ChartConfiguration, ChartData, Chart, ArcElement, BarElement, CategoryScale, LinearScale, DoughnutController, BarController, Legend, Tooltip } from 'chart.js';
 import { AuthService } from '../../core/services/auth.service';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { AdminDashboard, UserDashboard } from '../../core/models';
 import { ToastService } from '../../shared/services/toast.service';
+
+// Register Chart.js components
+Chart.register(
+  ArcElement,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  DoughnutController,
+  BarController,
+  Legend,
+  Tooltip
+);
 
 @Component({
   selector: 'app-dashboard',
