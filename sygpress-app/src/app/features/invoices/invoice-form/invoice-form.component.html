@@ -20,6 +20,7 @@
             placeholder="Rechercher un client..."
             [searchable]="true"
             [clearable]="true"
+            [searchFn]="customSearchFn"
             notFoundText="Aucun client trouvé"
           >
             <ng-template ng-option-tmp let-item="item">
@@ -61,6 +62,7 @@
                   placeholder="Rechercher un tarif..."
                   [searchable]="true"
                   [clearable]="true"
+                  [searchFn]="customSearchFn"
                   notFoundText="Aucun tarif trouvé"
                   class="ng-select-sm"
                 >
