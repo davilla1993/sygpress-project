@@ -64,8 +64,11 @@
     <!-- Sales Report -->
     @if (activeReport === 'sales' && salesReport()) {
       <div class="card p-6">
-        <div class="flex justify-between items-center mb-6">
-          <h3 class="text-lg font-semibold text-gray-800">Rapport des ventes</h3>
+        <div class="flex justify-between items-center mb-2">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-800">Rapport des ventes</h3>
+            <p class="text-sm text-gray-500">Période: {{ getFormattedPeriod() }}</p>
+          </div>
           <button (click)="printReport('sales')" class="btn-secondary">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
@@ -73,7 +76,7 @@
             Imprimer
           </button>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
           <div class="p-4 bg-gray-50 rounded-lg">
             <p class="text-sm text-gray-500">Total factures</p>
             <p class="text-2xl font-bold">{{ salesReport()!.totalInvoices }}</p>
@@ -101,8 +104,11 @@
     <!-- Customer Report -->
     @if (activeReport === 'customers' && customerReport()) {
       <div class="card p-6">
-        <div class="flex justify-between items-center mb-6">
-          <h3 class="text-lg font-semibold text-gray-800">Rapport clients</h3>
+        <div class="flex justify-between items-center mb-2">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-800">Rapport clients</h3>
+            <p class="text-sm text-gray-500">Période: {{ getFormattedPeriod() }}</p>
+          </div>
           <button (click)="printReport('customers')" class="btn-secondary">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
@@ -143,8 +149,11 @@
     <!-- Service Report -->
     @if (activeReport === 'services' && serviceReport().length > 0) {
       <div class="card p-6">
-        <div class="flex justify-between items-center mb-6">
-          <h3 class="text-lg font-semibold text-gray-800">Rapport des services</h3>
+        <div class="flex justify-between items-center mb-2">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-800">Rapport des services</h3>
+            <p class="text-sm text-gray-500">Période: {{ getFormattedPeriod() }}</p>
+          </div>
           <button (click)="printReport('services')" class="btn-secondary">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />

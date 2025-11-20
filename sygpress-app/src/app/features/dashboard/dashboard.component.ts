@@ -143,4 +143,11 @@ export class DashboardComponent implements OnInit {
     }
     return amount.toString();
   }
+
+  getCurrentPeriod(): string {
+    const now = new Date();
+    const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+                        'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+    return `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
+  }
 }
