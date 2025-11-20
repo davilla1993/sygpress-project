@@ -3,6 +3,7 @@ package com.follysitou.sygpress.controller;
 import com.follysitou.sygpress.dto.request.AdditionalFeesRequest;
 import com.follysitou.sygpress.dto.request.InvoiceLineRequest;
 import com.follysitou.sygpress.dto.request.InvoiceRequest;
+import com.follysitou.sygpress.dto.request.PaymentRequest;
 import com.follysitou.sygpress.dto.response.InvoiceResponse;
 import com.follysitou.sygpress.enums.ProcessingStatus;
 import com.follysitou.sygpress.exception.BadRequestException;
@@ -54,6 +55,7 @@ public class InvoiceController {
         invoice.setDepositDate(request.getDepositDate());
         invoice.setDeliveryDate(request.getDeliveryDate());
         invoice.setDiscount(request.getDiscount() != null ? request.getDiscount() : BigDecimal.ZERO);
+        invoice.setVatRate(request.getVatRate() != null ? request.getVatRate() : BigDecimal.ZERO);
         invoice.setAmountPaid(request.getAmountPaid() != null ? request.getAmountPaid() : BigDecimal.ZERO);
 
         // Set customer
@@ -113,6 +115,7 @@ public class InvoiceController {
         invoice.setDepositDate(request.getDepositDate());
         invoice.setDeliveryDate(request.getDeliveryDate());
         invoice.setDiscount(request.getDiscount() != null ? request.getDiscount() : BigDecimal.ZERO);
+        invoice.setVatRate(request.getVatRate() != null ? request.getVatRate() : BigDecimal.ZERO);
         invoice.setAmountPaid(request.getAmountPaid() != null ? request.getAmountPaid() : BigDecimal.ZERO);
 
         // Update customer
@@ -250,6 +253,30 @@ public class InvoiceController {
 
         auditLogService.logSuccess("CHANGE_STATUS", "Invoice", publicId,
                 "Changement statut facture " + updated.getInvoiceNumber() + ": " + oldStatus + " -> " + newStatus, httpRequest);
+
+        return ResponseEntity.ok(invoiceMapper.toResponse(updated));
+    }
+
+    @PostMapping("/{publicId}/payments")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @Operation(summary = "Ajouter un paiement à une facture")
+    public ResponseEntity<InvoiceResponse> addPayment(
+            @PathVariable String publicId,
+            @Valid @RequestBody PaymentRequest paymentRequest,
+            HttpServletRequest httpRequest) {
+        Invoice invoice = invoiceService.findByPublicId(publicId);
+
+        // Ajouter le nouveau paiement au montant déjà payé
+        BigDecimal currentAmountPaid = invoice.getAmountPaid() != null ? invoice.getAmountPaid() : BigDecimal.ZERO;
+        BigDecimal newAmountPaid = currentAmountPaid.add(paymentRequest.getAmount());
+        invoice.setAmountPaid(newAmountPaid);
+
+        // Mettre à jour la facture (le service recalculera automatiquement remainingAmount et invoicePaid)
+        Invoice updated = invoiceService.updateInvoice(invoice);
+
+        auditLogService.logSuccess("ADD_PAYMENT", "Invoice", publicId,
+                "Ajout paiement de " + paymentRequest.getAmount() + " sur facture " + invoice.getInvoiceNumber() +
+                " (Total payé: " + newAmountPaid + ")", httpRequest);
 
         return ResponseEntity.ok(invoiceMapper.toResponse(updated));
     }

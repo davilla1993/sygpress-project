@@ -19,7 +19,7 @@ public class InvoiceLine extends BaseEntity {
     private int quantity;
 
     @DecimalMin(value = "0.0", message = "Le montant ne peut pas être négatif")
-    @Column(precision = 10, scale = 2)
+    @Column(precision = 10, scale = 0)
     private BigDecimal amount;      // calculé: quantity * pricing.price
 
     @ManyToOne(fetch = FetchType.LAZY)

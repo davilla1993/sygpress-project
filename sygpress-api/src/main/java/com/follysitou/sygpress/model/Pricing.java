@@ -18,7 +18,7 @@ public class Pricing extends BaseEntity {
 
     @NotNull(message = "Le prix est obligatoire")
     @DecimalMin(value = "0.0", message = "Le prix ne peut pas être négatif")
-    @Column(precision = 10, scale = 2)
+    @Column(precision = 10, scale = 0)
     private BigDecimal price;
 
     @ManyToOne(fetch = FetchType.LAZY)
