@@ -287,24 +287,36 @@ public class InvoicePdfService {
             Font totalLabelFont = new Font(Font.HELVETICA, 11, Font.BOLD, PRIMARY_COLOR);
             Font totalValueFont = new Font(Font.HELVETICA, 11, Font.BOLD, PRIMARY_COLOR);
 
-            BigDecimal totalHT = invoice.calculateTotalAmount();
+            // Montant HT (Hors Taxes, après remise)
+            BigDecimal subtotal = invoice.calculateSubtotalAmount();
 
-            // Sous-total
-            addTotalRow(totalsTable, "Sous-total:", formatMoney(totalHT.add(invoice.getDiscount())), labelFont, valueFont);
+            // Sous-total (avant remise)
+            BigDecimal subtotalBeforeDiscount = subtotal.add(invoice.getDiscount());
+            addTotalRow(totalsTable, "Sous-total:", formatMoney(subtotalBeforeDiscount), labelFont, valueFont);
 
             // Remise
             if (invoice.getDiscount() != null && invoice.getDiscount().compareTo(BigDecimal.ZERO) > 0) {
                 addTotalRow(totalsTable, "Remise:", "-" + formatMoney(invoice.getDiscount()), labelFont, valueFont);
             }
 
+            // Montant HT (après remise)
+            addTotalRow(totalsTable, "Montant HT:", formatMoney(subtotal), labelFont, valueFont);
+
             // TVA
-            if (invoice.getVatAmount() != null && invoice.getVatAmount().compareTo(BigDecimal.ZERO) > 0) {
-                addTotalRow(totalsTable, "TVA:", formatMoney(invoice.getVatAmount()), labelFont, valueFont);
+            BigDecimal vatAmount = invoice.calculateVatAmount();
+            if (vatAmount != null && vatAmount.compareTo(BigDecimal.ZERO) > 0) {
+                String vatLabel = "TVA";
+                if (invoice.getVatRate() != null && invoice.getVatRate().compareTo(BigDecimal.ZERO) > 0) {
+                    vatLabel = String.format("TVA (%.0f%%):", invoice.getVatRate());
+                } else {
+                    vatLabel = "TVA:";
+                }
+                addTotalRow(totalsTable, vatLabel, formatMoney(vatAmount), labelFont, valueFont);
             }
 
-            // Total
-            BigDecimal total = totalHT.add(invoice.getVatAmount() != null ? invoice.getVatAmount() : BigDecimal.ZERO);
-            addTotalRow(totalsTable, "TOTAL:", formatMoney(total), totalLabelFont, totalValueFont);
+            // Total TTC
+            BigDecimal totalTTC = invoice.calculateTotalAmount();
+            addTotalRow(totalsTable, "TOTAL TTC:", formatMoney(totalTTC), totalLabelFont, totalValueFont);
 
             // Montant payé
             addTotalRow(totalsTable, "Montant payé:", formatMoney(invoice.getAmountPaid()), labelFont, valueFont);
