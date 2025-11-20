@@ -50,9 +50,35 @@ export class InvoiceDetailComponent implements OnInit {
   updateStatus(status: ProcessingStatus): void {
     const inv = this.invoice();
     if (inv) {
+      // Demander confirmation avant de changer le statut
+      const statusLabels: { [key: string]: string } = {
+        'DEPOT': 'Dépôt',
+        'EN_LAVAGE': 'En lavage',
+        'EN_REPASSAGE': 'En repassage',
+        'PRET': 'Prêt',
+        'LIVRE': 'Livré',
+        'COLLECTE': 'Collecté'
+      };
+
+      const statusLabel = statusLabels[status] || status;
+
+      if (!confirm(`Êtes-vous sûr de vouloir changer le statut de cette facture à "${statusLabel}" ?`)) {
+        // Réinitialiser le select à la valeur actuelle
+        // Force Angular to re-render the select with the current value
+        const currentStatus = inv.processingStatus;
+        setTimeout(() => {
+          const selectElement = document.querySelector('select[ng-reflect-model]') as HTMLSelectElement;
+          if (selectElement) {
+            selectElement.value = currentStatus;
+          }
+        });
+        return;
+      }
+
       this.invoiceService.updateStatus(inv.publicId, status).subscribe({
         next: (updated) => {
           this.invoice.set(updated);
+          this.toastService.success('Statut modifié avec succès');
         },
         error: (error) => {
           const message = error.error?.message || 'Erreur lors de la mise à jour du statut';
@@ -65,10 +91,17 @@ export class InvoiceDetailComponent implements OnInit {
   addPayment(): void {
     const inv = this.invoice();
     if (inv && this.paymentAmount > 0) {
+      // Demander confirmation avant d'ajouter le paiement
+      const formattedAmount = this.formatMoney(this.paymentAmount);
+      if (!confirm(`Êtes-vous sûr de vouloir enregistrer un paiement de ${formattedAmount} ?`)) {
+        return;
+      }
+
       this.invoiceService.addPayment(inv.publicId, { amount: this.paymentAmount }).subscribe({
         next: (updated) => {
           this.invoice.set(updated);
           this.paymentAmount = 0;
+          this.toastService.success('Paiement enregistré avec succès');
         },
         error: (error) => {
           const message = error.error?.message || 'Erreur lors de l\'ajout du paiement';
@@ -117,12 +150,8 @@ export class InvoiceDetailComponent implements OnInit {
   }
 
   canEditInvoice(): boolean {
-    const inv = this.invoice();
-    if (!inv) return false;
-
-    const isFullyPaid = inv.invoicePaid || inv.remainingAmount === 0;
-    const isDeliveredOrCollected = inv.processingStatus === 'LIVRE' || inv.processingStatus === 'COLLECTE';
-
-    return !(isDeliveredOrCollected && isFullyPaid);
+    // Une facture ne peut plus être modifiée dès qu'elle est enregistrée en BDD (statut != DRAFT)
+    // En effet, une facture enregistrée en BDD a par défaut le statut DEPOT
+    return false;
   }
 }
