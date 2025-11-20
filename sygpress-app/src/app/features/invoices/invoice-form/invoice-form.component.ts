@@ -123,6 +123,7 @@ export class InvoiceFormComponent implements OnInit {
             deliveryDate: invoice.deliveryDate.split('T')[0],
             discount: invoice.discount,
             amountPaid: invoice.amountPaid,
+            vatRate: invoice.vatRate || 0,
             observations: invoice.observations
           });
 
