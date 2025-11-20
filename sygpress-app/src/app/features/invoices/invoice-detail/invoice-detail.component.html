@@ -203,4 +203,28 @@
       </a>
     </div>
   }
+
+  <!-- Modal de confirmation pour changement de statut -->
+  <app-confirm-modal
+    [isOpen]="showStatusConfirmModal"
+    [title]="'Confirmer le changement de statut'"
+    [message]="'Êtes-vous sûr de vouloir changer le statut de cette facture à \"' + (pendingStatus ? statusLabels[pendingStatus] : '') + '\" ?'"
+    [confirmText]="'Confirmer'"
+    [cancelText]="'Annuler'"
+    [type]="'warning'"
+    (confirm)="confirmStatusChange()"
+    (cancel)="cancelStatusChange()"
+  ></app-confirm-modal>
+
+  <!-- Modal de confirmation pour paiement -->
+  <app-confirm-modal
+    [isOpen]="showPaymentConfirmModal"
+    [title]="'Confirmer le paiement'"
+    [message]="'Êtes-vous sûr de vouloir enregistrer un paiement de ' + formatMoney(paymentAmount) + ' ?'"
+    [confirmText]="'Confirmer'"
+    [cancelText]="'Annuler'"
+    [type]="'info'"
+    (confirm)="confirmPayment()"
+    (cancel)="cancelPayment()"
+  ></app-confirm-modal>
 </div>
