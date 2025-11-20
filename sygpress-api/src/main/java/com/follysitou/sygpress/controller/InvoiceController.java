@@ -5,6 +5,7 @@ import com.follysitou.sygpress.dto.request.InvoiceLineRequest;
 import com.follysitou.sygpress.dto.request.InvoiceRequest;
 import com.follysitou.sygpress.dto.response.InvoiceResponse;
 import com.follysitou.sygpress.enums.ProcessingStatus;
+import com.follysitou.sygpress.exception.BadRequestException;
 import com.follysitou.sygpress.exception.ResourceNotFoundException;
 import com.follysitou.sygpress.mapper.InvoiceMapper;
 import com.follysitou.sygpress.model.*;
@@ -96,6 +97,9 @@ public class InvoiceController {
             @Valid @RequestBody InvoiceRequest request) {
 
         Invoice invoice = invoiceService.findByPublicId(publicId);
+
+        // Vérifier si la facture peut être modifiée
+        validateInvoiceCanBeModified(invoice);
 
         // Update basic fields
         invoice.setDepositDate(request.getDepositDate());
@@ -220,5 +224,25 @@ public class InvoiceController {
 
         Invoice updated = invoiceService.updateInvoice(invoice);
         return ResponseEntity.ok(invoiceMapper.toResponse(updated));
+    }
+
+    /**
+     * Vérifie si une facture peut être modifiée selon les règles de gestion
+     * Une facture ne peut plus être modifiée si elle est LIVRE ou COLLECTE et totalement payée
+     */
+    private void validateInvoiceCanBeModified(Invoice invoice) {
+        boolean isFullyPaid = invoice.isInvoicePaid() ||
+                              (invoice.getRemainingAmount() != null &&
+                               invoice.getRemainingAmount().compareTo(BigDecimal.ZERO) == 0);
+
+        boolean isDeliveredOrCollected = invoice.getProcessingStatus() == ProcessingStatus.LIVRE ||
+                                         invoice.getProcessingStatus() == ProcessingStatus.COLLECTE;
+
+        if (isDeliveredOrCollected && isFullyPaid) {
+            throw new BadRequestException(
+                "Cette facture ne peut plus être modifiée car elle est " +
+                invoice.getProcessingStatus() + " et totalement payée"
+            );
+        }
     }
 }
