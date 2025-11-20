@@ -157,4 +157,28 @@ export class ReportsComponent {
     if (amount == null) return '0 FCFA';
     return new Intl.NumberFormat('fr-FR').format(amount) + ' FCFA';
   }
+
+  getFormattedPeriod(): string {
+    const start = new Date(this.startDate);
+    const end = new Date(this.endDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Vérifier si c'est aujourd'hui
+    if (this.startDate === this.endDate && start.getTime() === today.getTime()) {
+      return 'Aujourd\'hui';
+    }
+
+    // Vérifier si c'est le mois en cours
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    if (this.startDate === firstDayOfMonth.toISOString().split('T')[0] &&
+        this.endDate === this.getToday()) {
+      const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+                          'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+      return `${monthNames[today.getMonth()]} ${today.getFullYear()}`;
+    }
+
+    // Sinon afficher la période
+    return `Du ${start.toLocaleDateString('fr-FR')} au ${end.toLocaleDateString('fr-FR')}`;
+  }
 }
