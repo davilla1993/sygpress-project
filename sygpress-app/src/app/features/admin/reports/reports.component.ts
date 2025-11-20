@@ -17,9 +17,11 @@ interface CustomerReport {
   totalCustomers: number;
   newCustomers: number;
   topCustomers: {
-    name: string;
+    customerName: string;
+    customerPhone: string;
     invoiceCount: number;
     totalSpent: number;
+    totalUnpaid: number;
   }[];
 }
 

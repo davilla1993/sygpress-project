@@ -122,13 +122,18 @@
         </div>
         <h4 class="font-semibold mb-3">Top clients</h4>
         <div class="space-y-2">
-          @for (customer of customerReport()!.topCustomers; track customer.name) {
+          @for (customer of customerReport()!.topCustomers; track customer.customerName) {
             <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
               <div>
-                <p class="font-medium">{{ customer.name }}</p>
-                <p class="text-sm text-gray-500">{{ customer.invoiceCount }} factures</p>
+                <p class="font-medium">{{ customer.customerName }}</p>
+                <p class="text-sm text-gray-500">{{ customer.customerPhone }} · {{ customer.invoiceCount }} factures</p>
               </div>
-              <p class="font-semibold text-primary-600">{{ formatMoney(customer.totalSpent) }}</p>
+              <div class="text-right">
+                <p class="font-semibold text-primary-600">{{ formatMoney(customer.totalSpent) }}</p>
+                @if (customer.totalUnpaid > 0) {
+                  <p class="text-sm text-red-600">Impayé: {{ formatMoney(customer.totalUnpaid) }}</p>
+                }
+              </div>
             </div>
           }
         </div>
