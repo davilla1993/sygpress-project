@@ -2,6 +2,7 @@ package com.follysitou.sygpress.repository;
 
 import com.follysitou.sygpress.enums.ProcessingStatus;
 import com.follysitou.sygpress.model.Invoice;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,11 +20,9 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     Optional<Invoice> findByPublicId(String publicId);
     Optional<Invoice> findByInvoiceNumber(String invoiceNumber);
 
-    @Query("SELECT DISTINCT i FROM Invoice i LEFT JOIN FETCH i.invoiceLines il LEFT JOIN FETCH il.pricing p LEFT JOIN FETCH p.article LEFT JOIN FETCH p.service WHERE i.publicId = :publicId")
-    Optional<Invoice> findByPublicIdWithLines(@Param("publicId") String publicId);
-
-    @Query("SELECT DISTINCT i FROM Invoice i LEFT JOIN FETCH i.additionalFees WHERE i.publicId = :publicId")
-    Optional<Invoice> findByPublicIdWithFees(@Param("publicId") String publicId);
+    @EntityGraph(attributePaths = {"invoiceLines", "invoiceLines.pricing", "invoiceLines.pricing.article", "invoiceLines.pricing.service", "additionalFees", "customer"})
+    @Query("SELECT i FROM Invoice i WHERE i.publicId = :publicId")
+    Optional<Invoice> findByPublicIdWithDetails(@Param("publicId") String publicId);
 
     // Find invoices by customer
     Page<Invoice> findByCustomerPublicIdAndDeletedFalse(String customerPublicId, Pageable pageable);
