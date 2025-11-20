@@ -20,6 +20,7 @@
             placeholder="Rechercher un client..."
             [searchable]="true"
             [clearable]="true"
+            [searchFn]="customSearchFn"
             notFoundText="Aucun client trouvé"
           >
             <ng-template ng-option-tmp let-item="item">
@@ -57,10 +58,12 @@
                 <ng-select
                   formControlName="pricingPublicId"
                   [items]="pricings()"
+                  bindLabel="searchText"
                   bindValue="publicId"
                   placeholder="Rechercher un tarif..."
                   [searchable]="true"
                   [clearable]="true"
+                  [searchFn]="customSearchFn"
                   notFoundText="Aucun tarif trouvé"
                   class="ng-select-sm"
                 >
