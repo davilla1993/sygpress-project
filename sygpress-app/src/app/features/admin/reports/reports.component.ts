@@ -102,7 +102,7 @@ export class ReportsComponent {
 
   printReport(type: string): void {
     const params = this.getDateParams();
-    this.http.get(`${environment.apiUrl}/reports/${type}/print`, { params, responseType: 'blob' }).subscribe({
+    this.http.get(`${environment.apiUrl}/reports/${type}/pdf`, { params, responseType: 'blob' }).subscribe({
       next: (blob) => {
         const url = window.URL.createObjectURL(blob);
         window.open(url, '_blank');
