@@ -73,6 +73,12 @@ export class InvoiceFormComponent implements OnInit {
     this.loadCustomers();
     this.loadPricings();
 
+    // Vérifier si un client est passé en paramètre de query
+    const customerId = this.route.snapshot.queryParamMap.get('customerId');
+    if (customerId) {
+      this.form.patchValue({ customerPublicId: customerId });
+    }
+
     this.invoiceId = this.route.snapshot.paramMap.get('id');
     if (this.invoiceId) {
       this.isEditMode.set(true);
