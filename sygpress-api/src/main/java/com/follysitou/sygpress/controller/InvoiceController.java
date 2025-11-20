@@ -96,7 +96,7 @@ public class InvoiceController {
             @PathVariable String publicId,
             @Valid @RequestBody InvoiceRequest request) {
 
-        Invoice invoice = invoiceService.findByPublicId(publicId);
+        Invoice invoice = invoiceService.findByPublicIdWithDetails(publicId);
 
         // Vérifier si la facture peut être modifiée
         validateInvoiceCanBeModified(invoice);

@@ -56,6 +56,12 @@ public class InvoiceService {
     }
 
     @Transactional(readOnly = true)
+    public Invoice findByPublicIdWithDetails(String publicId) {
+        return invoiceRepository.findByPublicIdWithDetails(publicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Facture", "publicId", publicId));
+    }
+
+    @Transactional(readOnly = true)
     public Optional<Invoice> findByInvoiceNumber(String invoiceNumber) {
         return invoiceRepository.findByInvoiceNumber(invoiceNumber);
     }
