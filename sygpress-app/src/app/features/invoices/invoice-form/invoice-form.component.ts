@@ -95,7 +95,12 @@ export class InvoiceFormComponent implements OnInit {
   loadPricings(): void {
     this.http.get<Pricing[]>(`${environment.apiUrl}/pricing/all`).subscribe({
       next: (pricings) => {
-        this.pricings.set(Array.isArray(pricings) ? pricings : []);
+        // Ajouter une propriété searchText pour faciliter la recherche
+        const pricingsWithSearch = pricings.map(p => ({
+          ...p,
+          searchText: `${p.article.name} ${p.service.name}`.toLowerCase()
+        }));
+        this.pricings.set(Array.isArray(pricingsWithSearch) ? pricingsWithSearch : []);
         this.updateCalculatedTotal();
       },
       error: () => this.pricings.set([])
@@ -231,15 +236,22 @@ export class InvoiceFormComponent implements OnInit {
 
   // Fonction de recherche personnalisée pour ng-select (insensible à la casse)
   customSearchFn(term: string, item: any): boolean {
-    const searchTerm = term.toLowerCase();
+    if (!term) return true;
+
+    const searchTerm = term.toLowerCase().trim();
 
     // Pour le client
-    if (item.name) {
+    if (item.name && item.phoneNumber !== undefined) {
       return item.name.toLowerCase().includes(searchTerm) ||
-             (item.phoneNumber && item.phoneNumber.includes(searchTerm));
+             (item.phoneNumber && item.phoneNumber.toLowerCase().includes(searchTerm));
     }
 
-    // Pour le tarif
+    // Pour le tarif - utiliser searchText si disponible
+    if (item.searchText) {
+      return item.searchText.includes(searchTerm);
+    }
+
+    // Fallback pour le tarif si searchText n'existe pas
     if (item.article && item.service) {
       return item.article.name.toLowerCase().includes(searchTerm) ||
              item.service.name.toLowerCase().includes(searchTerm);
