@@ -181,40 +181,16 @@ body {
   @apply bg-gray-50;
 }
 
-/* ng-select styles */
-@import "@ng-select/ng-select/themes/default.theme.css";
-
-/* Custom ng-select overrides */
-.ng-select .ng-select-container {
-  @apply border border-gray-300 rounded-lg;
-  min-height: 42px;
+/* ng-select small variant */
+.ng-select-sm .ng-select-container {
+  min-height: 38px;
+  font-size: 0.875rem;
 }
 
-.ng-select.ng-select-focused .ng-select-container {
-  @apply border-primary-500 ring-2 ring-primary-500;
-  box-shadow: none;
+.ng-select-sm .ng-value {
+  font-size: 0.875rem;
 }
 
-.ng-select .ng-placeholder {
-  @apply text-gray-400;
-}
-
-.ng-dropdown-panel {
-  @apply border border-gray-300 rounded-lg shadow-lg;
-}
-
-.ng-dropdown-panel .ng-dropdown-panel-items .ng-option {
-  @apply px-3 py-2;
-}
-
-.ng-dropdown-panel .ng-dropdown-panel-items .ng-option.ng-option-selected {
-  @apply bg-primary-100 text-primary-800;
-}
-
-.ng-dropdown-panel .ng-dropdown-panel-items .ng-option.ng-option-marked {
-  @apply bg-gray-100;
-}
-
-.ng-select .ng-clear-wrapper {
-  @apply text-gray-400 hover:text-gray-600;
+.ng-select-sm .ng-input input {
+  font-size: 0.875rem;
 }

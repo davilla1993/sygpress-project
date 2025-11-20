@@ -54,14 +54,26 @@
             <div [formGroupName]="i" class="flex gap-4 items-start p-4 bg-gray-50 rounded-lg">
               <div class="flex-1">
                 <label class="block text-sm text-gray-500 mb-1">Tarif</label>
-                <select formControlName="pricingPublicId" class="input text-sm">
-                  <option value="">Selectionner</option>
-                  @for (pricing of pricings(); track pricing.publicId) {
-                    <option [value]="pricing.publicId">
-                      {{ pricing.article.name }} - {{ pricing.service.name }} ({{ formatMoney(pricing.price) }})
-                    </option>
-                  }
-                </select>
+                <ng-select
+                  formControlName="pricingPublicId"
+                  [items]="pricings()"
+                  bindValue="publicId"
+                  placeholder="Rechercher un tarif..."
+                  [searchable]="true"
+                  [clearable]="true"
+                  notFoundText="Aucun tarif trouvé"
+                  class="ng-select-sm"
+                >
+                  <ng-template ng-label-tmp let-item="item">
+                    {{ item.article.name }} - {{ item.service.name }}
+                  </ng-template>
+                  <ng-template ng-option-tmp let-item="item">
+                    <div class="flex flex-col">
+                      <span class="font-medium">{{ item.article.name }} - {{ item.service.name }}</span>
+                      <span class="text-sm text-gray-500">{{ formatMoney(item.price) }}</span>
+                    </div>
+                  </ng-template>
+                </ng-select>
               </div>
               <div class="w-24">
                 <label class="block text-sm text-gray-500 mb-1">Quantite</label>
