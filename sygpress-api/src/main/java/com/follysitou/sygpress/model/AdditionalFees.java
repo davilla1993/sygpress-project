@@ -27,7 +27,7 @@ public class AdditionalFees extends BaseEntity {
 
     @DecimalMin(value = "0.0", message = "Le montant ne peut pas être négatif")
     @NotNull(message = "Le montant est obligatoire")
-    @Column(precision = 10, scale = 2)
+    @Column(precision = 10, scale = 0)
     private BigDecimal amount;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -31,19 +31,19 @@ public class Invoice extends BaseEntity {
     private LocalDate deliveryDate;
 
     @DecimalMin(value = "0.0", message = "La remise ne peut pas être négative")
-    @Column(precision = 10, scale = 2)
+    @Column(precision = 10, scale = 0)
     private BigDecimal discount = BigDecimal.ZERO;
 
     @DecimalMin(value = "0.0", message = "Le montant de TVA ne peut pas être négatif")
-    @Column(precision = 10, scale = 2)
+    @Column(precision = 10, scale = 0)
     private BigDecimal vatAmount = BigDecimal.ZERO;
 
     @DecimalMin(value = "0.0", message = "Le montant payé ne peut pas être négatif")
-    @Column(precision = 10, scale = 2)
+    @Column(precision = 10, scale = 0)
     private BigDecimal amountPaid = BigDecimal.ZERO;
 
     @DecimalMin(value = "0.0", message = "Le montant restant ne peut pas être négatif")
-    @Column(precision = 10, scale = 2)
+    @Column(precision = 10, scale = 0)
     private BigDecimal remainingAmount = BigDecimal.ZERO;
 
     private boolean invoicePaid;
