@@ -169,6 +169,16 @@ export class InvoiceListComponent implements OnInit {
     return new Date(date).toLocaleDateString('fr-FR');
   }
 
+  formatDateTime(dateTime: string): string {
+    if (!dateTime) return 'N/A';
+    return new Date(dateTime).toLocaleDateString('fr-FR');
+  }
+
+  formatTime(dateTime: string): string {
+    if (!dateTime) return '';
+    return new Date(dateTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  }
+
   formatMoney(amount: number): string {
     return new Intl.NumberFormat('fr-FR').format(amount) + ' FCFA';
   }
