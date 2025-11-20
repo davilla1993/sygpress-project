@@ -58,6 +58,7 @@
                 <ng-select
                   formControlName="pricingPublicId"
                   [items]="pricings()"
+                  bindLabel="searchText"
                   bindValue="publicId"
                   placeholder="Rechercher un tarif..."
                   [searchable]="true"
