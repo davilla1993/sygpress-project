@@ -15,6 +15,7 @@ export interface Invoice {
   observations: string;
   createdAt: string;
   updatedAt: string;
+  createdBy: string;
 }
 
 export interface InvoiceLine {

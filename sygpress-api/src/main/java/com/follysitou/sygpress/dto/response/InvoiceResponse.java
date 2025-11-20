@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -24,4 +25,6 @@ public class InvoiceResponse {
     private List<InvoiceLineResponse> invoiceLines;
     private List<AdditionalFeesResponse> additionalFees;
     private BigDecimal totalAmount; // Champ calculé
+    private String createdBy;
+    private LocalDateTime createdAt;
 }

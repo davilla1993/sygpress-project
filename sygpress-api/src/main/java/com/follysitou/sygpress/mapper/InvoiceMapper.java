@@ -37,6 +37,8 @@ public class InvoiceMapper {
         response.setRemainingAmount(invoice.getRemainingAmount());
         response.setInvoicePaid(invoice.isInvoicePaid());
         response.setProcessingStatus(invoice.getProcessingStatus());
+        response.setCreatedBy(invoice.getCreatedBy());
+        response.setCreatedAt(invoice.getCreatedAt());
 
         // Calcul du montant total
         response.setTotalAmount(calculateTotalAmount(invoice));
