@@ -134,6 +134,18 @@ export class InvoiceFormComponent implements OnInit {
               quantity: [line.quantity, [Validators.required, Validators.min(1)]]
             }));
           });
+
+          // Charger les frais supplémentaires
+          this.additionalFeesArray.clear();
+          if (invoice.additionalFees && invoice.additionalFees.length > 0) {
+            invoice.additionalFees.forEach(fee => {
+              this.additionalFeesArray.push(this.fb.group({
+                title: [fee.title, Validators.required],
+                description: [fee.description || ''],
+                amount: [fee.amount, [Validators.required, Validators.min(0)]]
+              }));
+            });
+          }
         }
       });
     }
