@@ -1,18 +1,19 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InvoiceService } from '../../../core/services/invoice.service';
 import { CustomerService } from '../../../core/services/customer.service';
 import { Customer, Pricing } from '../../../core/models';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { ToastService } from '../../../shared/services/toast.service';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 @Component({
   selector: 'app-invoice-form',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, NgSelectModule],
   templateUrl: './invoice-form.component.html',
   styleUrls: ['./invoice-form.component.css']
 })
@@ -22,19 +23,7 @@ export class InvoiceFormComponent implements OnInit {
   isSubmitting = signal(false);
   customers = signal<Customer[]>([]);
   pricings = signal<Pricing[]>([]);
-  customerSearch = signal('');
   private invoiceId: string | null = null;
-
-  filteredCustomers = computed(() => {
-    const search = this.customerSearch().toLowerCase().trim();
-    if (!search) {
-      return this.customers();
-    }
-    return this.customers().filter(c =>
-      c.name.toLowerCase().includes(search) ||
-      c.phoneNumber.includes(search)
-    );
-  });
 
   // Calcul du total dynamique
   calculatedTotal = signal(0);
