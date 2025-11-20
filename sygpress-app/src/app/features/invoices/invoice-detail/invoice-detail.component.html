@@ -17,7 +17,9 @@
           </svg>
           Imprimer
         </button>
-        <a [routerLink]="['edit']" class="btn-secondary">Modifier</a>
+        @if (canEditInvoice()) {
+          <a [routerLink]="['edit']" class="btn-secondary">Modifier</a>
+        }
       </div>
     </div>
 
@@ -44,12 +46,12 @@
                   (ngModelChange)="updateStatus($event)"
                   class="input py-1 text-sm"
                 >
-                  <option value="COLLECTE">Collecte</option>
+                  <option value="DEPOT">Depot</option>
                   <option value="EN_LAVAGE">En lavage</option>
                   <option value="EN_REPASSAGE">En repassage</option>
                   <option value="PRET">Pret</option>
                   <option value="LIVRE">Livre</option>
-                  <option value="RECUPERE">Recupere</option>
+                  <option value="COLLECTE">Collecte</option>
                 </select>
               </div>
             </div>
