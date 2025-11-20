@@ -33,3 +33,10 @@ file:
 spring.servlet.multipart:
   max-file-size: 10MB
   max-request-size: 10MB
+
+# Configuration du nettoyage automatique des logs d'audit
+audit:
+  cleanup:
+    enabled: true
+    retention-days: 30  # Conserver les logs pendant 30 jours
+    cron: "0 0 2 1 * ?"  # Exécuter le 1er de chaque mois à 2h00 du matin
