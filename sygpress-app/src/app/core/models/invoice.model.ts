@@ -8,11 +8,17 @@ export interface Invoice {
   invoiceLines: InvoiceLine[];
   additionalFees: AdditionalFee[];
   discount: number;
-  vatAmount: number;
+  vatRate: number;  // Taux de TVA en %
   amountPaid: number;
   remainingAmount: number;
   invoicePaid: boolean;
   observations: string;
+
+  // Champs calculés
+  subtotalAmount: number;  // Montant HT
+  vatAmount: number;       // Montant TVA calculé
+  totalAmount: number;     // Montant TTC
+
   createdAt: string;
   updatedAt: string;
   createdBy: string;
