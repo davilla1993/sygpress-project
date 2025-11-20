@@ -74,11 +74,12 @@ export class UserListComponent implements OnInit {
   }
 
   createUser(): void {
-    this.http.post<User>(`${environment.apiUrl}/auth/register`, this.newUser).subscribe({
+    this.http.post<User>(`${environment.apiUrl}/admin/users`, this.newUser).subscribe({
       next: () => {
         this.showAddModal = false;
         this.newUser = { fullName: '', username: '', email: '', password: '', role: 'USER' };
         this.loadUsers();
+        this.toastService.success('Utilisateur créé avec succès');
       },
       error: (error) => {
         const message = error.error?.message || 'Erreur lors de la création de l\'utilisateur';
