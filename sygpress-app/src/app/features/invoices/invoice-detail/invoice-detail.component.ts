@@ -5,11 +5,12 @@ import { FormsModule } from '@angular/forms';
 import { InvoiceService } from '../../../core/services/invoice.service';
 import { Invoice, ProcessingStatus } from '../../../core/models';
 import { ToastService } from '../../../shared/services/toast.service';
+import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 
 @Component({
   selector: 'app-invoice-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, ConfirmModalComponent],
   templateUrl: './invoice-detail.component.html',
   styleUrls: ['./invoice-detail.component.css']
 })
@@ -17,6 +18,19 @@ export class InvoiceDetailComponent implements OnInit {
   invoice = signal<Invoice | null>(null);
   isLoading = signal(true);
   paymentAmount: number = 0;
+
+  // Modales de confirmation
+  showStatusConfirmModal = false;
+  showPaymentConfirmModal = false;
+  pendingStatus: ProcessingStatus | null = null;
+  statusLabels: { [key: string]: string } = {
+    'DEPOT': 'Dépôt',
+    'EN_LAVAGE': 'En lavage',
+    'EN_REPASSAGE': 'En repassage',
+    'PRET': 'Prêt',
+    'LIVRE': 'Livré',
+    'COLLECTE': 'Collecté'
+  };
 
   constructor(
     private invoiceService: InvoiceService,
@@ -50,65 +64,77 @@ export class InvoiceDetailComponent implements OnInit {
   updateStatus(status: ProcessingStatus): void {
     const inv = this.invoice();
     if (inv) {
-      // Demander confirmation avant de changer le statut
-      const statusLabels: { [key: string]: string } = {
-        'DEPOT': 'Dépôt',
-        'EN_LAVAGE': 'En lavage',
-        'EN_REPASSAGE': 'En repassage',
-        'PRET': 'Prêt',
-        'LIVRE': 'Livré',
-        'COLLECTE': 'Collecté'
-      };
+      // Ouvrir le modal de confirmation
+      this.pendingStatus = status;
+      this.showStatusConfirmModal = true;
+    }
+  }
 
-      const statusLabel = statusLabels[status] || status;
-
-      if (!confirm(`Êtes-vous sûr de vouloir changer le statut de cette facture à "${statusLabel}" ?`)) {
-        // Réinitialiser le select à la valeur actuelle
-        // Force Angular to re-render the select with the current value
-        const currentStatus = inv.processingStatus;
-        setTimeout(() => {
-          const selectElement = document.querySelector('select[ng-reflect-model]') as HTMLSelectElement;
-          if (selectElement) {
-            selectElement.value = currentStatus;
-          }
-        });
-        return;
-      }
-
-      this.invoiceService.updateStatus(inv.publicId, status).subscribe({
+  confirmStatusChange(): void {
+    const inv = this.invoice();
+    if (inv && this.pendingStatus) {
+      this.invoiceService.updateStatus(inv.publicId, this.pendingStatus).subscribe({
         next: (updated) => {
           this.invoice.set(updated);
+          this.showStatusConfirmModal = false;
+          this.pendingStatus = null;
           this.toastService.success('Statut modifié avec succès');
         },
         error: (error) => {
           const message = error.error?.message || 'Erreur lors de la mise à jour du statut';
           this.toastService.error(message);
+          this.showStatusConfirmModal = false;
+          this.pendingStatus = null;
         }
       });
     }
   }
 
+  cancelStatusChange(): void {
+    // Réinitialiser le select à la valeur actuelle
+    const inv = this.invoice();
+    if (inv) {
+      const currentStatus = inv.processingStatus;
+      setTimeout(() => {
+        const selectElement = document.querySelector('select') as HTMLSelectElement;
+        if (selectElement) {
+          selectElement.value = currentStatus;
+        }
+      });
+    }
+    this.showStatusConfirmModal = false;
+    this.pendingStatus = null;
+  }
+
   addPayment(): void {
     const inv = this.invoice();
     if (inv && this.paymentAmount > 0) {
-      // Demander confirmation avant d'ajouter le paiement
-      const formattedAmount = this.formatMoney(this.paymentAmount);
-      if (!confirm(`Êtes-vous sûr de vouloir enregistrer un paiement de ${formattedAmount} ?`)) {
-        return;
-      }
+      // Ouvrir le modal de confirmation
+      this.showPaymentConfirmModal = true;
+    }
+  }
 
+  confirmPayment(): void {
+    const inv = this.invoice();
+    if (inv && this.paymentAmount > 0) {
       this.invoiceService.addPayment(inv.publicId, { amount: this.paymentAmount }).subscribe({
         next: (updated) => {
           this.invoice.set(updated);
           this.paymentAmount = 0;
+          this.showPaymentConfirmModal = false;
           this.toastService.success('Paiement enregistré avec succès');
         },
         error: (error) => {
           const message = error.error?.message || 'Erreur lors de l\'ajout du paiement';
           this.toastService.error(message);
+          this.showPaymentConfirmModal = false;
         }
       });
     }
+  }
+
+  cancelPayment(): void {
+    this.showPaymentConfirmModal = false;
   }
 
   printInvoice(): void {
