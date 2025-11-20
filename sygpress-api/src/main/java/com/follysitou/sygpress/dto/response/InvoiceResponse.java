@@ -16,7 +16,7 @@ public class InvoiceResponse {
     private LocalDate depositDate;
     private LocalDate deliveryDate;
     private BigDecimal discount;
-    private BigDecimal vatAmount;
+    private BigDecimal vatRate;  // Taux de TVA en % (ex: 18.00 pour 18%)
     private BigDecimal amountPaid;
     private BigDecimal remainingAmount;
     private boolean invoicePaid;
@@ -24,7 +24,12 @@ public class InvoiceResponse {
     private CustomerResponse customer;
     private List<InvoiceLineResponse> invoiceLines;
     private List<AdditionalFeesResponse> additionalFees;
-    private BigDecimal totalAmount; // Champ calculé
+
+    // Champs calculés
+    private BigDecimal subtotalAmount; // Montant HT (Hors Taxes)
+    private BigDecimal vatAmount;      // Montant de TVA calculé
+    private BigDecimal totalAmount;    // Montant TTC (Toutes Taxes Comprises)
+
     private String createdBy;
     private LocalDateTime createdAt;
 }

@@ -32,7 +32,7 @@ public class InvoiceMapper {
         response.setDepositDate(invoice.getDepositDate());
         response.setDeliveryDate(invoice.getDeliveryDate());
         response.setDiscount(invoice.getDiscount());
-        response.setVatAmount(invoice.getVatAmount());
+        response.setVatRate(invoice.getVatRate());
         response.setAmountPaid(invoice.getAmountPaid());
         response.setRemainingAmount(invoice.getRemainingAmount());
         response.setInvoicePaid(invoice.isInvoicePaid());
@@ -40,8 +40,10 @@ public class InvoiceMapper {
         response.setCreatedBy(invoice.getCreatedBy());
         response.setCreatedAt(invoice.getCreatedAt());
 
-        // Calcul du montant total
-        response.setTotalAmount(calculateTotalAmount(invoice));
+        // Calculs des montants
+        response.setSubtotalAmount(invoice.calculateSubtotalAmount());  // Montant HT
+        response.setVatAmount(invoice.calculateVatAmount());            // Montant TVA
+        response.setTotalAmount(invoice.calculateTotalAmount());        // Montant TTC
 
         if (invoice.getCustomer() != null) {
             response.setCustomer(customerMapper.toResponse(invoice.getCustomer()));
@@ -82,21 +84,5 @@ public class InvoiceMapper {
         response.setDescription(fees.getDescription());
         response.setAmount(fees.getAmount());
         return response;
-    }
-
-    private BigDecimal calculateTotalAmount(Invoice invoice) {
-        BigDecimal totalLines = invoice.getInvoiceLines().stream()
-                .map(InvoiceLine::getAmount)
-                .filter(amount -> amount != null)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        BigDecimal totalFees = invoice.getAdditionalFees().stream()
-                .map(AdditionalFees::getAmount)
-                .filter(amount -> amount != null)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        BigDecimal discount = invoice.getDiscount() != null ? invoice.getDiscount() : BigDecimal.ZERO;
-
-        return totalLines.add(totalFees).subtract(discount);
     }
 }
