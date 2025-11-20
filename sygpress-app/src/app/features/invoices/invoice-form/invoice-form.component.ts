@@ -134,6 +134,18 @@ export class InvoiceFormComponent implements OnInit {
               quantity: [line.quantity, [Validators.required, Validators.min(1)]]
             }));
           });
+
+          // Charger les frais supplémentaires
+          this.additionalFeesArray.clear();
+          if (invoice.additionalFees && invoice.additionalFees.length > 0) {
+            invoice.additionalFees.forEach(fee => {
+              this.additionalFeesArray.push(this.fb.group({
+                title: [fee.title, Validators.required],
+                description: [fee.description || ''],
+                amount: [fee.amount, [Validators.required, Validators.min(0)]]
+              }));
+            });
+          }
         }
       });
     }
@@ -181,18 +193,21 @@ export class InvoiceFormComponent implements OnInit {
       feesTotal += fee.amount || 0;
     }
 
-    // Calcul de la TVA
-    const vatRate = formValue.vatRate || 0;
-    const vatAmount = (subtotal + feesTotal) * (vatRate / 100);
-
-    // Calcul du total
+    // Calcul du montant HT (après remise) - conforme au backend
     const discount = formValue.discount || 0;
-    const total = subtotal + feesTotal + vatAmount - discount;
+    const subtotalHT = subtotal + feesTotal - discount;
+
+    // Calcul de la TVA sur le montant HT (après remise)
+    const vatRate = formValue.vatRate || 0;
+    const vatAmount = Math.round(subtotalHT * (vatRate / 100)); // Arrondi pour FCFA
+
+    // Calcul du total TTC
+    const totalTTC = subtotalHT + vatAmount;
 
     this.calculatedSubtotal.set(subtotal);
     this.calculatedFeesTotal.set(feesTotal);
     this.calculatedVat.set(vatAmount);
-    this.calculatedTotal.set(total);
+    this.calculatedTotal.set(totalTTC);
   }
 
   onSubmit(): void {
