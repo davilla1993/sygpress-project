@@ -335,7 +335,7 @@ public class DashboardService {
             case EN_REPASSAGE -> "Repassage";
             case PRET -> "Prêt";
             case LIVRE -> "Livré";
-            case RECUPERE -> "Récupéré";
+            case COLLECTE -> "Collecté par le client";
         };
     }
 }
