@@ -38,9 +38,16 @@ public class AuthService {
 
     @Transactional
     public AuthResponse login(LoginRequest request, HttpServletRequest httpRequest) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
-        );
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+            );
+        } catch (Exception e) {
+            // Audit log for failed login attempt
+            auditLogService.logFailure("LOGIN", "User", request.getUsername(),
+                    "Échec de connexion pour: " + request.getUsername(), "Identifiants incorrects", httpRequest);
+            throw e;
+        }
 
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur", "username", request.getUsername()));

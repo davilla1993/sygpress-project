@@ -14,7 +14,9 @@ import com.follysitou.sygpress.repository.CustomerRepository;
 import com.follysitou.sygpress.repository.PricingRepository;
 import com.follysitou.sygpress.service.InvoicePdfService;
 import com.follysitou.sygpress.service.InvoiceService;
+import com.follysitou.sygpress.service.AuditLogService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletRequest;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -43,10 +45,11 @@ public class InvoiceController {
     private final CustomerRepository customerRepository;
     private final PricingRepository pricingRepository;
     private final InvoicePdfService invoicePdfService;
+    private final AuditLogService auditLogService;
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<InvoiceResponse> create(@Valid @RequestBody InvoiceRequest request) {
+    public ResponseEntity<InvoiceResponse> create(@Valid @RequestBody InvoiceRequest request, HttpServletRequest httpRequest) {
         Invoice invoice = new Invoice();
         invoice.setDepositDate(request.getDepositDate());
         invoice.setDeliveryDate(request.getDeliveryDate());
@@ -86,6 +89,10 @@ public class InvoiceController {
         }
 
         Invoice saved = invoiceService.createInvoice(invoice);
+
+        auditLogService.logSuccess("CREATE_INVOICE", "Invoice", saved.getPublicId(),
+                "Création facture: " + saved.getInvoiceNumber() + " pour client: " + customer.getName(), httpRequest);
+
         return new ResponseEntity<>(invoiceMapper.toResponse(saved), HttpStatus.CREATED);
     }
 
@@ -94,7 +101,8 @@ public class InvoiceController {
     @Operation(summary = "Modifier une facture")
     public ResponseEntity<InvoiceResponse> update(
             @PathVariable String publicId,
-            @Valid @RequestBody InvoiceRequest request) {
+            @Valid @RequestBody InvoiceRequest request,
+            HttpServletRequest httpRequest) {
 
         Invoice invoice = invoiceService.findByPublicIdWithDetails(publicId);
 
@@ -144,6 +152,10 @@ public class InvoiceController {
         }
 
         Invoice updated = invoiceService.updateInvoice(invoice);
+
+        auditLogService.logSuccess("UPDATE_INVOICE", "Invoice", publicId,
+                "Modification facture: " + updated.getInvoiceNumber(), httpRequest);
+
         return ResponseEntity.ok(invoiceMapper.toResponse(updated));
     }
 
@@ -171,8 +183,15 @@ public class InvoiceController {
 
     @DeleteMapping("/{publicId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> delete(@PathVariable String publicId) {
+    public ResponseEntity<Void> delete(@PathVariable String publicId, HttpServletRequest httpRequest) {
+        Invoice invoice = invoiceService.findByPublicId(publicId);
+        String invoiceNumber = invoice.getInvoiceNumber();
+
         invoiceService.deleteByPublicId(publicId);
+
+        auditLogService.logSuccess("DELETE_INVOICE", "Invoice", publicId,
+                "Suppression facture: " + invoiceNumber, httpRequest);
+
         return ResponseEntity.noContent().build();
     }
 
@@ -194,9 +213,12 @@ public class InvoiceController {
     @GetMapping("/{publicId}/print")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @Operation(summary = "Imprimer la facture en PDF")
-    public ResponseEntity<byte[]> printPdf(@PathVariable String publicId) throws IOException {
+    public ResponseEntity<byte[]> printPdf(@PathVariable String publicId, HttpServletRequest httpRequest) throws IOException {
         Invoice invoice = invoiceService.findByPublicId(publicId);
         byte[] pdfContent = invoicePdfService.generateInvoicePdf(publicId);
+
+        auditLogService.logSuccess("PRINT_INVOICE", "Invoice", publicId,
+                "Impression facture: " + invoice.getInvoiceNumber(), httpRequest);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
@@ -211,7 +233,8 @@ public class InvoiceController {
     @Operation(summary = "Changer le statut d'une facture")
     public ResponseEntity<InvoiceResponse> updateStatus(
             @PathVariable String publicId,
-            @RequestBody Map<String, String> statusUpdate) {
+            @RequestBody Map<String, String> statusUpdate,
+            HttpServletRequest httpRequest) {
         Invoice invoice = invoiceService.findByPublicId(publicId);
 
         String statusStr = statusUpdate.get("status");
@@ -219,10 +242,15 @@ public class InvoiceController {
             throw new IllegalArgumentException("Le statut est requis");
         }
 
+        ProcessingStatus oldStatus = invoice.getProcessingStatus();
         ProcessingStatus newStatus = ProcessingStatus.valueOf(statusStr);
         invoice.setProcessingStatus(newStatus);
 
         Invoice updated = invoiceService.updateInvoice(invoice);
+
+        auditLogService.logSuccess("CHANGE_STATUS", "Invoice", publicId,
+                "Changement statut facture " + updated.getInvoiceNumber() + ": " + oldStatus + " -> " + newStatus, httpRequest);
+
         return ResponseEntity.ok(invoiceMapper.toResponse(updated));
     }
 

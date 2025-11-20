@@ -9,6 +9,8 @@ import com.follysitou.sygpress.model.Customer;
 import com.follysitou.sygpress.model.Invoice;
 import com.follysitou.sygpress.service.CustomerService;
 import com.follysitou.sygpress.service.InvoiceService;
+import com.follysitou.sygpress.service.AuditLogService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -30,16 +32,21 @@ public class CustomerController {
     private final CustomerMapper customerMapper;
     private final InvoiceService invoiceService;
     private final InvoiceMapper invoiceMapper;
+    private final AuditLogService auditLogService;
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<CustomerResponse> create(@Valid @RequestBody CustomerRequest request) {
+    public ResponseEntity<CustomerResponse> create(@Valid @RequestBody CustomerRequest request, HttpServletRequest httpRequest) {
         Customer customer = new Customer();
         customer.setName(request.getName());
         customer.setPhoneNumber(request.getPhoneNumber());
         customer.setAddress(request.getAddress());
 
         Customer saved = customerService.create(customer);
+
+        auditLogService.logSuccess("CREATE_CUSTOMER", "Customer", saved.getPublicId(),
+                "Création client: " + saved.getName() + " (" + saved.getPhoneNumber() + ")", httpRequest);
+
         return new ResponseEntity<>(customerMapper.toResponse(saved), HttpStatus.CREATED);
     }
 
@@ -84,20 +91,33 @@ public class CustomerController {
     @PutMapping("/{publicId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<CustomerResponse> update(@PathVariable String publicId,
-                                                   @Valid @RequestBody CustomerRequest request) {
+                                                   @Valid @RequestBody CustomerRequest request,
+                                                   HttpServletRequest httpRequest) {
+
         Customer customerDetails = new Customer();
         customerDetails.setName(request.getName());
         customerDetails.setPhoneNumber(request.getPhoneNumber());
         customerDetails.setAddress(request.getAddress());
 
         Customer updated = customerService.update(publicId, customerDetails);
+
+        auditLogService.logSuccess("UPDATE_CUSTOMER", "Customer", publicId,
+                "Modification client: " + updated.getName(), httpRequest);
+
         return ResponseEntity.ok(customerMapper.toResponse(updated));
     }
 
     @DeleteMapping("/{publicId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> delete(@PathVariable String publicId) {
+    public ResponseEntity<Void> delete(@PathVariable String publicId, HttpServletRequest httpRequest) {
+        Customer customer = customerService.findByPublicId(publicId);
+        String customerName = customer.getName();
+
         customerService.delete(publicId);
+
+        auditLogService.logSuccess("DELETE_CUSTOMER", "Customer", publicId,
+                "Suppression client: " + customerName, httpRequest);
+
         return ResponseEntity.noContent().build();
     }
 
