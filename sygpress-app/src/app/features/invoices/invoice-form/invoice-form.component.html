@@ -12,23 +12,23 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Client *</label>
-          <input
-            type="text"
-            [ngModel]="customerSearch()"
-            (ngModelChange)="customerSearch.set($event)"
-            [ngModelOptions]="{standalone: true}"
+          <ng-select
+            formControlName="customerPublicId"
+            [items]="customers()"
+            bindLabel="name"
+            bindValue="publicId"
             placeholder="Rechercher un client..."
-            class="input mb-2"
-          />
-          <select formControlName="customerPublicId" class="input">
-            <option value="">Selectionner un client</option>
-            @for (customer of filteredCustomers(); track customer.publicId) {
-              <option [value]="customer.publicId">{{ customer.name }} - {{ customer.phoneNumber }}</option>
-            }
-          </select>
-          @if (filteredCustomers().length === 0 && customerSearch()) {
-            <p class="text-sm text-gray-500 mt-1">Aucun client trouvé</p>
-          }
+            [searchable]="true"
+            [clearable]="true"
+            notFoundText="Aucun client trouvé"
+          >
+            <ng-template ng-option-tmp let-item="item">
+              <div class="flex flex-col">
+                <span class="font-medium">{{ item.name }}</span>
+                <span class="text-sm text-gray-500">{{ item.phoneNumber }}</span>
+              </div>
+            </ng-template>
+          </ng-select>
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Date de depot *</label>
