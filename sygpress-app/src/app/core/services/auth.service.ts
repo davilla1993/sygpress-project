@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { LoginRequest, AuthResponse, Role } from '../models';
+import { LoginRequest, AuthResponse, Role, ChangePasswordRequest } from '../models';
 
 @Injectable({
   providedIn: 'root'
@@ -18,6 +18,7 @@ export class AuthService {
   isAuthenticated = computed(() => !!this.currentUserSignal());
   isAdmin = computed(() => this.currentUserSignal()?.role === 'ADMIN');
   userRole = computed(() => this.currentUserSignal()?.role as Role | null);
+  mustChangePassword = computed(() => this.currentUserSignal()?.mustChangePassword || false);
 
   constructor(
     private http: HttpClient,
@@ -66,5 +67,20 @@ export class AuthService {
   hasAnyRole(roles: Role[]): boolean {
     const userRole = this.currentUserSignal()?.role;
     return userRole ? roles.includes(userRole as Role) : false;
+  }
+
+  changePassword(request: ChangePasswordRequest): Observable<void> {
+    return this.http.post<void>(`${environment.apiUrl}/auth/change-password`, request)
+      .pipe(
+        tap(() => {
+          // Mettre à jour le signal pour indiquer que le changement de mot de passe n'est plus requis
+          const currentUser = this.currentUserSignal();
+          if (currentUser) {
+            const updatedUser = { ...currentUser, mustChangePassword: false };
+            this.setUser(updatedUser);
+            this.currentUserSignal.set(updatedUser);
+          }
+        })
+      );
   }
 }

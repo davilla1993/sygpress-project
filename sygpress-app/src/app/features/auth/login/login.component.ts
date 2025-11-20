@@ -55,9 +55,14 @@ export class LoginComponent {
     this.errorMessage.set('');
 
     this.authService.login(this.loginForm.value).subscribe({
-      next: () => {
-        const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
-        this.router.navigateByUrl(returnUrl);
+      next: (response) => {
+        // Vérifier si l'utilisateur doit changer son mot de passe
+        if (response.mustChangePassword) {
+          this.router.navigate(['/change-password']);
+        } else {
+          const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+          this.router.navigateByUrl(returnUrl);
+        }
       },
       error: (error) => {
         this.isLoading.set(false);
