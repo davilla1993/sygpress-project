@@ -213,8 +213,7 @@
     [cancelText]="'Annuler'"
     [type]="'warning'"
     (confirm)="confirmStatusChange()"
-    (cancel)="cancelStatusChange()"
-  ></app-confirm-modal>
+    (cancel)="cancelStatusChange()" />
 
   <!-- Modal de confirmation pour paiement -->
   <app-confirm-modal
@@ -225,6 +224,5 @@
     [cancelText]="'Annuler'"
     [type]="'info'"
     (confirm)="confirmPayment()"
-    (cancel)="cancelPayment()"
-  ></app-confirm-modal>
+    (cancel)="cancelPayment()" />
 </div>
