@@ -57,8 +57,14 @@ public class InvoiceService {
 
     @Transactional(readOnly = true)
     public Invoice findByPublicIdWithDetails(String publicId) {
-        return invoiceRepository.findByPublicIdWithDetails(publicId)
+        // Charger en deux étapes pour éviter le Cartesian product
+        Invoice invoice = invoiceRepository.findByPublicIdWithLines(publicId)
                 .orElseThrow(() -> new ResourceNotFoundException("Facture", "publicId", publicId));
+
+        // Charger les frais supplémentaires
+        invoiceRepository.findByPublicIdWithFees(publicId);
+
+        return invoice;
     }
 
     @Transactional(readOnly = true)
