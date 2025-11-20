@@ -19,6 +19,9 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     Optional<Invoice> findByPublicId(String publicId);
     Optional<Invoice> findByInvoiceNumber(String invoiceNumber);
 
+    @Query("SELECT i FROM Invoice i LEFT JOIN FETCH i.invoiceLines LEFT JOIN FETCH i.additionalFees WHERE i.publicId = :publicId")
+    Optional<Invoice> findByPublicIdWithDetails(@Param("publicId") String publicId);
+
     // Find invoices by customer
     Page<Invoice> findByCustomerPublicIdAndDeletedFalse(String customerPublicId, Pageable pageable);
 

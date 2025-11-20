@@ -115,4 +115,14 @@ export class InvoiceDetailComponent implements OnInit {
   formatMoney(amount: number): string {
     return new Intl.NumberFormat('fr-FR').format(amount) + ' FCFA';
   }
+
+  canEditInvoice(): boolean {
+    const inv = this.invoice();
+    if (!inv) return false;
+
+    const isFullyPaid = inv.invoicePaid || inv.remainingAmount === 0;
+    const isDeliveredOrCollected = inv.processingStatus === 'LIVRE' || inv.processingStatus === 'COLLECTE';
+
+    return !(isDeliveredOrCollected && isFullyPaid);
+  }
 }
