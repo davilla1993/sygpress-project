@@ -180,3 +180,17 @@ body {
 .table tr:hover {
   @apply bg-gray-50;
 }
+
+/* ng-select small variant */
+.ng-select-sm .ng-select-container {
+  min-height: 38px;
+  font-size: 0.875rem;
+}
+
+.ng-select-sm .ng-value {
+  font-size: 0.875rem;
+}
+
+.ng-select-sm .ng-input input {
+  font-size: 0.875rem;
+}
