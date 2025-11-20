@@ -228,4 +228,23 @@ export class InvoiceFormComponent implements OnInit {
   formatMoney(amount: number): string {
     return new Intl.NumberFormat('fr-FR').format(amount) + ' FCFA';
   }
+
+  // Fonction de recherche personnalisée pour ng-select (insensible à la casse)
+  customSearchFn(term: string, item: any): boolean {
+    const searchTerm = term.toLowerCase();
+
+    // Pour le client
+    if (item.name) {
+      return item.name.toLowerCase().includes(searchTerm) ||
+             (item.phoneNumber && item.phoneNumber.includes(searchTerm));
+    }
+
+    // Pour le tarif
+    if (item.article && item.service) {
+      return item.article.name.toLowerCase().includes(searchTerm) ||
+             item.service.name.toLowerCase().includes(searchTerm);
+    }
+
+    return false;
+  }
 }
