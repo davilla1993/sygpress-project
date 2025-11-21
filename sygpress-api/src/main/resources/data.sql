@@ -1,3 +1,0 @@
--- Ce fichier n'est plus utilisé
--- Les migrations de base de données sont désormais gérées par Flyway
--- Voir les fichiers dans src/main/resources/db/migration/
