@@ -1,6 +1,8 @@
+
 -- Insertion des utilisateurs par défaut
 -- Mot de passe Admin: Admin@123
 -- Mot de passe User: User@123
+/*
 
 INSERT INTO users (
     id,
@@ -100,3 +102,4 @@ ALTER SEQUENCE users_seq RESTART WITH 3;
 -- Initialisation de la séquence pour les numéros de facture
 INSERT INTO sequence (id, last_number) VALUES (1, 0)
 ON CONFLICT (id) DO NOTHING;
+*/
