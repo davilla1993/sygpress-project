@@ -9,7 +9,8 @@ WORKDIR /app/frontend
 COPY sygpress-app/package*.json ./
 
 # Install dependencies
-RUN npm ci --production=false
+# Utilise --legacy-peer-deps pour résoudre les conflits de peer dependencies
+RUN npm ci --legacy-peer-deps
 
 # Copy frontend source
 COPY sygpress-app/ ./
