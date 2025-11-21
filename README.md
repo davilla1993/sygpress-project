@@ -215,6 +215,8 @@ Variables obligatoires:
 - `DB_USERNAME` - Utilisateur de la BDD
 - `DB_PASSWORD` - Mot de passe de la BDD
 - `JWT_SECRET` - Secret pour les tokens JWT
+- `APP_BASE_URL` - URL publique de l'application (ex: https://sygpress.votredomaine.com)
+- `APP_SERVER_URL` - URL du serveur API (en monorepo: identique à APP_BASE_URL)
 
 Voir `.env.example` pour la liste complète.
 

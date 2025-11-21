@@ -65,6 +65,18 @@ SERVER_PORT=8080
 SPRING_PROFILES_ACTIVE=prod
 ```
 
+#### URLs de l'Application (OBLIGATOIRE)
+```env
+APP_BASE_URL=https://votre-domaine.com
+APP_SERVER_URL=https://votre-domaine.com
+```
+
+> 📌 **Note** :
+> - `APP_BASE_URL` : URL publique de votre application (sans slash à la fin)
+> - `APP_SERVER_URL` : URL du serveur API (en mode monorepo, identique à APP_BASE_URL)
+> - Ces URLs sont utilisées pour générer des liens absolus (emails, PDFs, redirections, etc.)
+> - En production, utilisez toujours HTTPS
+
 #### Configuration Upload (OPTIONNEL)
 ```env
 FILE_UPLOAD_DIR=/app/uploads
