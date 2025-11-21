@@ -77,7 +77,7 @@ export class ChangePasswordComponent {
     this.authService.changePassword({ oldPassword, newPassword }).subscribe({
       next: () => {
         this.toastService.success('Mot de passe modifié avec succès');
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/app/dashboard']);
       },
       error: (error) => {
         this.isLoading.set(false);

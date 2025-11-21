@@ -30,7 +30,7 @@ export class LoginComponent {
 
     // Redirect if already logged in
     if (this.authService.isAuthenticated()) {
-      this.router.navigate(['/dashboard']);
+      this.router.navigate(['/app/dashboard']);
     }
   }
 
@@ -60,7 +60,7 @@ export class LoginComponent {
         if (response.mustChangePassword) {
           this.router.navigate(['/change-password']);
         } else {
-          const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+          const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/app/dashboard';
           this.router.navigateByUrl(returnUrl);
         }
       },

@@ -1,0 +1,319 @@
+<!-- Hero Section -->
+<section class="relative bg-gradient-to-br from-blue-600 to-blue-800 text-white">
+  <div class="container mx-auto px-4 py-20 md:py-32">
+    <div class="max-w-4xl mx-auto text-center">
+      <h1 class="text-4xl md:text-6xl font-bold mb-6">
+        Simplifiez la Gestion de Votre Pressing
+      </h1>
+      <p class="text-xl md:text-2xl mb-8 text-blue-100">
+        La solution complète pour gérer vos clients, factures, et services en toute simplicité
+      </p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a routerLink="/login" class="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-blue-50 transition">
+          Essayer Gratuitement
+        </a>
+        <a href="#demo" class="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-blue-600 transition">
+          Voir une Démo
+        </a>
+      </div>
+      <p class="mt-6 text-blue-200">
+        ✓ Pas de carte bancaire requise &nbsp;&nbsp;✓ Installation en 5 minutes &nbsp;&nbsp;✓ Support francophone
+      </p>
+    </div>
+  </div>
+
+  <!-- Wave separator -->
+  <div class="absolute bottom-0 left-0 right-0">
+    <svg viewBox="0 0 1440 120" class="w-full h-auto">
+      <path fill="#ffffff" d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"></path>
+    </svg>
+  </div>
+</section>
+
+<!-- Problems & Solutions -->
+<section class="py-16 bg-gray-50">
+  <div class="container mx-auto px-4">
+    <div class="max-w-5xl mx-auto">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          Pourquoi SygPress ?
+        </h2>
+        <p class="text-xl text-gray-600">
+          Résolvez les défis quotidiens de votre pressing
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-8">
+        <div class="bg-white p-6 rounded-lg shadow-md">
+          <div class="flex items-start gap-4">
+            <span class="text-red-500 text-3xl">❌</span>
+            <div>
+              <h3 class="font-bold text-lg text-gray-900 mb-2">Gestion manuelle chronophage</h3>
+              <p class="text-gray-600">Registres papier, calculs à la main, risques d'erreurs...</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-md border-2 border-green-500">
+          <div class="flex items-start gap-4">
+            <span class="text-green-500 text-3xl">✅</span>
+            <div>
+              <h3 class="font-bold text-lg text-gray-900 mb-2">Automatisation complète</h3>
+              <p class="text-gray-600">Tout est numérisé, automatique et sans erreur !</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-md">
+          <div class="flex items-start gap-4">
+            <span class="text-red-500 text-3xl">❌</span>
+            <div>
+              <h3 class="font-bold text-lg text-gray-900 mb-2">Erreurs de facturation</h3>
+              <p class="text-gray-600">Calculs manuels, oublis, pertes financières...</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-md border-2 border-green-500">
+          <div class="flex items-start gap-4">
+            <span class="text-green-500 text-3xl">✅</span>
+            <div>
+              <h3 class="font-bold text-lg text-gray-900 mb-2">Calculs automatiques précis</h3>
+              <p class="text-gray-600">Génération de factures PDF instantanée et exacte.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="py-20 bg-white">
+  <div class="container mx-auto px-4">
+    <div class="text-center mb-16">
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+        Fonctionnalités Complètes
+      </h2>
+      <p class="text-xl text-gray-600">
+        Tout ce dont vous avez besoin pour gérer votre pressing efficacement
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+      @for (feature of features; track feature.title) {
+        <div class="p-6 rounded-xl border border-gray-200 hover:shadow-xl transition-shadow">
+          <div class="text-5xl mb-4">{{ feature.icon }}</div>
+          <h3 class="text-xl font-bold text-gray-900 mb-2">{{ feature.title }}</h3>
+          <p class="text-gray-600">{{ feature.description }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- Screenshot/Demo Section -->
+<section id="demo" class="py-20 bg-gray-50">
+  <div class="container mx-auto px-4">
+    <div class="max-w-5xl mx-auto text-center">
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+        Interface Moderne et Intuitive
+      </h2>
+      <p class="text-xl text-gray-600 mb-12">
+        Découvrez une interface conçue pour la simplicité et l'efficacité
+      </p>
+
+      <div class="bg-white rounded-xl shadow-2xl p-4 md:p-8">
+        <div class="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center">
+          <div class="text-center">
+            <div class="text-6xl mb-4">📊</div>
+            <p class="text-gray-600 text-lg">Aperçu de l'interface</p>
+            <p class="text-sm text-gray-500 mt-2">Tableau de bord intuitif avec toutes vos métriques</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Pricing Section -->
+<section id="pricing" class="py-20 bg-white">
+  <div class="container mx-auto px-4">
+    <div class="text-center mb-16">
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+        Tarifs Simples et Transparents
+      </h2>
+      <p class="text-xl text-gray-600">
+        Choisissez le plan adapté à votre pressing
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+      @for (plan of pricingPlans; track plan.name) {
+        <div class="rounded-xl border-2 p-8 relative"
+             [class.border-blue-500]="plan.highlighted"
+             [class.shadow-2xl]="plan.highlighted"
+             [class.border-gray-200]="!plan.highlighted">
+
+          @if (plan.highlighted) {
+            <div class="absolute -top-4 left-1/2 -translate-x-1/2">
+              <span class="bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                Le plus populaire
+              </span>
+            </div>
+          }
+
+          <h3 class="text-2xl font-bold text-gray-900 mb-2">{{ plan.name }}</h3>
+          <p class="text-gray-600 mb-6">{{ plan.description }}</p>
+
+          <div class="mb-6">
+            <span class="text-4xl font-bold text-gray-900">{{ plan.price }}</span>
+            @if (plan.period) {
+              <span class="text-gray-600">{{ plan.period }}</span>
+            }
+          </div>
+
+          <ul class="space-y-3 mb-8">
+            @for (feature of plan.features; track feature) {
+              <li class="flex items-start gap-2">
+                <span class="text-green-500 mt-1">✓</span>
+                <span class="text-gray-700">{{ feature }}</span>
+              </li>
+            }
+          </ul>
+
+          <a routerLink="/login"
+             class="block w-full text-center py-3 px-6 rounded-lg font-semibold transition"
+             [class.bg-blue-600]="plan.highlighted"
+             [class.text-white]="plan.highlighted"
+             [class.hover:bg-blue-700]="plan.highlighted"
+             [class.bg-gray-100]="!plan.highlighted"
+             [class.text-gray-900]="!plan.highlighted"
+             [class.hover:bg-gray-200]="!plan.highlighted">
+            {{ plan.cta }}
+          </a>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="py-20 bg-gray-50">
+  <div class="container mx-auto px-4">
+    <div class="text-center mb-16">
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+        Ce Que Disent Nos Clients
+      </h2>
+      <p class="text-xl text-gray-600">
+        Rejoignez des centaines de pressings satisfaits
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+      @for (testimonial of testimonials; track testimonial.name) {
+        <div class="bg-white p-6 rounded-xl shadow-md">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="text-4xl">{{ testimonial.avatar }}</div>
+            <div>
+              <div class="font-bold text-gray-900">{{ testimonial.name }}</div>
+              <div class="text-sm text-gray-600">{{ testimonial.role }}</div>
+            </div>
+          </div>
+          <p class="text-gray-700 italic">"{{ testimonial.content }}"</p>
+          <div class="mt-4 text-yellow-500">★★★★★</div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- FAQ Section -->
+<section id="faq" class="py-20 bg-white">
+  <div class="container mx-auto px-4">
+    <div class="max-w-3xl mx-auto">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          Questions Fréquentes
+        </h2>
+        <p class="text-xl text-gray-600">
+          Tout ce que vous devez savoir sur SygPress
+        </p>
+      </div>
+
+      <div class="space-y-6">
+        @for (faq of faqs; track faq.question) {
+          <div class="bg-gray-50 rounded-lg p-6">
+            <h3 class="font-bold text-lg text-gray-900 mb-2">{{ faq.question }}</h3>
+            <p class="text-gray-600">{{ faq.answer }}</p>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Final Section -->
+<section class="py-20 bg-gradient-to-br from-blue-600 to-blue-800 text-white">
+  <div class="container mx-auto px-4 text-center">
+    <h2 class="text-3xl md:text-5xl font-bold mb-6">
+      Prêt à Transformer Votre Pressing ?
+    </h2>
+    <p class="text-xl md:text-2xl mb-8 text-blue-100">
+      Commencez gratuitement dès aujourd'hui. Aucune carte bancaire requise.
+    </p>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+      <a routerLink="/login" class="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-blue-50 transition">
+        Créer un Compte Gratuit
+      </a>
+      <a href="mailto:contact@sygpress.com" class="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-blue-600 transition">
+        Nous Contacter
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-gray-900 text-gray-300 py-12">
+  <div class="container mx-auto px-4">
+    <div class="grid md:grid-cols-4 gap-8 mb-8">
+      <div>
+        <h3 class="text-white font-bold text-xl mb-4">SygPress</h3>
+        <p class="text-gray-400">
+          La solution complète pour la gestion de votre pressing.
+        </p>
+      </div>
+
+      <div>
+        <h4 class="text-white font-semibold mb-4">Produit</h4>
+        <ul class="space-y-2">
+          <li><a href="#features" class="hover:text-white transition">Fonctionnalités</a></li>
+          <li><a href="#pricing" class="hover:text-white transition">Tarifs</a></li>
+          <li><a routerLink="/login" class="hover:text-white transition">Connexion</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="text-white font-semibold mb-4">Entreprise</h4>
+        <ul class="space-y-2">
+          <li><a href="#" class="hover:text-white transition">À propos</a></li>
+          <li><a href="#" class="hover:text-white transition">Contact</a></li>
+          <li><a href="#" class="hover:text-white transition">Support</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="text-white font-semibold mb-4">Légal</h4>
+        <ul class="space-y-2">
+          <li><a href="#" class="hover:text-white transition">CGU</a></li>
+          <li><a href="#" class="hover:text-white transition">Confidentialité</a></li>
+          <li><a href="#" class="hover:text-white transition">Mentions légales</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="border-t border-gray-800 pt-8 text-center text-gray-400">
+      <p>&copy; {{ currentYear }} SygPress. Tous droits réservés.</p>
+    </div>
+  </div>
+</footer>

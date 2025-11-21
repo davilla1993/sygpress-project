@@ -1,0 +1,9 @@
+/* Animations et effets personnalisés */
+:host {
+  display: block;
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
