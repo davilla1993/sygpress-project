@@ -161,8 +161,8 @@
       <!-- User menu -->
       <div class="flex items-center space-x-4">
         <div class="text-right hidden sm:block">
-          <p class="text-sm font-medium text-gray-700">{{ authService.currentUser()?.fullName }}</p>
-          <p class="text-xs text-gray-500">{{ authService.currentUser()?.role }}</p>
+          <p class="text-sm font-medium text-gray-700">{{ authService.currentUser()?.lastName }} {{ authService.currentUser()?.firstName }}</p>
+          <p class="text-xs text-gray-500">{{ authService.currentUser()?.email }}</p>
         </div>
         <button
           (click)="logout()"
