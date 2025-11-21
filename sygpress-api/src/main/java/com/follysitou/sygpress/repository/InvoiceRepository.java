@@ -65,4 +65,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 
     @Query("SELECT i FROM Invoice i WHERE i.deleted = false ORDER BY i.createdAt DESC")
     List<Invoice> findAllOrderByCreatedAtDesc();
+
+    @Query("SELECT i FROM Invoice i WHERE i.deleted = false ORDER BY i.invoiceNumber DESC")
+    Optional<Invoice> findTopByOrderByInvoiceNumberDesc();
 }
