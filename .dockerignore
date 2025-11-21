@@ -1,0 +1,46 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+README.md
+prompt.md
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Frontend (Angular)
+sygpress-app/node_modules
+sygpress-app/dist
+sygpress-app/.angular
+sygpress-app/coverage
+sygpress-app/.vscode
+
+# Backend (Spring Boot)
+sygpress-api/target
+sygpress-api/.mvn/wrapper/maven-wrapper.jar
+sygpress-api/.settings
+sygpress-api/.classpath
+sygpress-api/.project
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment files (should not be in image)
+.env
+.env.local
+.env.*.local
+
+# Uploads (runtime data)
+uploads/
