@@ -51,8 +51,13 @@ public class UserService {
         user.setPhone(request.getPhone());
         user.setRole(request.getRole());
 
-        // Parse fullName to extract firstName and lastName
-        if (request.getFullName() != null && !request.getFullName().isEmpty()) {
+        // Use firstName and lastName directly if provided
+        if (request.getFirstName() != null || request.getLastName() != null) {
+            user.setFirstName(request.getFirstName());
+            user.setLastName(request.getLastName());
+        }
+        // Fallback: parse fullName to extract firstName and lastName (for backward compatibility)
+        else if (request.getFullName() != null && !request.getFullName().isEmpty()) {
             String[] nameParts = request.getFullName().trim().split("\\s+", 2);
             user.setFirstName(nameParts[0]);
             user.setLastName(nameParts.length > 1 ? nameParts[1] : "");
