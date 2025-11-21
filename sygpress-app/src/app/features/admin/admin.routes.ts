@@ -33,5 +33,9 @@ export const ADMIN_ROUTES: Routes = [
   {
     path: 'reports',
     loadComponent: () => import('./reports/reports.component').then(m => m.ReportsComponent)
+  },
+  {
+    path: 'contact-messages',
+    loadComponent: () => import('./contact-messages/contact-messages.component').then(m => m.ContactMessagesComponent)
   }
 ];
