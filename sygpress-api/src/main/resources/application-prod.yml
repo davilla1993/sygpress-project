@@ -1,6 +1,11 @@
 server:
   port: ${SERVER_PORT}
 
+# URLs de l'application
+app:
+  base-url: ${APP_BASE_URL:http://localhost:8080}
+  server-url: ${APP_SERVER_URL:http://localhost:8080}
+
 spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL://${DB_HOST}:${DB_PORT}/${DB_NAME}}
