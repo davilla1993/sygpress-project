@@ -3,12 +3,12 @@ server:
 
 # URLs de l'application
 app:
-  base-url: ${APP_BASE_URL:http://localhost:8080}
-  server-url: ${APP_SERVER_URL:http://localhost:8080}
+  base-url: ${APP_BASE_URL}
+  server-url: ${APP_SERVER_URL}
 
 spring:
   datasource:
-    url: ${SPRING_DATASOURCE_URL://${DB_HOST}:${DB_PORT}/${DB_NAME}}
+    url: ${DATABASE_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
@@ -31,7 +31,7 @@ spring:
 
 jwt:
   secret: ${JWT_SECRET}
-  expiration: ${JWT_EXPIRATION:86400000}
+  expiration: ${JWT_EXPIRATION}
 
 file:
   upload-dir: ${FILE_UPLOAD_DIR:uploads}
