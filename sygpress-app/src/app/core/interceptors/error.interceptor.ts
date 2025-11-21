@@ -15,8 +15,8 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
       if (error.status === 401 && !isLoginRequest) {
         // Déconnecter uniquement si ce n'est pas une tentative de connexion
+        // logout() redirige déjà vers la page d'accueil
         authService.logout();
-        router.navigate(['/login']);
       } else if (error.status === 403) {
         router.navigate(['/unauthorized']);
       }
