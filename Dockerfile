@@ -30,6 +30,9 @@ COPY sygpress-api/pom.xml ./
 COPY sygpress-api/.mvn ./.mvn
 COPY sygpress-api/mvnw ./
 
+# Rendre mvnw exécutable
+RUN chmod +x ./mvnw
+
 # Download dependencies (cached layer)
 RUN ./mvnw dependency:go-offline -B
 
