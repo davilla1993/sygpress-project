@@ -17,6 +17,8 @@ public class UserUpdateRequest {
     @Email(message = "L'email doit être valide")
     private String email;
 
+    private String firstName;
+    private String lastName;
     private String fullName;
     private String phone;
     private Role role;

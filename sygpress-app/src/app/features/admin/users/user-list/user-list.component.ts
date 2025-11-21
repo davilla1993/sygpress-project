@@ -8,6 +8,8 @@ import { ToastService } from '../../../../shared/services/toast.service';
 interface User {
   publicId: string;
   username: string;
+  firstName: string;
+  lastName: string;
   fullName: string;
   email: string;
   role: string;
@@ -32,7 +34,8 @@ export class UserListComponent implements OnInit {
   showEditModal = false;
   showPasswordModal = false;
   newUser = {
-    fullName: '',
+    firstName: '',
+    lastName: '',
     username: '',
     email: '',
     password: '',
@@ -77,7 +80,7 @@ export class UserListComponent implements OnInit {
     this.http.post<User>(`${environment.apiUrl}/admin/users`, this.newUser).subscribe({
       next: () => {
         this.showAddModal = false;
-        this.newUser = { fullName: '', username: '', email: '', password: '', role: 'USER' };
+        this.newUser = { firstName: '', lastName: '', username: '', email: '', password: '', role: 'USER' };
         this.loadUsers();
         this.toastService.success('Utilisateur créé avec succès');
       },
@@ -103,7 +106,8 @@ export class UserListComponent implements OnInit {
   openEditModal(user: User): void {
     this.editUser = {
       publicId: user.publicId,
-      fullName: user.fullName,
+      firstName: user.firstName,
+      lastName: user.lastName,
       username: user.username,
       email: user.email,
       role: user.role
@@ -129,7 +133,8 @@ export class UserListComponent implements OnInit {
   }
 
   resetPassword(user: User): void {
-    if (!confirm(`Êtes-vous sûr de vouloir réinitialiser le mot de passe de "${user.fullName}" ?`)) {
+    const fullName = user.fullName || `${user.firstName} ${user.lastName}`.trim();
+    if (!confirm(`Êtes-vous sûr de vouloir réinitialiser le mot de passe de "${fullName}" ?`)) {
       return;
     }
 
