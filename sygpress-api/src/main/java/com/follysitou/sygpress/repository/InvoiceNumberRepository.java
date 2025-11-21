@@ -1,10 +1,14 @@
 package com.follysitou.sygpress.repository;
 
 import com.follysitou.sygpress.model.Sequence;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 public interface InvoiceNumberRepository extends JpaRepository<Sequence, Long> {
 
@@ -15,4 +19,8 @@ public interface InvoiceNumberRepository extends JpaRepository<Sequence, Long> {
 
     @Query("SELECT s.lastNumber FROM Sequence s WHERE s.id = :id")
     Long findLastNumber(Long id);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT s FROM Sequence s WHERE s.id = :id")
+    Optional<Sequence> findByIdWithLock(Long id);
 }

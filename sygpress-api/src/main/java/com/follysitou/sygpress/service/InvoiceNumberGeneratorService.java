@@ -1,9 +1,10 @@
 package com.follysitou.sygpress.service;
 
+import com.follysitou.sygpress.model.Sequence;
 import com.follysitou.sygpress.repository.InvoiceNumberRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.text.DecimalFormat;
 
@@ -13,17 +14,22 @@ public class InvoiceNumberGeneratorService {
 
     private final InvoiceNumberRepository sequenceRepository;
 
-
     @Transactional
-    public String getNextInvoiceNumber() {
+    public synchronized String getNextInvoiceNumber() {
         final Long sequenceId = 1L;
 
-        sequenceRepository.incrementNextNumber(sequenceId);
-        Long nextNumber = sequenceRepository.findLastNumber(sequenceId);
+        // Utiliser un verrou pessimiste pour éviter les problèmes de concurrence
+        Sequence sequence = sequenceRepository.findByIdWithLock(sequenceId)
+                .orElseGet(() -> {
+                    // Créer la séquence si elle n'existe pas
+                    Sequence newSequence = new Sequence(sequenceId, 0L);
+                    return sequenceRepository.save(newSequence);
+                });
 
-        if (nextNumber == null) {
-            nextNumber = 1L;
-        }
+        // Incrémenter le numéro
+        Long nextNumber = sequence.getLastNumber() + 1;
+        sequence.setLastNumber(nextNumber);
+        sequenceRepository.save(sequence);
 
         // Formater le numéro (Ex: 1 -> "00001")
         DecimalFormat formatter = new DecimalFormat("00000"); // 5 zéros
