@@ -33,6 +33,7 @@ export class UserListComponent implements OnInit {
   showAddModal = false;
   showEditModal = false;
   showPasswordModal = false;
+  showPassword = false;
   newUser = {
     firstName: '',
     lastName: '',
@@ -80,6 +81,7 @@ export class UserListComponent implements OnInit {
     this.http.post<User>(`${environment.apiUrl}/admin/users`, this.newUser).subscribe({
       next: () => {
         this.showAddModal = false;
+        this.showPassword = false;
         this.newUser = { firstName: '', lastName: '', username: '', email: '', password: '', role: 'USER' };
         this.loadUsers();
         this.toastService.success('Utilisateur créé avec succès');
@@ -89,6 +91,10 @@ export class UserListComponent implements OnInit {
         this.toastService.error(message);
       }
     });
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
   }
 
   toggleStatus(user: User): void {
