@@ -1,0 +1,57 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:sygpress_db}}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX_SIZE:10}
+      minimum-idle: ${DB_POOL_MIN_IDLE:5}
+      idle-timeout: ${DB_POOL_IDLE_TIMEOUT:30000}
+  jpa:
+    hibernate:
+      ddl-auto: ${HIBERNATE_DDL_AUTO:update}
+    defer-datasource-initialization: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        show_sql: ${HIBERNATE_SHOW_SQL:false}
+        format_sql: ${HIBERNATE_FORMAT_SQL:false}
+  sql:
+    init:
+      mode: always
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:86400000}
+
+file:
+  upload-dir: ${FILE_UPLOAD_DIR:uploads}
+
+spring.servlet.multipart:
+  max-file-size: ${MAX_FILE_SIZE:10MB}
+  max-request-size: ${MAX_REQUEST_SIZE:10MB}
+
+# Configuration du nettoyage automatique des logs d'audit
+audit:
+  cleanup:
+    enabled: ${AUDIT_CLEANUP_ENABLED:true}
+    retention-days: ${AUDIT_RETENTION_DAYS:30}
+    cron: ${AUDIT_CLEANUP_CRON:0 0 2 1 * ?}
+
+# Configuration Actuator pour monitoring et health checks
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+  health:
+    db:
+      enabled: true

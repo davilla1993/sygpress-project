@@ -85,6 +85,12 @@
 			<artifactId>openpdf</artifactId>
 			<version>1.3.35</version>
 		</dependency>
+
+		<!-- Spring Boot Actuator pour monitoring et health checks -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
