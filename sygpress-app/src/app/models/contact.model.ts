@@ -6,6 +6,7 @@ export interface ContactMessage {
   subject: string;
   message: string;
   createdAt?: Date;
+  readStatus?: boolean;
 }
 
 export interface ContactFormData {
