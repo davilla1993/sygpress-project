@@ -90,7 +90,10 @@ public class CustomerController {
 
     @PutMapping("/{publicId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<CustomerResponse> update(@PathVariable String publicId, @Valid @RequestBody CustomerRequest request, HttpServletRequest httpRequest) {
+    public ResponseEntity<CustomerResponse> update(@PathVariable String publicId,
+                                                   @Valid @RequestBody CustomerRequest request,
+                                                   HttpServletRequest httpRequest) {
+
         Customer customerDetails = new Customer();
         customerDetails.setName(request.getName());
         customerDetails.setPhoneNumber(request.getPhoneNumber());

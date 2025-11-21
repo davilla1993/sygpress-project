@@ -208,7 +208,7 @@
   <app-confirm-modal
     [isOpen]="showStatusConfirmModal"
     [title]="'Confirmer le changement de statut'"
-    [message]="'Êtes-vous sûr de vouloir changer le statut de cette facture à \"' + (pendingStatus ? statusLabels[pendingStatus] : '') + '\" ?'"
+    [message]="'Êtes-vous sûr de vouloir changer le statut de cette facture à ' + (pendingStatus ? ('« ' + statusLabels[pendingStatus] + ' »') : '') + ' ?'"
     [confirmText]="'Confirmer'"
     [cancelText]="'Annuler'"
     [type]="'warning'"
