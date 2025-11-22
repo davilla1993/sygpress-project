@@ -29,8 +29,8 @@ public class ServiceReportResponse {
     public static class ServiceStats {
         private String serviceName;
         private int quantity;
-        private BigDecimal revenue;
-        private BigDecimal percentage;
+        private BigDecimal amount;
+        private double percentage;
     }
 
     @Data
@@ -40,8 +40,8 @@ public class ServiceReportResponse {
     public static class ArticleStats {
         private String articleName;
         private int quantity;
-        private BigDecimal revenue;
-        private BigDecimal percentage;
+        private BigDecimal amount;
+        private double percentage;
     }
 
     @Data
@@ -49,9 +49,9 @@ public class ServiceReportResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class CombinationStats {
-        private String articleName;
         private String serviceName;
+        private String articleName;
         private int quantity;
-        private BigDecimal revenue;
+        private BigDecimal amount;
     }
 }
