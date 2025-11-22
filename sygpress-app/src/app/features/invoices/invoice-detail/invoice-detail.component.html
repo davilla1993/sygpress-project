@@ -172,6 +172,25 @@
             </div>
           </div>
 
+          @if (invoice()!.payments && invoice()!.payments.length > 0) {
+            <div class="mt-4 pt-4 border-t">
+              <p class="text-xs text-gray-500 mb-2">Historique des encaissements</p>
+              <div class="space-y-2 max-h-48 overflow-y-auto">
+                @for (payment of invoice()!.payments; track payment.publicId) {
+                  <div class="bg-gray-50 p-2 rounded">
+                    <div class="flex justify-between items-start">
+                      <div>
+                        <p class="text-sm font-medium text-gray-700">{{ payment.paidBy }}</p>
+                        <p class="text-xs text-gray-500">{{ formatDateTime(payment.paymentDate) }}</p>
+                      </div>
+                      <p class="text-sm font-semibold text-green-600">{{ formatMoney(payment.amount) }}</p>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
           @if (!invoice()!.invoicePaid) {
             <div class="mt-4 pt-4 border-t">
               <label class="block text-sm font-medium text-gray-700 mb-2">Ajouter paiement</label>

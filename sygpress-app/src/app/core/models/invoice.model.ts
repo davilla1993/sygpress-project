@@ -7,6 +7,7 @@ export interface Invoice {
   processingStatus: ProcessingStatus;
   invoiceLines: InvoiceLine[];
   additionalFees: AdditionalFee[];
+  payments?: Payment[];  // Historique des paiements
   discount: number;
   vatRate: number;  // Taux de TVA en %
   amountPaid: number;
@@ -22,6 +23,10 @@ export interface Invoice {
   createdAt: string;
   updatedAt: string;
   createdBy: string;
+
+  // Traçabilité des paiements
+  lastPaymentBy?: string;  // Email/nom de la personne qui a effectué le dernier paiement
+  lastPaymentAt?: string;  // Date et heure du dernier paiement
 }
 
 export interface InvoiceLine {
@@ -94,4 +99,13 @@ export interface AdditionalFeeRequest {
 
 export interface PaymentRequest {
   amount: number;
+}
+
+export interface Payment {
+  publicId: string;
+  amount: number;
+  paymentDate: string;
+  paidBy: string;
+  paymentMethod?: string;
+  notes?: string;
 }

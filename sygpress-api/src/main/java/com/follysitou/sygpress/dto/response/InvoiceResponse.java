@@ -24,6 +24,7 @@ public class InvoiceResponse {
     private CustomerResponse customer;
     private List<InvoiceLineResponse> invoiceLines;
     private List<AdditionalFeesResponse> additionalFees;
+    private List<PaymentResponse> payments;  // Historique complet des paiements
 
     // Champs calculés
     private BigDecimal subtotalAmount; // Montant HT (Hors Taxes)
@@ -32,4 +33,8 @@ public class InvoiceResponse {
 
     private String createdBy;
     private LocalDateTime createdAt;
+
+    // Traçabilité des paiements
+    private String lastPaymentBy;  // Email/nom de la personne qui a effectué le dernier paiement
+    private LocalDateTime lastPaymentAt;  // Date et heure du dernier paiement
 }

@@ -39,6 +39,8 @@ public class InvoiceMapper {
         response.setProcessingStatus(invoice.getProcessingStatus());
         response.setCreatedBy(invoice.getCreatedBy());
         response.setCreatedAt(invoice.getCreatedAt());
+        response.setLastPaymentBy(invoice.getLastPaymentBy());
+        response.setLastPaymentAt(invoice.getLastPaymentAt());
 
         // Calculs des montants
         response.setSubtotalAmount(invoice.calculateSubtotalAmount());  // Montant HT
@@ -58,6 +60,12 @@ public class InvoiceMapper {
         if (invoice.getAdditionalFees() != null) {
             response.setAdditionalFees(invoice.getAdditionalFees().stream()
                     .map(this::additionalFeesToResponse)
+                    .collect(Collectors.toList()));
+        }
+
+        if (invoice.getPayments() != null) {
+            response.setPayments(invoice.getPayments().stream()
+                    .map(this::paymentToResponse)
                     .collect(Collectors.toList()));
         }
 
@@ -83,6 +91,17 @@ public class InvoiceMapper {
         response.setTitle(fees.getTitle());
         response.setDescription(fees.getDescription());
         response.setAmount(fees.getAmount());
+        return response;
+    }
+
+    private PaymentResponse paymentToResponse(Payment payment) {
+        PaymentResponse response = new PaymentResponse();
+        response.setPublicId(payment.getPublicId());
+        response.setAmount(payment.getAmount());
+        response.setPaymentDate(payment.getPaymentDate());
+        response.setPaidBy(payment.getPaidBy());
+        response.setPaymentMethod(payment.getPaymentMethod());
+        response.setNotes(payment.getNotes());
         return response;
     }
 }

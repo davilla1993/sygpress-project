@@ -13,6 +13,7 @@ import com.follysitou.sygpress.model.*;
 import java.util.Map;
 import com.follysitou.sygpress.repository.CustomerRepository;
 import com.follysitou.sygpress.repository.PricingRepository;
+import com.follysitou.sygpress.repository.PaymentRepository;
 import com.follysitou.sygpress.service.InvoicePdfService;
 import com.follysitou.sygpress.service.InvoiceService;
 import com.follysitou.sygpress.service.AuditLogService;
@@ -32,8 +33,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @RestController
 @RequestMapping("/api/invoices")
@@ -45,6 +49,7 @@ public class InvoiceController {
     private final InvoiceMapper invoiceMapper;
     private final CustomerRepository customerRepository;
     private final PricingRepository pricingRepository;
+    private final PaymentRepository paymentRepository;
     private final InvoicePdfService invoicePdfService;
     private final AuditLogService auditLogService;
 
@@ -266,17 +271,34 @@ public class InvoiceController {
             HttpServletRequest httpRequest) {
         Invoice invoice = invoiceService.findByPublicId(publicId);
 
+        // Récupérer l'utilisateur connecté pour la traçabilité
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUser = authentication != null ? authentication.getName() : "SYSTEM";
+
+        // Créer une entrée dans l'historique des paiements
+        Payment payment = new Payment();
+        payment.setAmount(paymentRequest.getAmount());
+        payment.setInvoice(invoice);
+        payment.setPaidBy(currentUser);
+        payment.setPaymentDate(LocalDateTime.now());
+        payment.setPaymentMethod("Espèces"); // Par défaut, peut être modifié ultérieurement
+        invoice.getPayments().add(payment);
+
         // Ajouter le nouveau paiement au montant déjà payé
         BigDecimal currentAmountPaid = invoice.getAmountPaid() != null ? invoice.getAmountPaid() : BigDecimal.ZERO;
         BigDecimal newAmountPaid = currentAmountPaid.add(paymentRequest.getAmount());
         invoice.setAmountPaid(newAmountPaid);
+
+        // Enregistrer qui a effectué ce paiement et quand (pour rétrocompatibilité)
+        invoice.setLastPaymentBy(currentUser);
+        invoice.setLastPaymentAt(LocalDateTime.now());
 
         // Mettre à jour la facture (le service recalculera automatiquement remainingAmount et invoicePaid)
         Invoice updated = invoiceService.updateInvoice(invoice);
 
         auditLogService.logSuccess("ADD_PAYMENT", "Invoice", publicId,
                 "Ajout paiement de " + paymentRequest.getAmount() + " sur facture " + invoice.getInvoiceNumber() +
-                " (Total payé: " + newAmountPaid + ")", httpRequest);
+                " (Total payé: " + newAmountPaid + ") par " + currentUser, httpRequest);
 
         return ResponseEntity.ok(invoiceMapper.toResponse(updated));
     }

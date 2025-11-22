@@ -9,6 +9,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,6 +49,10 @@ public class Invoice extends BaseEntity {
 
     private boolean invoicePaid;
 
+    // Traçabilité des paiements
+    private String lastPaymentBy;  // Email/nom de la personne qui a effectué le dernier paiement
+    private LocalDateTime lastPaymentAt;  // Date et heure du dernier paiement
+
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private ProcessingStatus processingStatus = ProcessingStatus.DEPOT;
@@ -61,6 +66,9 @@ public class Invoice extends BaseEntity {
 
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AdditionalFees> additionalFees = new ArrayList<>();
+
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Payment> payments = new ArrayList<>();
 
     // Méthode utilitaire pour calculer le montant HT (Hors Taxes)
     public BigDecimal calculateSubtotalAmount() {
