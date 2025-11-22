@@ -3,6 +3,7 @@ package com.follysitou.sygpress.service;
 import com.follysitou.sygpress.dto.response.CustomerReportResponse;
 import com.follysitou.sygpress.dto.response.InvoiceStatusReportResponse;
 import com.follysitou.sygpress.dto.response.SalesReportResponse;
+import com.follysitou.sygpress.dto.response.UserReportResponse;
 import com.follysitou.sygpress.model.Company;
 import com.lowagie.text.*;
 import com.lowagie.text.pdf.*;
@@ -216,6 +217,59 @@ public class ReportPdfService {
                 }
 
                 document.add(unpaidTable);
+            }
+
+        } catch (DocumentException e) {
+            throw new IOException("Erreur lors de la génération du PDF", e);
+        } finally {
+            document.close();
+        }
+
+        return outputStream.toByteArray();
+    }
+
+    public byte[] generateUserReportPdf(UserReportResponse report) throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        Document document = new Document(PageSize.A4, 36, 36, 36, 36);
+
+        try {
+            PdfWriter.getInstance(document, outputStream);
+            document.open();
+
+            addReportHeader(document, "Rapport par Utilisateur", report.getStartDate().format(DATE_FORMATTER), report.getEndDate().format(DATE_FORMATTER));
+
+            // Summary table
+            PdfPTable summaryTable = new PdfPTable(2);
+            summaryTable.setWidthPercentage(100);
+            summaryTable.setSpacingBefore(20);
+
+            addSummaryRow(summaryTable, "Nombre d'utilisateurs actifs", String.valueOf(report.getTotalUsers()));
+            addSummaryRow(summaryTable, "Chiffre d'affaires total", formatMoney(report.getTotalRevenue()));
+
+            document.add(summaryTable);
+
+            // User stats table
+            if (report.getUserStats() != null && !report.getUserStats().isEmpty()) {
+                document.add(new Paragraph("\n"));
+                addSectionTitle(document, "Statistiques par utilisateur");
+
+                PdfPTable userTable = new PdfPTable(7);
+                userTable.setWidthPercentage(100);
+                userTable.setWidths(new float[]{2.5f, 1.5f, 1f, 1.5f, 1.5f, 1.5f, 1f});
+
+                addTableHeader(userTable, "Utilisateur", "Rôle", "Factures", "CA Total", "Payé", "Impayé", "%");
+
+                for (UserReportResponse.UserStats user : report.getUserStats()) {
+                    addTableCell(userTable, user.getUserName(), Element.ALIGN_LEFT);
+                    addTableCell(userTable, user.getUserRole(), Element.ALIGN_CENTER);
+                    addTableCell(userTable, String.valueOf(user.getInvoiceCount()), Element.ALIGN_CENTER);
+                    addTableCell(userTable, formatMoney(user.getTotalRevenue()), Element.ALIGN_RIGHT);
+                    addTableCell(userTable, formatMoney(user.getTotalPaid()), Element.ALIGN_RIGHT);
+                    addTableCell(userTable, formatMoney(user.getTotalUnpaid()), Element.ALIGN_RIGHT);
+                    addTableCell(userTable, String.format("%.1f%%", user.getPercentage()), Element.ALIGN_CENTER);
+                }
+
+                document.add(userTable);
             }
 
         } catch (DocumentException e) {

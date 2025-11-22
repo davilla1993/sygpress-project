@@ -3,10 +3,13 @@ package com.follysitou.sygpress.service;
 import com.follysitou.sygpress.dto.response.CustomerReportResponse;
 import com.follysitou.sygpress.dto.response.InvoiceStatusReportResponse;
 import com.follysitou.sygpress.dto.response.SalesReportResponse;
+import com.follysitou.sygpress.dto.response.UserReportResponse;
 import com.follysitou.sygpress.enums.ProcessingStatus;
 import com.follysitou.sygpress.model.Invoice;
 import com.follysitou.sygpress.model.InvoiceLine;
+import com.follysitou.sygpress.model.User;
 import com.follysitou.sygpress.repository.InvoiceRepository;
+import com.follysitou.sygpress.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +26,7 @@ import java.util.stream.Collectors;
 public class ReportService {
 
     private final InvoiceRepository invoiceRepository;
+    private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     public SalesReportResponse generateSalesReport(LocalDate startDate, LocalDate endDate) {
@@ -205,5 +209,77 @@ public class ReportService {
                 .totalAmount(total)
                 .remainingAmount(remaining)
                 .build());
+    }
+
+    @Transactional(readOnly = true)
+    public UserReportResponse generateUserReport(LocalDate startDate, LocalDate endDate) {
+        List<Invoice> invoices = invoiceRepository.findByDepositDateBetweenAndDeletedFalse(startDate, endDate);
+
+        // Calculer le revenu total de la période pour les pourcentages
+        BigDecimal totalRevenue = invoices.stream()
+                .map(Invoice::calculateTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Regrouper les factures par utilisateur créateur
+        Map<String, List<Invoice>> invoicesByUser = invoices.stream()
+                .filter(i -> i.getCreatedBy() != null && !i.getCreatedBy().equals("SYSTEM"))
+                .collect(Collectors.groupingBy(Invoice::getCreatedBy));
+
+        // Créer un Map pour rechercher les utilisateurs par email
+        Map<String, User> usersByEmail = new HashMap<>();
+        invoicesByUser.keySet().forEach(email -> {
+            userRepository.findByEmail(email).ifPresent(user -> usersByEmail.put(email, user));
+        });
+
+        // Calculer les statistiques pour chaque utilisateur
+        List<UserReportResponse.UserStats> userStats = invoicesByUser.entrySet().stream()
+                .map(entry -> {
+                    String userEmail = entry.getKey();
+                    List<Invoice> userInvoices = entry.getValue();
+                    User user = usersByEmail.get(userEmail);
+
+                    BigDecimal userTotalRevenue = userInvoices.stream()
+                            .map(Invoice::calculateTotalAmount)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                    BigDecimal userTotalPaid = userInvoices.stream()
+                            .map(i -> i.getAmountPaid() != null ? i.getAmountPaid() : BigDecimal.ZERO)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                    BigDecimal userTotalUnpaid = userInvoices.stream()
+                            .map(i -> i.getRemainingAmount() != null ? i.getRemainingAmount() : BigDecimal.ZERO)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                    BigDecimal averageAmount = userInvoices.isEmpty() ? BigDecimal.ZERO :
+                            userTotalRevenue.divide(BigDecimal.valueOf(userInvoices.size()), 2, RoundingMode.HALF_UP);
+
+                    double percentage = totalRevenue.compareTo(BigDecimal.ZERO) == 0 ? 0.0 :
+                            userTotalRevenue.divide(totalRevenue, 4, RoundingMode.HALF_UP)
+                                    .multiply(BigDecimal.valueOf(100))
+                                    .doubleValue();
+
+                    return UserReportResponse.UserStats.builder()
+                            .userId(user != null ? user.getId() : null)
+                            .userName(user != null ? user.getLastName() + " " + user.getFirstName() : userEmail)
+                            .userEmail(userEmail)
+                            .userRole(user != null ? user.getRole().name() : "UNKNOWN")
+                            .invoiceCount(userInvoices.size())
+                            .totalRevenue(userTotalRevenue)
+                            .totalPaid(userTotalPaid)
+                            .totalUnpaid(userTotalUnpaid)
+                            .averageInvoiceAmount(averageAmount)
+                            .percentage(percentage)
+                            .build();
+                })
+                .sorted((a, b) -> b.getTotalRevenue().compareTo(a.getTotalRevenue()))
+                .collect(Collectors.toList());
+
+        return UserReportResponse.builder()
+                .startDate(startDate)
+                .endDate(endDate)
+                .totalUsers(userStats.size())
+                .totalRevenue(totalRevenue)
+                .userStats(userStats)
+                .build();
     }
 }
