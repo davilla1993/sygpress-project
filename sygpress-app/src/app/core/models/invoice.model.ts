@@ -22,6 +22,10 @@ export interface Invoice {
   createdAt: string;
   updatedAt: string;
   createdBy: string;
+
+  // Traçabilité des paiements
+  lastPaymentBy?: string;  // Email/nom de la personne qui a effectué le dernier paiement
+  lastPaymentAt?: string;  // Date et heure du dernier paiement
 }
 
 export interface InvoiceLine {

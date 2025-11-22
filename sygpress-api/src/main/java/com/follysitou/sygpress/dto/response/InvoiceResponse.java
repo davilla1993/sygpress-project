@@ -32,4 +32,8 @@ public class InvoiceResponse {
 
     private String createdBy;
     private LocalDateTime createdAt;
+
+    // Traçabilité des paiements
+    private String lastPaymentBy;  // Email/nom de la personne qui a effectué le dernier paiement
+    private LocalDateTime lastPaymentAt;  // Date et heure du dernier paiement
 }

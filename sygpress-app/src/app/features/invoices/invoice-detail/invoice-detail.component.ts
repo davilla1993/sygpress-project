@@ -171,6 +171,14 @@ export class InvoiceDetailComponent implements OnInit {
     return new Date(date).toLocaleDateString('fr-FR');
   }
 
+  formatDateTime(dateTime: string): string {
+    const date = new Date(dateTime);
+    return date.toLocaleDateString('fr-FR') + ' à ' + date.toLocaleTimeString('fr-FR', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
   formatMoney(amount: number): string {
     return new Intl.NumberFormat('fr-FR').format(amount) + ' FCFA';
   }

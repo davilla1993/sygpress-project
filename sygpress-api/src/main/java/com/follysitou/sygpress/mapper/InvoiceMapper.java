@@ -39,6 +39,8 @@ public class InvoiceMapper {
         response.setProcessingStatus(invoice.getProcessingStatus());
         response.setCreatedBy(invoice.getCreatedBy());
         response.setCreatedAt(invoice.getCreatedAt());
+        response.setLastPaymentBy(invoice.getLastPaymentBy());
+        response.setLastPaymentAt(invoice.getLastPaymentAt());
 
         // Calculs des montants
         response.setSubtotalAmount(invoice.calculateSubtotalAmount());  // Montant HT
