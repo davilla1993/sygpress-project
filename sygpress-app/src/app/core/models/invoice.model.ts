@@ -41,7 +41,7 @@ export interface Pricing {
 export interface Article {
   publicId: string;
   name: string;
-  category: Category;
+  category?: Category;
 }
 
 export interface Category {
