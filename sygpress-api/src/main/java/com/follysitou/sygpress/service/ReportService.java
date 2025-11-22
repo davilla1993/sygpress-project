@@ -3,6 +3,7 @@ package com.follysitou.sygpress.service;
 import com.follysitou.sygpress.dto.response.CustomerReportResponse;
 import com.follysitou.sygpress.dto.response.InvoiceStatusReportResponse;
 import com.follysitou.sygpress.dto.response.SalesReportResponse;
+import com.follysitou.sygpress.dto.response.ServiceReportResponse;
 import com.follysitou.sygpress.enums.ProcessingStatus;
 import com.follysitou.sygpress.model.Invoice;
 import com.follysitou.sygpress.model.InvoiceLine;
@@ -205,5 +206,107 @@ public class ReportService {
                 .totalAmount(total)
                 .remainingAmount(remaining)
                 .build());
+    }
+
+    @Transactional(readOnly = true)
+    public ServiceReportResponse generateServiceReport(LocalDate startDate, LocalDate endDate) {
+        List<Invoice> invoices = invoiceRepository.findByDepositDateBetweenAndDeletedFalse(startDate, endDate);
+
+        BigDecimal totalRevenue = BigDecimal.ZERO;
+        Map<String, ServiceReportResponse.ServiceStats> serviceMap = new HashMap<>();
+        Map<String, ServiceReportResponse.ArticleStats> articleMap = new HashMap<>();
+        Map<String, ServiceReportResponse.CombinationStats> combinationMap = new HashMap<>();
+
+        // Analyse de toutes les lignes de facture
+        for (Invoice invoice : invoices) {
+            for (InvoiceLine line : invoice.getInvoiceLines()) {
+                BigDecimal lineAmount = line.getAmount();
+                totalRevenue = totalRevenue.add(lineAmount);
+
+                String serviceName = line.getPricing().getService().getName();
+                String articleName = line.getPricing().getArticle().getName();
+                int quantity = line.getQuantity();
+
+                // Statistiques par service
+                ServiceReportResponse.ServiceStats serviceStats = serviceMap.getOrDefault(serviceName,
+                        ServiceReportResponse.ServiceStats.builder()
+                                .serviceName(serviceName)
+                                .quantity(0)
+                                .revenue(BigDecimal.ZERO)
+                                .percentage(BigDecimal.ZERO)
+                                .build());
+                serviceStats.setQuantity(serviceStats.getQuantity() + quantity);
+                serviceStats.setRevenue(serviceStats.getRevenue().add(lineAmount));
+                serviceMap.put(serviceName, serviceStats);
+
+                // Statistiques par article
+                ServiceReportResponse.ArticleStats articleStats = articleMap.getOrDefault(articleName,
+                        ServiceReportResponse.ArticleStats.builder()
+                                .articleName(articleName)
+                                .quantity(0)
+                                .revenue(BigDecimal.ZERO)
+                                .percentage(BigDecimal.ZERO)
+                                .build());
+                articleStats.setQuantity(articleStats.getQuantity() + quantity);
+                articleStats.setRevenue(articleStats.getRevenue().add(lineAmount));
+                articleMap.put(articleName, articleStats);
+
+                // Statistiques par combinaison article + service
+                String combinationKey = articleName + "|" + serviceName;
+                ServiceReportResponse.CombinationStats combinationStats = combinationMap.getOrDefault(combinationKey,
+                        ServiceReportResponse.CombinationStats.builder()
+                                .articleName(articleName)
+                                .serviceName(serviceName)
+                                .quantity(0)
+                                .revenue(BigDecimal.ZERO)
+                                .build());
+                combinationStats.setQuantity(combinationStats.getQuantity() + quantity);
+                combinationStats.setRevenue(combinationStats.getRevenue().add(lineAmount));
+                combinationMap.put(combinationKey, combinationStats);
+            }
+        }
+
+        // Calculer les pourcentages
+        final BigDecimal finalTotalRevenue = totalRevenue.compareTo(BigDecimal.ZERO) > 0 ? totalRevenue : BigDecimal.ONE;
+
+        // Pourcentages par service
+        serviceMap.values().forEach(stats -> {
+            BigDecimal percentage = stats.getRevenue()
+                    .multiply(BigDecimal.valueOf(100))
+                    .divide(finalTotalRevenue, 2, RoundingMode.HALF_UP);
+            stats.setPercentage(percentage);
+        });
+
+        // Pourcentages par article
+        articleMap.values().forEach(stats -> {
+            BigDecimal percentage = stats.getRevenue()
+                    .multiply(BigDecimal.valueOf(100))
+                    .divide(finalTotalRevenue, 2, RoundingMode.HALF_UP);
+            stats.setPercentage(percentage);
+        });
+
+        // Trier les résultats
+        List<ServiceReportResponse.ServiceStats> sortedServices = serviceMap.values().stream()
+                .sorted((a, b) -> b.getRevenue().compareTo(a.getRevenue()))
+                .collect(Collectors.toList());
+
+        List<ServiceReportResponse.ArticleStats> sortedArticles = articleMap.values().stream()
+                .sorted((a, b) -> b.getRevenue().compareTo(a.getRevenue()))
+                .collect(Collectors.toList());
+
+        List<ServiceReportResponse.CombinationStats> sortedCombinations = combinationMap.values().stream()
+                .sorted((a, b) -> b.getRevenue().compareTo(a.getRevenue()))
+                .limit(20) // Top 20 combinaisons
+                .collect(Collectors.toList());
+
+        return ServiceReportResponse.builder()
+                .startDate(startDate)
+                .endDate(endDate)
+                .totalServices(sortedServices.size())
+                .totalRevenue(totalRevenue)
+                .serviceStats(sortedServices)
+                .articleStats(sortedArticles)
+                .combinationStats(sortedCombinations)
+                .build();
     }
 }

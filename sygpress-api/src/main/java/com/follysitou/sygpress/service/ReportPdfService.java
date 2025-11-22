@@ -3,6 +3,7 @@ package com.follysitou.sygpress.service;
 import com.follysitou.sygpress.dto.response.CustomerReportResponse;
 import com.follysitou.sygpress.dto.response.InvoiceStatusReportResponse;
 import com.follysitou.sygpress.dto.response.SalesReportResponse;
+import com.follysitou.sygpress.dto.response.ServiceReportResponse;
 import com.follysitou.sygpress.model.Company;
 import com.lowagie.text.*;
 import com.lowagie.text.pdf.*;
@@ -216,6 +217,98 @@ public class ReportPdfService {
                 }
 
                 document.add(unpaidTable);
+            }
+
+        } catch (DocumentException e) {
+            throw new IOException("Erreur lors de la génération du PDF", e);
+        } finally {
+            document.close();
+        }
+
+        return outputStream.toByteArray();
+    }
+
+    public byte[] generateServiceReportPdf(ServiceReportResponse report) throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        Document document = new Document(PageSize.A4, 36, 36, 36, 36);
+
+        try {
+            PdfWriter.getInstance(document, outputStream);
+            document.open();
+
+            addReportHeader(document, "Rapport des Services", report.getStartDate().format(DATE_FORMATTER), report.getEndDate().format(DATE_FORMATTER));
+
+            // Summary
+            PdfPTable summaryTable = new PdfPTable(2);
+            summaryTable.setWidthPercentage(100);
+            summaryTable.setSpacingBefore(20);
+
+            addSummaryRow(summaryTable, "Nombre de services", String.valueOf(report.getTotalServices()));
+            addSummaryRow(summaryTable, "Chiffre d'affaires total", formatMoney(report.getTotalRevenue()));
+
+            document.add(summaryTable);
+
+            // Service stats
+            if (report.getServiceStats() != null && !report.getServiceStats().isEmpty()) {
+                document.add(new Paragraph("\n"));
+                addSectionTitle(document, "Statistiques par service");
+
+                PdfPTable serviceTable = new PdfPTable(4);
+                serviceTable.setWidthPercentage(100);
+                serviceTable.setWidths(new float[]{3, 1, 2, 1});
+
+                addTableHeader(serviceTable, "Service", "Quantité", "Chiffre d'affaires", "%");
+
+                for (ServiceReportResponse.ServiceStats service : report.getServiceStats()) {
+                    addTableCell(serviceTable, service.getServiceName(), Element.ALIGN_LEFT);
+                    addTableCell(serviceTable, String.valueOf(service.getQuantity()), Element.ALIGN_CENTER);
+                    addTableCell(serviceTable, formatMoney(service.getRevenue()), Element.ALIGN_RIGHT);
+                    addTableCell(serviceTable, service.getPercentage() + "%", Element.ALIGN_RIGHT);
+                }
+
+                document.add(serviceTable);
+            }
+
+            // Article stats
+            if (report.getArticleStats() != null && !report.getArticleStats().isEmpty()) {
+                document.add(new Paragraph("\n"));
+                addSectionTitle(document, "Statistiques par article");
+
+                PdfPTable articleTable = new PdfPTable(4);
+                articleTable.setWidthPercentage(100);
+                articleTable.setWidths(new float[]{3, 1, 2, 1});
+
+                addTableHeader(articleTable, "Article", "Quantité", "Chiffre d'affaires", "%");
+
+                for (ServiceReportResponse.ArticleStats article : report.getArticleStats()) {
+                    addTableCell(articleTable, article.getArticleName(), Element.ALIGN_LEFT);
+                    addTableCell(articleTable, String.valueOf(article.getQuantity()), Element.ALIGN_CENTER);
+                    addTableCell(articleTable, formatMoney(article.getRevenue()), Element.ALIGN_RIGHT);
+                    addTableCell(articleTable, article.getPercentage() + "%", Element.ALIGN_RIGHT);
+                }
+
+                document.add(articleTable);
+            }
+
+            // Top combinations
+            if (report.getCombinationStats() != null && !report.getCombinationStats().isEmpty()) {
+                document.add(new Paragraph("\n"));
+                addSectionTitle(document, "Top 20 combinaisons Article + Service");
+
+                PdfPTable combinationTable = new PdfPTable(4);
+                combinationTable.setWidthPercentage(100);
+                combinationTable.setWidths(new float[]{2, 2, 1, 2});
+
+                addTableHeader(combinationTable, "Article", "Service", "Quantité", "Chiffre d'affaires");
+
+                for (ServiceReportResponse.CombinationStats combination : report.getCombinationStats()) {
+                    addTableCell(combinationTable, combination.getArticleName(), Element.ALIGN_LEFT);
+                    addTableCell(combinationTable, combination.getServiceName(), Element.ALIGN_LEFT);
+                    addTableCell(combinationTable, String.valueOf(combination.getQuantity()), Element.ALIGN_CENTER);
+                    addTableCell(combinationTable, formatMoney(combination.getRevenue()), Element.ALIGN_RIGHT);
+                }
+
+                document.add(combinationTable);
             }
 
         } catch (DocumentException e) {
