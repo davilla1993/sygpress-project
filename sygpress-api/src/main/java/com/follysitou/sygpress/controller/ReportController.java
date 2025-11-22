@@ -3,6 +3,7 @@ package com.follysitou.sygpress.controller;
 import com.follysitou.sygpress.dto.response.CustomerReportResponse;
 import com.follysitou.sygpress.dto.response.InvoiceStatusReportResponse;
 import com.follysitou.sygpress.dto.response.SalesReportResponse;
+import com.follysitou.sygpress.dto.response.ServiceReportResponse;
 import com.follysitou.sygpress.dto.response.UserReportResponse;
 import com.follysitou.sygpress.model.User;
 import com.follysitou.sygpress.repository.UserRepository;
@@ -102,6 +103,42 @@ public class ReportController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDispositionFormData("attachment", "rapport-clients-" + startDate + "-" + endDate + ".pdf");
+
+        return new ResponseEntity<>(pdfContent, headers, HttpStatus.OK);
+    }
+
+    // Service Report endpoints
+    @GetMapping("/services")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Générer le rapport des services")
+    public ResponseEntity<ServiceReportResponse> getServiceReport(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) String userEmail) {
+        return ResponseEntity.ok(reportService.generateServiceReport(startDate, endDate, userEmail));
+    }
+
+    @GetMapping("/services/today")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Générer le rapport des services d'aujourd'hui")
+    public ResponseEntity<ServiceReportResponse> getServiceReportToday() {
+        LocalDate today = LocalDate.now();
+        return ResponseEntity.ok(reportService.generateServiceReport(today, today));
+    }
+
+    @GetMapping("/services/pdf")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Télécharger le rapport des services en PDF")
+    public ResponseEntity<byte[]> downloadServiceReportPdf(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) String userEmail) throws IOException {
+        ServiceReportResponse report = reportService.generateServiceReport(startDate, endDate, userEmail);
+        byte[] pdfContent = reportPdfService.generateServiceReportPdf(report);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", "rapport-services-" + startDate + "-" + endDate + ".pdf");
 
         return new ResponseEntity<>(pdfContent, headers, HttpStatus.OK);
     }

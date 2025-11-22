@@ -3,6 +3,7 @@ package com.follysitou.sygpress.service;
 import com.follysitou.sygpress.dto.response.CustomerReportResponse;
 import com.follysitou.sygpress.dto.response.InvoiceStatusReportResponse;
 import com.follysitou.sygpress.dto.response.SalesReportResponse;
+import com.follysitou.sygpress.dto.response.ServiceReportResponse;
 import com.follysitou.sygpress.dto.response.UserReportResponse;
 import com.follysitou.sygpress.enums.ProcessingStatus;
 import com.follysitou.sygpress.model.Invoice;
@@ -314,6 +315,129 @@ public class ReportService {
                 .totalUsers(userStats.size())
                 .totalRevenue(totalRevenue)
                 .userStats(userStats)
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public ServiceReportResponse generateServiceReport(LocalDate startDate, LocalDate endDate) {
+        return generateServiceReport(startDate, endDate, null);
+    }
+
+    @Transactional(readOnly = true)
+    public ServiceReportResponse generateServiceReport(LocalDate startDate, LocalDate endDate, String userEmail) {
+        List<Invoice> invoices = invoiceRepository.findByDepositDateBetweenAndDeletedFalse(startDate, endDate);
+
+        // Filtrer par utilisateur si spécifié
+        if (userEmail != null && !userEmail.isEmpty()) {
+            invoices = invoices.stream()
+                    .filter(i -> userEmail.equals(i.getCreatedBy()))
+                    .collect(Collectors.toList());
+        }
+
+        // Collecter toutes les lignes de facture
+        List<InvoiceLine> allLines = invoices.stream()
+                .flatMap(i -> i.getInvoiceLines().stream())
+                .collect(Collectors.toList());
+
+        // Calculer le revenu total
+        BigDecimal totalRevenue = allLines.stream()
+                .map(InvoiceLine::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Statistiques par service
+        Map<String, ServiceReportResponse.ServiceStats> serviceMap = new HashMap<>();
+        for (InvoiceLine line : allLines) {
+            String serviceName = line.getPricing().getService().getName();
+            ServiceReportResponse.ServiceStats stats = serviceMap.getOrDefault(serviceName,
+                    ServiceReportResponse.ServiceStats.builder()
+                            .serviceName(serviceName)
+                            .quantity(0)
+                            .amount(BigDecimal.ZERO)
+                            .percentage(0.0)
+                            .build());
+            stats.setQuantity(stats.getQuantity() + line.getQuantity());
+            stats.setAmount(stats.getAmount().add(line.getAmount()));
+            serviceMap.put(serviceName, stats);
+        }
+
+        // Calculer les pourcentages pour les services
+        serviceMap.values().forEach(stats -> {
+            if (totalRevenue.compareTo(BigDecimal.ZERO) > 0) {
+                double percentage = stats.getAmount()
+                        .divide(totalRevenue, 4, RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(100))
+                        .doubleValue();
+                stats.setPercentage(percentage);
+            }
+        });
+
+        List<ServiceReportResponse.ServiceStats> serviceStats = serviceMap.values().stream()
+                .sorted((a, b) -> b.getAmount().compareTo(a.getAmount()))
+                .collect(Collectors.toList());
+
+        // Statistiques par article
+        Map<String, ServiceReportResponse.ArticleStats> articleMap = new HashMap<>();
+        for (InvoiceLine line : allLines) {
+            String articleName = line.getPricing().getArticle().getName();
+            ServiceReportResponse.ArticleStats stats = articleMap.getOrDefault(articleName,
+                    ServiceReportResponse.ArticleStats.builder()
+                            .articleName(articleName)
+                            .quantity(0)
+                            .amount(BigDecimal.ZERO)
+                            .percentage(0.0)
+                            .build());
+            stats.setQuantity(stats.getQuantity() + line.getQuantity());
+            stats.setAmount(stats.getAmount().add(line.getAmount()));
+            articleMap.put(articleName, stats);
+        }
+
+        // Calculer les pourcentages pour les articles
+        articleMap.values().forEach(stats -> {
+            if (totalRevenue.compareTo(BigDecimal.ZERO) > 0) {
+                double percentage = stats.getAmount()
+                        .divide(totalRevenue, 4, RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(100))
+                        .doubleValue();
+                stats.setPercentage(percentage);
+            }
+        });
+
+        List<ServiceReportResponse.ArticleStats> articleStats = articleMap.values().stream()
+                .sorted((a, b) -> b.getAmount().compareTo(a.getAmount()))
+                .collect(Collectors.toList());
+
+        // Statistiques par combinaison service + article
+        Map<String, ServiceReportResponse.CombinationStats> combinationMap = new HashMap<>();
+        for (InvoiceLine line : allLines) {
+            String serviceName = line.getPricing().getService().getName();
+            String articleName = line.getPricing().getArticle().getName();
+            String key = serviceName + "|" + articleName;
+
+            ServiceReportResponse.CombinationStats stats = combinationMap.getOrDefault(key,
+                    ServiceReportResponse.CombinationStats.builder()
+                            .serviceName(serviceName)
+                            .articleName(articleName)
+                            .quantity(0)
+                            .amount(BigDecimal.ZERO)
+                            .build());
+            stats.setQuantity(stats.getQuantity() + line.getQuantity());
+            stats.setAmount(stats.getAmount().add(line.getAmount()));
+            combinationMap.put(key, stats);
+        }
+
+        List<ServiceReportResponse.CombinationStats> combinationStats = combinationMap.values().stream()
+                .sorted((a, b) -> b.getAmount().compareTo(a.getAmount()))
+                .limit(20)
+                .collect(Collectors.toList());
+
+        return ServiceReportResponse.builder()
+                .startDate(startDate)
+                .endDate(endDate)
+                .totalServices(serviceMap.size())
+                .totalRevenue(totalRevenue)
+                .serviceStats(serviceStats)
+                .articleStats(articleStats)
+                .combinationStats(combinationStats)
                 .build();
     }
 }
