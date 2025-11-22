@@ -69,12 +69,6 @@ interface UserReport {
   }[];
 }
 
-interface UserInfo {
-  email: string;
-  name: string;
-  role: string;
-}
-
 @Component({
   selector: 'app-reports',
   standalone: true,
@@ -86,19 +80,16 @@ export class ReportsComponent {
   activeReport: 'sales' | 'customers' | 'services' | 'users' = 'sales';
   startDate = this.getFirstDayOfMonth();
   endDate = this.getToday();
-  selectedUserEmail = '';
   isLoading = signal(false);
   salesReport = signal<SalesReport | null>(null);
   customerReport = signal<CustomerReport | null>(null);
   serviceReport = signal<ServiceReport | null>(null);
   userReport = signal<UserReport | null>(null);
-  availableUsers = signal<UserInfo[]>([]);
 
   constructor(
     private http: HttpClient,
     private toastService: ToastService
   ) {
-    this.loadUsers();
     this.loadSalesReport();
   }
 
@@ -180,21 +171,6 @@ export class ReportsComponent {
     });
   }
 
-  loadUsers(): void {
-    this.http.get<UserInfo[]>(`${environment.apiUrl}/reports/users/list`).subscribe({
-      next: (data) => {
-        this.availableUsers.set(data);
-      },
-      error: (error) => {
-        console.error('Erreur lors du chargement des utilisateurs:', error);
-      }
-    });
-  }
-
-  onUserChange(): void {
-    this.onDateChange();
-  }
-
   onDateChange(): void {
     if (this.activeReport === 'sales') {
       this.loadSalesReport();
@@ -220,15 +196,9 @@ export class ReportsComponent {
   }
 
   private getDateParams(): HttpParams {
-    let params = new HttpParams()
+    return new HttpParams()
       .set('startDate', this.startDate)
       .set('endDate', this.endDate);
-
-    if (this.selectedUserEmail) {
-      params = params.set('userEmail', this.selectedUserEmail);
-    }
-
-    return params;
   }
 
   private getToday(): string {
