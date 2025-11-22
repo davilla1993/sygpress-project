@@ -27,12 +27,16 @@ public class InvoicePdfService {
     private static final Color SECONDARY_COLOR = new Color(52, 152, 219);
     private static final Color LIGHT_GRAY = new Color(245, 245, 245);
 
+    // Format ticket de caisse : 80mm de large (environ 226 points), hauteur variable
+    private static final Rectangle TICKET_SIZE = new Rectangle(226, 842); // 80mm x 297mm max
+
     public byte[] generateInvoicePdf(String invoicePublicId) throws IOException {
         Invoice invoice = invoiceService.findByPublicId(invoicePublicId);
         Optional<Company> companyOpt = companyService.getCompany();
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        Document document = new Document(PageSize.A4, 36, 36, 36, 36);
+        // Ticket de caisse avec marges réduites (10 points = ~3.5mm)
+        Document document = new Document(TICKET_SIZE, 10, 10, 10, 10);
 
         try {
             PdfWriter writer = PdfWriter.getInstance(document, outputStream);
@@ -67,105 +71,83 @@ public class InvoicePdfService {
 
     private void addCompanyHeader(Document document, Company company) {
         try {
-            PdfPTable headerTable = new PdfPTable(2);
-            headerTable.setWidthPercentage(100);
-            headerTable.setWidths(new float[]{1, 2});
+            Font companyNameFont = new Font(Font.HELVETICA, 10, Font.BOLD, PRIMARY_COLOR);
+            Font infoFont = new Font(Font.HELVETICA, 7, Font.NORMAL, Color.DARK_GRAY);
 
-            // Logo cell
-            PdfPCell logoCell = new PdfPCell();
-            logoCell.setBorder(Rectangle.NO_BORDER);
+            // Nom de l'entreprise centré
+            Paragraph companyName = new Paragraph(company.getName(), companyNameFont);
+            companyName.setAlignment(Element.ALIGN_CENTER);
+            document.add(companyName);
+
+            // Logo (optionnel, réduit)
             if (company.getLogoPath() != null && !company.getLogoPath().isEmpty()) {
                 try {
                     Resource logoResource = fileStorageService.loadFileAsResource(company.getLogoPath());
                     byte[] logoBytes = logoResource.getInputStream().readAllBytes();
                     Image logo = Image.getInstance(logoBytes);
-                    logo.scaleToFit(100, 80);
-                    logoCell.addElement(logo);
+                    logo.scaleToFit(60, 50); // Taille réduite pour ticket
+                    logo.setAlignment(Element.ALIGN_CENTER);
+                    document.add(logo);
                 } catch (Exception e) {
                     // Logo loading failed, skip it
                 }
             }
-            headerTable.addCell(logoCell);
 
-            // Company info cell
-            PdfPCell infoCell = new PdfPCell();
-            infoCell.setBorder(Rectangle.NO_BORDER);
-            infoCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-
-            Font companyNameFont = new Font(Font.HELVETICA, 16, Font.BOLD, PRIMARY_COLOR);
-            Font infoFont = new Font(Font.HELVETICA, 9, Font.NORMAL, Color.DARK_GRAY);
-
-            Paragraph companyName = new Paragraph(company.getName(), companyNameFont);
-            companyName.setAlignment(Element.ALIGN_RIGHT);
-            infoCell.addElement(companyName);
-
+            // Infos entreprise centrées
             if (company.getAddress() != null) {
                 Paragraph address = new Paragraph(company.getAddress(), infoFont);
-                address.setAlignment(Element.ALIGN_RIGHT);
-                infoCell.addElement(address);
+                address.setAlignment(Element.ALIGN_CENTER);
+                document.add(address);
             }
 
             if (company.getCity() != null) {
                 Paragraph city = new Paragraph(company.getCity(), infoFont);
-                city.setAlignment(Element.ALIGN_RIGHT);
-                infoCell.addElement(city);
+                city.setAlignment(Element.ALIGN_CENTER);
+                document.add(city);
             }
 
             if (company.getPhoneNumber() != null) {
-                Paragraph phone = new Paragraph("Tél: " + company.getPhoneNumber(), infoFont);
-                phone.setAlignment(Element.ALIGN_RIGHT);
-                infoCell.addElement(phone);
+                Paragraph phone = new Paragraph("Tel: " + company.getPhoneNumber(), infoFont);
+                phone.setAlignment(Element.ALIGN_CENTER);
+                document.add(phone);
             }
 
             if (company.getEmail() != null) {
                 Paragraph email = new Paragraph(company.getEmail(), infoFont);
-                email.setAlignment(Element.ALIGN_RIGHT);
-                infoCell.addElement(email);
+                email.setAlignment(Element.ALIGN_CENTER);
+                document.add(email);
             }
 
-            headerTable.addCell(infoCell);
-            document.add(headerTable);
-            document.add(new Paragraph("\n"));
+            // Ligne de séparation
+            document.add(new Paragraph("========================================", infoFont));
+            document.add(new Paragraph(" "));
 
-        } catch (DocumentException e) {
+        } catch (Exception e) {
             // Skip header if error
         }
     }
 
     private void addInvoiceTitle(Document document, Invoice invoice) {
         try {
-            Font titleFont = new Font(Font.HELVETICA, 20, Font.BOLD, SECONDARY_COLOR);
+            Font titleFont = new Font(Font.HELVETICA, 9, Font.BOLD, SECONDARY_COLOR);
+            Font infoFont = new Font(Font.HELVETICA, 7, Font.NORMAL);
+
+            // Numéro de facture
             Paragraph title = new Paragraph("FACTURE N° " + invoice.getInvoiceNumber(), titleFont);
             title.setAlignment(Element.ALIGN_CENTER);
             document.add(title);
-            document.add(new Paragraph("\n"));
 
-            // Dates
-            PdfPTable datesTable = new PdfPTable(2);
-            datesTable.setWidthPercentage(100);
+            // Dates (format compact pour ticket)
+            Paragraph depositDate = new Paragraph("Depot: " + invoice.getDepositDate().format(DATE_FORMATTER), infoFont);
+            depositDate.setAlignment(Element.ALIGN_CENTER);
+            document.add(depositDate);
 
-            Font labelFont = new Font(Font.HELVETICA, 10, Font.BOLD, Color.DARK_GRAY);
-            Font valueFont = new Font(Font.HELVETICA, 10, Font.NORMAL);
+            Paragraph deliveryDate = new Paragraph("Livraison: " + invoice.getDeliveryDate().format(DATE_FORMATTER), infoFont);
+            deliveryDate.setAlignment(Element.ALIGN_CENTER);
+            document.add(deliveryDate);
 
-            PdfPCell depositCell = new PdfPCell();
-            depositCell.setBorder(Rectangle.NO_BORDER);
-            depositCell.addElement(new Phrase("Date de dépôt: ", labelFont));
-            depositCell.addElement(new Phrase(invoice.getDepositDate().format(DATE_FORMATTER), valueFont));
-            datesTable.addCell(depositCell);
-
-            PdfPCell deliveryCell = new PdfPCell();
-            deliveryCell.setBorder(Rectangle.NO_BORDER);
-            deliveryCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-            Paragraph deliveryLabel = new Paragraph("Date de livraison: ", labelFont);
-            deliveryLabel.setAlignment(Element.ALIGN_RIGHT);
-            deliveryCell.addElement(deliveryLabel);
-            Paragraph deliveryValue = new Paragraph(invoice.getDeliveryDate().format(DATE_FORMATTER), valueFont);
-            deliveryValue.setAlignment(Element.ALIGN_RIGHT);
-            deliveryCell.addElement(deliveryValue);
-            datesTable.addCell(deliveryCell);
-
-            document.add(datesTable);
-            document.add(new Paragraph("\n"));
+            document.add(new Paragraph("----------------------------------------", infoFont));
+            document.add(new Paragraph(" "));
 
         } catch (DocumentException e) {
             // Skip title if error
@@ -177,32 +159,32 @@ public class InvoicePdfService {
             Customer customer = invoice.getCustomer();
             if (customer == null) return;
 
-            PdfPTable customerTable = new PdfPTable(1);
-            customerTable.setWidthPercentage(50);
-            customerTable.setHorizontalAlignment(Element.ALIGN_LEFT);
+            Font labelFont = new Font(Font.HELVETICA, 7, Font.BOLD, PRIMARY_COLOR);
+            Font valueFont = new Font(Font.HELVETICA, 7, Font.NORMAL);
 
-            Font labelFont = new Font(Font.HELVETICA, 10, Font.BOLD, PRIMARY_COLOR);
-            Font valueFont = new Font(Font.HELVETICA, 10, Font.NORMAL);
+            // Informations client centrées et compactes
+            Paragraph clientLabel = new Paragraph("CLIENT", labelFont);
+            clientLabel.setAlignment(Element.ALIGN_CENTER);
+            document.add(clientLabel);
 
-            PdfPCell cell = new PdfPCell();
-            cell.setBackgroundColor(LIGHT_GRAY);
-            cell.setPadding(10);
-            cell.setBorderColor(Color.LIGHT_GRAY);
-
-            cell.addElement(new Phrase("CLIENT", labelFont));
-            cell.addElement(new Phrase(customer.getName(), valueFont));
+            Paragraph clientName = new Paragraph(customer.getName(), valueFont);
+            clientName.setAlignment(Element.ALIGN_CENTER);
+            document.add(clientName);
 
             if (customer.getPhoneNumber() != null) {
-                cell.addElement(new Phrase("Tél: " + customer.getPhoneNumber(), valueFont));
+                Paragraph phone = new Paragraph("Tel: " + customer.getPhoneNumber(), valueFont);
+                phone.setAlignment(Element.ALIGN_CENTER);
+                document.add(phone);
             }
 
             if (customer.getAddress() != null) {
-                cell.addElement(new Phrase(customer.getAddress(), valueFont));
+                Paragraph address = new Paragraph(customer.getAddress(), valueFont);
+                address.setAlignment(Element.ALIGN_CENTER);
+                document.add(address);
             }
 
-            customerTable.addCell(cell);
-            document.add(customerTable);
-            document.add(new Paragraph("\n"));
+            document.add(new Paragraph("----------------------------------------", valueFont));
+            document.add(new Paragraph(" "));
 
         } catch (DocumentException e) {
             // Skip customer info if error
@@ -211,55 +193,50 @@ public class InvoicePdfService {
 
     private void addInvoiceDetails(Document document, Invoice invoice) {
         try {
-            PdfPTable table = new PdfPTable(5);
+            // Format ticket simplifié : 3 colonnes (Description, Qté, Montant)
+            PdfPTable table = new PdfPTable(3);
             table.setWidthPercentage(100);
-            table.setWidths(new float[]{3, 2, 1, 2, 2});
+            table.setWidths(new float[]{3, 1, 2});
 
-            // Header
-            Font headerFont = new Font(Font.HELVETICA, 10, Font.BOLD, Color.WHITE);
-            String[] headers = {"Article", "Service", "Qté", "Prix Unit.", "Montant"};
+            // Header avec police réduite pour ticket
+            Font headerFont = new Font(Font.HELVETICA, 7, Font.BOLD, Color.WHITE);
+            String[] headers = {"Description", "Qte", "Montant"};
 
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
                 cell.setBackgroundColor(PRIMARY_COLOR);
-                cell.setPadding(8);
+                cell.setPadding(4);
                 cell.setHorizontalAlignment(Element.ALIGN_CENTER);
                 table.addCell(cell);
             }
 
-            // Invoice lines
-            Font cellFont = new Font(Font.HELVETICA, 9, Font.NORMAL);
-            boolean alternate = false;
+            // Invoice lines avec police réduite
+            Font cellFont = new Font(Font.HELVETICA, 6, Font.NORMAL);
 
             for (InvoiceLine line : invoice.getInvoiceLines()) {
-                Color bgColor = alternate ? LIGHT_GRAY : Color.WHITE;
-
-                addTableCell(table, line.getPricing().getArticle().getName(), cellFont, bgColor, Element.ALIGN_LEFT);
-                addTableCell(table, line.getPricing().getService().getName(), cellFont, bgColor, Element.ALIGN_LEFT);
-                addTableCell(table, String.valueOf(line.getQuantity()), cellFont, bgColor, Element.ALIGN_CENTER);
-                addTableCell(table, formatMoney(line.getPricing().getPrice()), cellFont, bgColor, Element.ALIGN_RIGHT);
-                addTableCell(table, formatMoney(line.getAmount()), cellFont, bgColor, Element.ALIGN_RIGHT);
-
-                alternate = !alternate;
+                // Description = Article + Service
+                String description = line.getPricing().getArticle().getName() + " - " +
+                                   line.getPricing().getService().getName();
+                addTableCell(table, description, cellFont, Color.WHITE, Element.ALIGN_LEFT);
+                addTableCell(table, String.valueOf(line.getQuantity()), cellFont, Color.WHITE, Element.ALIGN_CENTER);
+                addTableCell(table, formatMoney(line.getAmount()), cellFont, Color.WHITE, Element.ALIGN_RIGHT);
             }
 
             // Additional fees
             if (invoice.getAdditionalFees() != null && !invoice.getAdditionalFees().isEmpty()) {
                 for (AdditionalFees fee : invoice.getAdditionalFees()) {
-                    Color bgColor = alternate ? LIGHT_GRAY : Color.WHITE;
-
-                    addTableCell(table, fee.getTitle(), cellFont, bgColor, Element.ALIGN_LEFT);
-                    addTableCell(table, fee.getDescription() != null ? fee.getDescription() : "-", cellFont, bgColor, Element.ALIGN_LEFT);
-                    addTableCell(table, "1", cellFont, bgColor, Element.ALIGN_CENTER);
-                    addTableCell(table, formatMoney(fee.getAmount()), cellFont, bgColor, Element.ALIGN_RIGHT);
-                    addTableCell(table, formatMoney(fee.getAmount()), cellFont, bgColor, Element.ALIGN_RIGHT);
-
-                    alternate = !alternate;
+                    String description = fee.getTitle();
+                    if (fee.getDescription() != null && !fee.getDescription().isEmpty()) {
+                        description += " (" + fee.getDescription() + ")";
+                    }
+                    addTableCell(table, description, cellFont, Color.WHITE, Element.ALIGN_LEFT);
+                    addTableCell(table, "1", cellFont, Color.WHITE, Element.ALIGN_CENTER);
+                    addTableCell(table, formatMoney(fee.getAmount()), cellFont, Color.WHITE, Element.ALIGN_RIGHT);
                 }
             }
 
             document.add(table);
-            document.add(new Paragraph("\n"));
+            document.add(new Paragraph(" "));
 
         } catch (DocumentException e) {
             // Skip details if error
@@ -277,25 +254,26 @@ public class InvoicePdfService {
 
     private void addTotals(Document document, Invoice invoice) {
         try {
+            // Format ticket : tableau pleine largeur avec police réduite
             PdfPTable totalsTable = new PdfPTable(2);
-            totalsTable.setWidthPercentage(40);
-            totalsTable.setHorizontalAlignment(Element.ALIGN_RIGHT);
-            totalsTable.setWidths(new float[]{2, 1});
+            totalsTable.setWidthPercentage(100);
+            totalsTable.setWidths(new float[]{1, 1});
 
-            Font labelFont = new Font(Font.HELVETICA, 10, Font.NORMAL);
-            Font valueFont = new Font(Font.HELVETICA, 10, Font.NORMAL);
-            Font totalLabelFont = new Font(Font.HELVETICA, 11, Font.BOLD, PRIMARY_COLOR);
-            Font totalValueFont = new Font(Font.HELVETICA, 11, Font.BOLD, PRIMARY_COLOR);
+            Font labelFont = new Font(Font.HELVETICA, 6, Font.NORMAL);
+            Font valueFont = new Font(Font.HELVETICA, 6, Font.NORMAL);
+            Font totalLabelFont = new Font(Font.HELVETICA, 7, Font.BOLD, PRIMARY_COLOR);
+            Font totalValueFont = new Font(Font.HELVETICA, 7, Font.BOLD, PRIMARY_COLOR);
+
+            // Ligne de séparation
+            document.add(new Paragraph("========================================", labelFont));
 
             // Montant HT (Hors Taxes, après remise)
             BigDecimal subtotal = invoice.calculateSubtotalAmount();
 
-            // Sous-total (avant remise)
-            BigDecimal subtotalBeforeDiscount = subtotal.add(invoice.getDiscount());
-            addTotalRow(totalsTable, "Sous-total:", formatMoney(subtotalBeforeDiscount), labelFont, valueFont);
-
-            // Remise
+            // Sous-total (avant remise) si remise existe
             if (invoice.getDiscount() != null && invoice.getDiscount().compareTo(BigDecimal.ZERO) > 0) {
+                BigDecimal subtotalBeforeDiscount = subtotal.add(invoice.getDiscount());
+                addTotalRow(totalsTable, "Sous-total:", formatMoney(subtotalBeforeDiscount), labelFont, valueFont);
                 addTotalRow(totalsTable, "Remise:", "-" + formatMoney(invoice.getDiscount()), labelFont, valueFont);
             }
 
@@ -319,17 +297,18 @@ public class InvoicePdfService {
             addTotalRow(totalsTable, "TOTAL TTC:", formatMoney(totalTTC), totalLabelFont, totalValueFont);
 
             // Montant payé
-            addTotalRow(totalsTable, "Montant payé:", formatMoney(invoice.getAmountPaid()), labelFont, valueFont);
+            addTotalRow(totalsTable, "Montant paye:", formatMoney(invoice.getAmountPaid()), labelFont, valueFont);
 
             // Reste à payer
             Font restFont = invoice.getRemainingAmount().compareTo(BigDecimal.ZERO) > 0
-                    ? new Font(Font.HELVETICA, 11, Font.BOLD, Color.RED)
-                    : new Font(Font.HELVETICA, 11, Font.BOLD, new Color(39, 174, 96));
-            addTotalRow(totalsTable, "Reste à payer:", formatMoney(invoice.getRemainingAmount()),
-                    new Font(Font.HELVETICA, 11, Font.BOLD), restFont);
+                    ? new Font(Font.HELVETICA, 7, Font.BOLD, Color.RED)
+                    : new Font(Font.HELVETICA, 7, Font.BOLD, new Color(39, 174, 96));
+            addTotalRow(totalsTable, "Reste a payer:", formatMoney(invoice.getRemainingAmount()),
+                    new Font(Font.HELVETICA, 7, Font.BOLD), restFont);
 
             document.add(totalsTable);
-            document.add(new Paragraph("\n"));
+            document.add(new Paragraph(" "));
+            document.add(new Paragraph("========================================", labelFont));
 
         } catch (DocumentException e) {
             // Skip totals if error
@@ -352,25 +331,23 @@ public class InvoicePdfService {
 
     private void addFooter(Document document, Company company) {
         try {
-            Font footerFont = new Font(Font.HELVETICA, 8, Font.NORMAL, Color.GRAY);
+            Font footerFont = new Font(Font.HELVETICA, 6, Font.NORMAL, Color.GRAY);
 
-            StringBuilder footer = new StringBuilder();
+            // Message de remerciement
+            Paragraph thanks = new Paragraph("Merci de votre confiance !", footerFont);
+            thanks.setAlignment(Element.ALIGN_CENTER);
+            document.add(thanks);
 
             if (company.getWebsite() != null) {
-                footer.append(company.getWebsite());
+                Paragraph website = new Paragraph(company.getWebsite(), footerFont);
+                website.setAlignment(Element.ALIGN_CENTER);
+                document.add(website);
             }
 
             if (company.getSlogan() != null) {
-                if (footer.length() > 0) {
-                    footer.append(" | ");
-                }
-                footer.append(company.getSlogan());
-            }
-
-            if (footer.length() > 0) {
-                Paragraph footerPara = new Paragraph(footer.toString(), footerFont);
-                footerPara.setAlignment(Element.ALIGN_CENTER);
-                document.add(footerPara);
+                Paragraph slogan = new Paragraph(company.getSlogan(), footerFont);
+                slogan.setAlignment(Element.ALIGN_CENTER);
+                document.add(slogan);
             }
 
         } catch (DocumentException e) {

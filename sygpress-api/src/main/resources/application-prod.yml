@@ -19,19 +19,15 @@ spring:
   jpa:
     hibernate:
       ddl-auto: ${HIBERNATE_DDL_AUTO}
-    defer-datasource-initialization: false
+    defer-datasource-initialization: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         show_sql: ${HIBERNATE_SHOW_SQL:false}
         format_sql: ${HIBERNATE_FORMAT_SQL:false}
-  flyway:
-    enabled: true
-    baseline-on-migrate: true
-    locations: classpath:db/migration
   sql:
     init:
-      mode: never
+      mode: always
 
 jwt:
   secret: ${JWT_SECRET}
