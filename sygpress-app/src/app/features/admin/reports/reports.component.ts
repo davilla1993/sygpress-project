@@ -26,9 +26,28 @@ interface CustomerReport {
 }
 
 interface ServiceReport {
-  serviceName: string;
-  quantity: number;
-  revenue: number;
+  startDate: string;
+  endDate: string;
+  totalServices: number;
+  totalRevenue: number;
+  serviceStats: {
+    serviceName: string;
+    quantity: number;
+    amount: number;
+    percentage: number;
+  }[];
+  articleStats: {
+    articleName: string;
+    quantity: number;
+    amount: number;
+    percentage: number;
+  }[];
+  combinationStats: {
+    serviceName: string;
+    articleName: string;
+    quantity: number;
+    amount: number;
+  }[];
 }
 
 @Component({
@@ -45,7 +64,7 @@ export class ReportsComponent {
   isLoading = signal(false);
   salesReport = signal<SalesReport | null>(null);
   customerReport = signal<CustomerReport | null>(null);
-  serviceReport = signal<ServiceReport[]>([]);
+  serviceReport = signal<ServiceReport | null>(null);
 
   constructor(
     private http: HttpClient,
@@ -89,7 +108,7 @@ export class ReportsComponent {
   loadServiceReport(): void {
     this.isLoading.set(true);
     const params = this.getDateParams();
-    this.http.get<ServiceReport[]>(`${environment.apiUrl}/reports/services`, { params }).subscribe({
+    this.http.get<ServiceReport>(`${environment.apiUrl}/reports/services`, { params }).subscribe({
       next: (data) => {
         this.serviceReport.set(data);
         this.isLoading.set(false);
