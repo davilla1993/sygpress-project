@@ -3,7 +3,7 @@ package com.follysitou.sygpress.controller;
 import com.follysitou.sygpress.dto.response.CustomerReportResponse;
 import com.follysitou.sygpress.dto.response.InvoiceStatusReportResponse;
 import com.follysitou.sygpress.dto.response.SalesReportResponse;
-import com.follysitou.sygpress.dto.response.ServiceReportResponse;
+import com.follysitou.sygpress.dto.response.UserReportResponse;
 import com.follysitou.sygpress.service.ReportPdfService;
 import com.follysitou.sygpress.service.ReportService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -131,36 +131,36 @@ public class ReportController {
         return new ResponseEntity<>(pdfContent, headers, HttpStatus.OK);
     }
 
-    // Service Report endpoints
-    @GetMapping("/services")
+    // User Report endpoints
+    @GetMapping("/users")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Générer le rapport des services")
-    public ResponseEntity<ServiceReportResponse> getServiceReport(
+    @Operation(summary = "Générer le rapport par utilisateur")
+    public ResponseEntity<UserReportResponse> getUserReport(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        return ResponseEntity.ok(reportService.generateServiceReport(startDate, endDate));
+        return ResponseEntity.ok(reportService.generateUserReport(startDate, endDate));
     }
 
-    @GetMapping("/services/today")
+    @GetMapping("/users/today")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Générer le rapport des services d'aujourd'hui")
-    public ResponseEntity<ServiceReportResponse> getServiceReportToday() {
+    @Operation(summary = "Générer le rapport par utilisateur d'aujourd'hui")
+    public ResponseEntity<UserReportResponse> getUserReportToday() {
         LocalDate today = LocalDate.now();
-        return ResponseEntity.ok(reportService.generateServiceReport(today, today));
+        return ResponseEntity.ok(reportService.generateUserReport(today, today));
     }
 
-    @GetMapping("/services/pdf")
+    @GetMapping("/users/pdf")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Télécharger le rapport des services en PDF")
-    public ResponseEntity<byte[]> downloadServiceReportPdf(
+    @Operation(summary = "Télécharger le rapport par utilisateur en PDF")
+    public ResponseEntity<byte[]> downloadUserReportPdf(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) throws IOException {
-        ServiceReportResponse report = reportService.generateServiceReport(startDate, endDate);
-        byte[] pdfContent = reportPdfService.generateServiceReportPdf(report);
+        UserReportResponse report = reportService.generateUserReport(startDate, endDate);
+        byte[] pdfContent = reportPdfService.generateUserReportPdf(report);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
-        headers.setContentDispositionFormData("attachment", "rapport-services-" + startDate + "-" + endDate + ".pdf");
+        headers.setContentDispositionFormData("attachment", "rapport-utilisateurs-" + startDate + "-" + endDate + ".pdf");
 
         return new ResponseEntity<>(pdfContent, headers, HttpStatus.OK);
     }

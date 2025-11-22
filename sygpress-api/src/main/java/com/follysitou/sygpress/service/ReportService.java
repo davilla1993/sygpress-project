@@ -3,11 +3,13 @@ package com.follysitou.sygpress.service;
 import com.follysitou.sygpress.dto.response.CustomerReportResponse;
 import com.follysitou.sygpress.dto.response.InvoiceStatusReportResponse;
 import com.follysitou.sygpress.dto.response.SalesReportResponse;
-import com.follysitou.sygpress.dto.response.ServiceReportResponse;
+import com.follysitou.sygpress.dto.response.UserReportResponse;
 import com.follysitou.sygpress.enums.ProcessingStatus;
 import com.follysitou.sygpress.model.Invoice;
 import com.follysitou.sygpress.model.InvoiceLine;
+import com.follysitou.sygpress.model.User;
 import com.follysitou.sygpress.repository.InvoiceRepository;
+import com.follysitou.sygpress.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +26,7 @@ import java.util.stream.Collectors;
 public class ReportService {
 
     private final InvoiceRepository invoiceRepository;
+    private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     public SalesReportResponse generateSalesReport(LocalDate startDate, LocalDate endDate) {
@@ -209,104 +212,74 @@ public class ReportService {
     }
 
     @Transactional(readOnly = true)
-    public ServiceReportResponse generateServiceReport(LocalDate startDate, LocalDate endDate) {
+    public UserReportResponse generateUserReport(LocalDate startDate, LocalDate endDate) {
         List<Invoice> invoices = invoiceRepository.findByDepositDateBetweenAndDeletedFalse(startDate, endDate);
 
-        BigDecimal totalRevenue = BigDecimal.ZERO;
-        Map<String, ServiceReportResponse.ServiceStats> serviceMap = new HashMap<>();
-        Map<String, ServiceReportResponse.ArticleStats> articleMap = new HashMap<>();
-        Map<String, ServiceReportResponse.CombinationStats> combinationMap = new HashMap<>();
+        // Calculer le revenu total de la période pour les pourcentages
+        BigDecimal totalRevenue = invoices.stream()
+                .map(Invoice::calculateTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Analyse de toutes les lignes de facture
-        for (Invoice invoice : invoices) {
-            for (InvoiceLine line : invoice.getInvoiceLines()) {
-                BigDecimal lineAmount = line.getAmount();
-                totalRevenue = totalRevenue.add(lineAmount);
+        // Regrouper les factures par utilisateur créateur
+        Map<String, List<Invoice>> invoicesByUser = invoices.stream()
+                .filter(i -> i.getCreatedBy() != null && !i.getCreatedBy().equals("SYSTEM"))
+                .collect(Collectors.groupingBy(Invoice::getCreatedBy));
 
-                String serviceName = line.getPricing().getService().getName();
-                String articleName = line.getPricing().getArticle().getName();
-                int quantity = line.getQuantity();
-
-                // Statistiques par service
-                ServiceReportResponse.ServiceStats serviceStats = serviceMap.getOrDefault(serviceName,
-                        ServiceReportResponse.ServiceStats.builder()
-                                .serviceName(serviceName)
-                                .quantity(0)
-                                .revenue(BigDecimal.ZERO)
-                                .percentage(BigDecimal.ZERO)
-                                .build());
-                serviceStats.setQuantity(serviceStats.getQuantity() + quantity);
-                serviceStats.setRevenue(serviceStats.getRevenue().add(lineAmount));
-                serviceMap.put(serviceName, serviceStats);
-
-                // Statistiques par article
-                ServiceReportResponse.ArticleStats articleStats = articleMap.getOrDefault(articleName,
-                        ServiceReportResponse.ArticleStats.builder()
-                                .articleName(articleName)
-                                .quantity(0)
-                                .revenue(BigDecimal.ZERO)
-                                .percentage(BigDecimal.ZERO)
-                                .build());
-                articleStats.setQuantity(articleStats.getQuantity() + quantity);
-                articleStats.setRevenue(articleStats.getRevenue().add(lineAmount));
-                articleMap.put(articleName, articleStats);
-
-                // Statistiques par combinaison article + service
-                String combinationKey = articleName + "|" + serviceName;
-                ServiceReportResponse.CombinationStats combinationStats = combinationMap.getOrDefault(combinationKey,
-                        ServiceReportResponse.CombinationStats.builder()
-                                .articleName(articleName)
-                                .serviceName(serviceName)
-                                .quantity(0)
-                                .revenue(BigDecimal.ZERO)
-                                .build());
-                combinationStats.setQuantity(combinationStats.getQuantity() + quantity);
-                combinationStats.setRevenue(combinationStats.getRevenue().add(lineAmount));
-                combinationMap.put(combinationKey, combinationStats);
-            }
-        }
-
-        // Calculer les pourcentages
-        final BigDecimal finalTotalRevenue = totalRevenue.compareTo(BigDecimal.ZERO) > 0 ? totalRevenue : BigDecimal.ONE;
-
-        // Pourcentages par service
-        serviceMap.values().forEach(stats -> {
-            BigDecimal percentage = stats.getRevenue()
-                    .multiply(BigDecimal.valueOf(100))
-                    .divide(finalTotalRevenue, 2, RoundingMode.HALF_UP);
-            stats.setPercentage(percentage);
+        // Créer un Map pour rechercher les utilisateurs par email
+        Map<String, User> usersByEmail = new HashMap<>();
+        invoicesByUser.keySet().forEach(email -> {
+            userRepository.findByEmail(email).ifPresent(user -> usersByEmail.put(email, user));
         });
 
-        // Pourcentages par article
-        articleMap.values().forEach(stats -> {
-            BigDecimal percentage = stats.getRevenue()
-                    .multiply(BigDecimal.valueOf(100))
-                    .divide(finalTotalRevenue, 2, RoundingMode.HALF_UP);
-            stats.setPercentage(percentage);
-        });
+        // Calculer les statistiques pour chaque utilisateur
+        List<UserReportResponse.UserStats> userStats = invoicesByUser.entrySet().stream()
+                .map(entry -> {
+                    String userEmail = entry.getKey();
+                    List<Invoice> userInvoices = entry.getValue();
+                    User user = usersByEmail.get(userEmail);
 
-        // Trier les résultats
-        List<ServiceReportResponse.ServiceStats> sortedServices = serviceMap.values().stream()
-                .sorted((a, b) -> b.getRevenue().compareTo(a.getRevenue()))
+                    BigDecimal userTotalRevenue = userInvoices.stream()
+                            .map(Invoice::calculateTotalAmount)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                    BigDecimal userTotalPaid = userInvoices.stream()
+                            .map(i -> i.getAmountPaid() != null ? i.getAmountPaid() : BigDecimal.ZERO)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                    BigDecimal userTotalUnpaid = userInvoices.stream()
+                            .map(i -> i.getRemainingAmount() != null ? i.getRemainingAmount() : BigDecimal.ZERO)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                    BigDecimal averageAmount = userInvoices.isEmpty() ? BigDecimal.ZERO :
+                            userTotalRevenue.divide(BigDecimal.valueOf(userInvoices.size()), 2, RoundingMode.HALF_UP);
+
+                    double percentage = totalRevenue.compareTo(BigDecimal.ZERO) == 0 ? 0.0 :
+                            userTotalRevenue.divide(totalRevenue, 4, RoundingMode.HALF_UP)
+                                    .multiply(BigDecimal.valueOf(100))
+                                    .doubleValue();
+
+                    return UserReportResponse.UserStats.builder()
+                            .userId(user != null ? user.getId() : null)
+                            .userName(user != null ? user.getLastName() + " " + user.getFirstName() : userEmail)
+                            .userEmail(userEmail)
+                            .userRole(user != null ? user.getRole().name() : "UNKNOWN")
+                            .invoiceCount(userInvoices.size())
+                            .totalRevenue(userTotalRevenue)
+                            .totalPaid(userTotalPaid)
+                            .totalUnpaid(userTotalUnpaid)
+                            .averageInvoiceAmount(averageAmount)
+                            .percentage(percentage)
+                            .build();
+                })
+                .sorted((a, b) -> b.getTotalRevenue().compareTo(a.getTotalRevenue()))
                 .collect(Collectors.toList());
 
-        List<ServiceReportResponse.ArticleStats> sortedArticles = articleMap.values().stream()
-                .sorted((a, b) -> b.getRevenue().compareTo(a.getRevenue()))
-                .collect(Collectors.toList());
-
-        List<ServiceReportResponse.CombinationStats> sortedCombinations = combinationMap.values().stream()
-                .sorted((a, b) -> b.getRevenue().compareTo(a.getRevenue()))
-                .limit(20) // Top 20 combinaisons
-                .collect(Collectors.toList());
-
-        return ServiceReportResponse.builder()
+        return UserReportResponse.builder()
                 .startDate(startDate)
                 .endDate(endDate)
-                .totalServices(sortedServices.size())
+                .totalUsers(userStats.size())
                 .totalRevenue(totalRevenue)
-                .serviceStats(sortedServices)
-                .articleStats(sortedArticles)
-                .combinationStats(sortedCombinations)
+                .userStats(userStats)
                 .build();
     }
 }

@@ -50,6 +50,25 @@ interface ServiceReport {
   }[];
 }
 
+interface UserReport {
+  startDate: string;
+  endDate: string;
+  totalUsers: number;
+  totalRevenue: number;
+  userStats: {
+    userId: number;
+    userName: string;
+    userEmail: string;
+    userRole: string;
+    invoiceCount: number;
+    totalRevenue: number;
+    totalPaid: number;
+    totalUnpaid: number;
+    averageInvoiceAmount: number;
+    percentage: number;
+  }[];
+}
+
 @Component({
   selector: 'app-reports',
   standalone: true,
@@ -58,13 +77,14 @@ interface ServiceReport {
   styleUrls: ['./reports.component.css']
 })
 export class ReportsComponent {
-  activeReport: 'sales' | 'customers' | 'services' = 'sales';
+  activeReport: 'sales' | 'customers' | 'services' | 'users' = 'sales';
   startDate = this.getFirstDayOfMonth();
   endDate = this.getToday();
   isLoading = signal(false);
   salesReport = signal<SalesReport | null>(null);
   customerReport = signal<CustomerReport | null>(null);
   serviceReport = signal<ServiceReport | null>(null);
+  userReport = signal<UserReport | null>(null);
 
   constructor(
     private http: HttpClient,
@@ -115,6 +135,22 @@ export class ReportsComponent {
       },
       error: (error) => {
         const message = error.error?.message || 'Erreur lors du chargement du rapport des services';
+        this.toastService.error(message);
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  loadUserReport(): void {
+    this.isLoading.set(true);
+    const params = this.getDateParams();
+    this.http.get<UserReport>(`${environment.apiUrl}/reports/users`, { params }).subscribe({
+      next: (data) => {
+        this.userReport.set(data);
+        this.isLoading.set(false);
+      },
+      error: (error) => {
+        const message = error.error?.message || 'Erreur lors du chargement du rapport utilisateurs';
         this.toastService.error(message);
         this.isLoading.set(false);
       }

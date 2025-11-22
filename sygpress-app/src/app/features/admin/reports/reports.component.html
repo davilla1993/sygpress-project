@@ -54,6 +54,15 @@
     >
       Services
     </button>
+    <button
+      (click)="activeReport = 'users'; loadUserReport()"
+      class="px-4 py-2 rounded-lg font-medium"
+      [class.bg-primary-600]="activeReport === 'users'"
+      [class.text-white]="activeReport === 'users'"
+      [class.bg-gray-100]="activeReport !== 'users'"
+    >
+      Utilisateurs
+    </button>
   </div>
 
   @if (isLoading()) {
@@ -252,6 +261,86 @@
                 }
               </tbody>
             </table>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- User Report -->
+    @if (activeReport === 'users' && userReport()) {
+      <div class="card p-6">
+        <div class="flex justify-between items-center mb-2">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-800">Rapport par utilisateur</h3>
+            <p class="text-sm text-gray-500">Période: {{ getFormattedPeriod() }}</p>
+          </div>
+          <button (click)="printReport('users')" class="btn-secondary">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+            </svg>
+            Imprimer
+          </button>
+        </div>
+
+        <!-- Summary -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div class="p-4 bg-gray-50 rounded-lg">
+            <p class="text-sm text-gray-500">Utilisateurs actifs</p>
+            <p class="text-2xl font-bold">{{ userReport()!.totalUsers }}</p>
+          </div>
+          <div class="p-4 bg-green-50 rounded-lg">
+            <p class="text-sm text-gray-500">Chiffre d'affaires total</p>
+            <p class="text-2xl font-bold text-green-600">{{ formatMoney(userReport()!.totalRevenue) }}</p>
+          </div>
+        </div>
+
+        <!-- User Stats -->
+        @if (userReport()!.userStats && userReport()!.userStats.length > 0) {
+          <div>
+            <h4 class="font-semibold mb-3">Performance par utilisateur</h4>
+            <div class="overflow-x-auto">
+              <table class="w-full">
+                <thead>
+                  <tr class="text-left text-sm text-gray-500 border-b">
+                    <th class="pb-2">Utilisateur</th>
+                    <th class="pb-2 text-center">Rôle</th>
+                    <th class="pb-2 text-right">Factures</th>
+                    <th class="pb-2 text-right">CA Total</th>
+                    <th class="pb-2 text-right">Payé</th>
+                    <th class="pb-2 text-right">Impayé</th>
+                    <th class="pb-2 text-right">Panier moyen</th>
+                    <th class="pb-2 text-right">%</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (user of userReport()!.userStats; track user.userId) {
+                    <tr class="border-b hover:bg-gray-50">
+                      <td class="py-3">
+                        <div>
+                          <p class="font-medium">{{ user.userName }}</p>
+                          <p class="text-xs text-gray-500">{{ user.userEmail }}</p>
+                        </div>
+                      </td>
+                      <td class="py-3 text-center">
+                        <span class="px-2 py-1 text-xs rounded-full"
+                              [class.bg-purple-100]="user.userRole === 'ADMIN'"
+                              [class.text-purple-800]="user.userRole === 'ADMIN'"
+                              [class.bg-blue-100]="user.userRole === 'USER'"
+                              [class.text-blue-800]="user.userRole === 'USER'">
+                          {{ user.userRole }}
+                        </span>
+                      </td>
+                      <td class="py-3 text-right">{{ user.invoiceCount }}</td>
+                      <td class="py-3 text-right font-semibold">{{ formatMoney(user.totalRevenue) }}</td>
+                      <td class="py-3 text-right text-green-600">{{ formatMoney(user.totalPaid) }}</td>
+                      <td class="py-3 text-right text-red-600">{{ formatMoney(user.totalUnpaid) }}</td>
+                      <td class="py-3 text-right">{{ formatMoney(user.averageInvoiceAmount) }}</td>
+                      <td class="py-3 text-right text-primary-600 font-semibold">{{ user.percentage.toFixed(1) }}%</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
           </div>
         }
       </div>
