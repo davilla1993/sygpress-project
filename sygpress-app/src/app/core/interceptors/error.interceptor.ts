@@ -13,12 +13,10 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       // Ne pas déconnecter si c'est une erreur sur la route de login
       const isLoginRequest = req.url.includes('/auth/login');
 
-      if (error.status === 401 && !isLoginRequest) {
-        // Déconnecter uniquement si ce n'est pas une tentative de connexion
-        // logout() redirige déjà vers la page d'accueil
+      // 401 Unauthorized ou 403 Forbidden : token expiré/invalide → déconnexion
+      if ((error.status === 401 || error.status === 403) && !isLoginRequest) {
+        // Déconnecter l'utilisateur et rediriger vers login
         authService.logout();
-      } else if (error.status === 403) {
-        router.navigate(['/unauthorized']);
       }
 
       const errorMessage = error.error?.message || error.message || 'Une erreur est survenue';
