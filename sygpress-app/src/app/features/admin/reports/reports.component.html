@@ -147,7 +147,7 @@
     }
 
     <!-- Service Report -->
-    @if (activeReport === 'services' && serviceReport().length > 0) {
+    @if (activeReport === 'services' && serviceReport()) {
       <div class="card p-6">
         <div class="flex justify-between items-center mb-2">
           <div>
@@ -161,24 +161,99 @@
             Imprimer
           </button>
         </div>
-        <table class="w-full">
-          <thead>
-            <tr class="text-left text-sm text-gray-500 border-b">
-              <th class="pb-2">Service</th>
-              <th class="pb-2 text-right">Quantité</th>
-              <th class="pb-2 text-right">Revenus</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (service of serviceReport(); track service.serviceName) {
-              <tr class="border-b">
-                <td class="py-3 font-medium">{{ service.serviceName }}</td>
-                <td class="py-3 text-right">{{ service.quantity }}</td>
-                <td class="py-3 text-right font-semibold">{{ formatMoney(service.revenue) }}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
+
+        <!-- Summary -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div class="p-4 bg-gray-50 rounded-lg">
+            <p class="text-sm text-gray-500">Total services différents</p>
+            <p class="text-2xl font-bold">{{ serviceReport()!.totalServices }}</p>
+          </div>
+          <div class="p-4 bg-green-50 rounded-lg">
+            <p class="text-sm text-gray-500">Chiffre d'affaires total</p>
+            <p class="text-2xl font-bold text-green-600">{{ formatMoney(serviceReport()!.totalRevenue) }}</p>
+          </div>
+        </div>
+
+        <!-- Service Stats -->
+        @if (serviceReport()!.serviceStats && serviceReport()!.serviceStats.length > 0) {
+          <div class="mb-6">
+            <h4 class="font-semibold mb-3">Statistiques par service</h4>
+            <table class="w-full">
+              <thead>
+                <tr class="text-left text-sm text-gray-500 border-b">
+                  <th class="pb-2">Service</th>
+                  <th class="pb-2 text-right">Quantité</th>
+                  <th class="pb-2 text-right">Revenus</th>
+                  <th class="pb-2 text-right">%</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (service of serviceReport()!.serviceStats; track service.serviceName) {
+                  <tr class="border-b">
+                    <td class="py-3 font-medium">{{ service.serviceName }}</td>
+                    <td class="py-3 text-right">{{ service.quantity }}</td>
+                    <td class="py-3 text-right font-semibold">{{ formatMoney(service.amount) }}</td>
+                    <td class="py-3 text-right text-primary-600">{{ service.percentage.toFixed(1) }}%</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+
+        <!-- Article Stats -->
+        @if (serviceReport()!.articleStats && serviceReport()!.articleStats.length > 0) {
+          <div class="mb-6">
+            <h4 class="font-semibold mb-3">Statistiques par article</h4>
+            <table class="w-full">
+              <thead>
+                <tr class="text-left text-sm text-gray-500 border-b">
+                  <th class="pb-2">Article</th>
+                  <th class="pb-2 text-right">Quantité</th>
+                  <th class="pb-2 text-right">Revenus</th>
+                  <th class="pb-2 text-right">%</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (article of serviceReport()!.articleStats; track article.articleName) {
+                  <tr class="border-b">
+                    <td class="py-3 font-medium">{{ article.articleName }}</td>
+                    <td class="py-3 text-right">{{ article.quantity }}</td>
+                    <td class="py-3 text-right font-semibold">{{ formatMoney(article.amount) }}</td>
+                    <td class="py-3 text-right text-primary-600">{{ article.percentage.toFixed(1) }}%</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+
+        <!-- Top Combinations -->
+        @if (serviceReport()!.combinationStats && serviceReport()!.combinationStats.length > 0) {
+          <div>
+            <h4 class="font-semibold mb-3">Top 20 combinaisons service + article</h4>
+            <table class="w-full">
+              <thead>
+                <tr class="text-left text-sm text-gray-500 border-b">
+                  <th class="pb-2">Service</th>
+                  <th class="pb-2">Article</th>
+                  <th class="pb-2 text-right">Quantité</th>
+                  <th class="pb-2 text-right">Revenus</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (combo of serviceReport()!.combinationStats; track combo.serviceName + '-' + combo.articleName) {
+                  <tr class="border-b">
+                    <td class="py-3 font-medium">{{ combo.serviceName }}</td>
+                    <td class="py-3 text-gray-600">{{ combo.articleName }}</td>
+                    <td class="py-3 text-right">{{ combo.quantity }}</td>
+                    <td class="py-3 text-right font-semibold">{{ formatMoney(combo.amount) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
       </div>
     }
   }
