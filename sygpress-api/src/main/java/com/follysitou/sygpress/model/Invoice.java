@@ -67,6 +67,9 @@ public class Invoice extends BaseEntity {
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AdditionalFees> additionalFees = new ArrayList<>();
 
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Payment> payments = new ArrayList<>();
+
     // Méthode utilitaire pour calculer le montant HT (Hors Taxes)
     public BigDecimal calculateSubtotalAmount() {
         BigDecimal totalLines = invoiceLines.stream()

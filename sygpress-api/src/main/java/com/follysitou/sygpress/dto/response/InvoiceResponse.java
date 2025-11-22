@@ -24,6 +24,7 @@ public class InvoiceResponse {
     private CustomerResponse customer;
     private List<InvoiceLineResponse> invoiceLines;
     private List<AdditionalFeesResponse> additionalFees;
+    private List<PaymentResponse> payments;  // Historique complet des paiements
 
     // Champs calculés
     private BigDecimal subtotalAmount; // Montant HT (Hors Taxes)

@@ -63,6 +63,12 @@ public class InvoiceMapper {
                     .collect(Collectors.toList()));
         }
 
+        if (invoice.getPayments() != null) {
+            response.setPayments(invoice.getPayments().stream()
+                    .map(this::paymentToResponse)
+                    .collect(Collectors.toList()));
+        }
+
         return response;
     }
 
@@ -85,6 +91,17 @@ public class InvoiceMapper {
         response.setTitle(fees.getTitle());
         response.setDescription(fees.getDescription());
         response.setAmount(fees.getAmount());
+        return response;
+    }
+
+    private PaymentResponse paymentToResponse(Payment payment) {
+        PaymentResponse response = new PaymentResponse();
+        response.setPublicId(payment.getPublicId());
+        response.setAmount(payment.getAmount());
+        response.setPaymentDate(payment.getPaymentDate());
+        response.setPaidBy(payment.getPaidBy());
+        response.setPaymentMethod(payment.getPaymentMethod());
+        response.setNotes(payment.getNotes());
         return response;
     }
 }
