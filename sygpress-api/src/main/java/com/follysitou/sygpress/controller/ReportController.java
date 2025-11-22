@@ -4,6 +4,8 @@ import com.follysitou.sygpress.dto.response.CustomerReportResponse;
 import com.follysitou.sygpress.dto.response.InvoiceStatusReportResponse;
 import com.follysitou.sygpress.dto.response.SalesReportResponse;
 import com.follysitou.sygpress.dto.response.UserReportResponse;
+import com.follysitou.sygpress.model.User;
+import com.follysitou.sygpress.repository.UserRepository;
 import com.follysitou.sygpress.service.ReportPdfService;
 import com.follysitou.sygpress.service.ReportService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,6 +21,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/reports")
@@ -28,6 +32,7 @@ public class ReportController {
 
     private final ReportService reportService;
     private final ReportPdfService reportPdfService;
+    private final UserRepository userRepository;
 
     // Sales Report endpoints
     @GetMapping("/sales")
@@ -35,8 +40,9 @@ public class ReportController {
     @Operation(summary = "Générer le rapport des ventes")
     public ResponseEntity<SalesReportResponse> getSalesReport(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        return ResponseEntity.ok(reportService.generateSalesReport(startDate, endDate));
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) String userEmail) {
+        return ResponseEntity.ok(reportService.generateSalesReport(startDate, endDate, userEmail));
     }
 
     @GetMapping("/sales/today")
@@ -52,8 +58,9 @@ public class ReportController {
     @Operation(summary = "Télécharger le rapport des ventes en PDF")
     public ResponseEntity<byte[]> downloadSalesReportPdf(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) throws IOException {
-        SalesReportResponse report = reportService.generateSalesReport(startDate, endDate);
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) String userEmail) throws IOException {
+        SalesReportResponse report = reportService.generateSalesReport(startDate, endDate, userEmail);
         byte[] pdfContent = reportPdfService.generateSalesReportPdf(report);
 
         HttpHeaders headers = new HttpHeaders();
@@ -69,8 +76,9 @@ public class ReportController {
     @Operation(summary = "Générer le rapport clients")
     public ResponseEntity<CustomerReportResponse> getCustomerReport(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        return ResponseEntity.ok(reportService.generateCustomerReport(startDate, endDate));
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) String userEmail) {
+        return ResponseEntity.ok(reportService.generateCustomerReport(startDate, endDate, userEmail));
     }
 
     @GetMapping("/customers/today")
@@ -86,8 +94,9 @@ public class ReportController {
     @Operation(summary = "Télécharger le rapport clients en PDF")
     public ResponseEntity<byte[]> downloadCustomerReportPdf(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) throws IOException {
-        CustomerReportResponse report = reportService.generateCustomerReport(startDate, endDate);
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) String userEmail) throws IOException {
+        CustomerReportResponse report = reportService.generateCustomerReport(startDate, endDate, userEmail);
         byte[] pdfContent = reportPdfService.generateCustomerReportPdf(report);
 
         HttpHeaders headers = new HttpHeaders();
@@ -164,4 +173,23 @@ public class ReportController {
 
         return new ResponseEntity<>(pdfContent, headers, HttpStatus.OK);
     }
+
+    // Helper endpoint to get list of users for filtering
+    @GetMapping("/users/list")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Récupérer la liste des utilisateurs actifs")
+    public ResponseEntity<List<UserInfo>> getActiveUsers() {
+        List<User> users = userRepository.findAll().stream()
+                .filter(u -> !u.getDeleted() && u.getEnabled())
+                .collect(Collectors.toList());
+
+        List<UserInfo> userInfos = users.stream()
+                .map(u -> new UserInfo(u.getEmail(), u.getLastName() + " " + u.getFirstName(), u.getRole().name()))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(userInfos);
+    }
+
+    // Simple DTO for user info
+    public record UserInfo(String email, String name, String role) {}
 }

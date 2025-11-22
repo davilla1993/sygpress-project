@@ -30,7 +30,19 @@ public class ReportService {
 
     @Transactional(readOnly = true)
     public SalesReportResponse generateSalesReport(LocalDate startDate, LocalDate endDate) {
+        return generateSalesReport(startDate, endDate, null);
+    }
+
+    @Transactional(readOnly = true)
+    public SalesReportResponse generateSalesReport(LocalDate startDate, LocalDate endDate, String userEmail) {
         List<Invoice> invoices = invoiceRepository.findByDepositDateBetweenAndDeletedFalse(startDate, endDate);
+
+        // Filtrer par utilisateur si spécifié
+        if (userEmail != null && !userEmail.isEmpty()) {
+            invoices = invoices.stream()
+                    .filter(i -> userEmail.equals(i.getCreatedBy()))
+                    .collect(Collectors.toList());
+        }
 
         BigDecimal totalRevenue = BigDecimal.ZERO;
         BigDecimal totalPaid = BigDecimal.ZERO;
@@ -95,11 +107,33 @@ public class ReportService {
 
     @Transactional(readOnly = true)
     public CustomerReportResponse generateCustomerReport(LocalDate startDate, LocalDate endDate) {
+        return generateCustomerReport(startDate, endDate, null);
+    }
+
+    @Transactional(readOnly = true)
+    public CustomerReportResponse generateCustomerReport(LocalDate startDate, LocalDate endDate, String userEmail) {
         List<Invoice> invoices = invoiceRepository.findByDepositDateBetweenAndDeletedFalse(startDate, endDate);
 
-        int totalCustomers = invoiceRepository.countDistinctCustomersByDateRange(startDate, endDate);
+        // Filtrer par utilisateur si spécifié
+        if (userEmail != null && !userEmail.isEmpty()) {
+            invoices = invoices.stream()
+                    .filter(i -> userEmail.equals(i.getCreatedBy()))
+                    .collect(Collectors.toList());
+        }
+
+        // Pour le filtre utilisateur, recalculer les totaux basés sur les factures filtrées
+        int totalCustomers = userEmail != null && !userEmail.isEmpty()
+                ? (int) invoices.stream().filter(i -> i.getCustomer() != null).map(i -> i.getCustomer().getId()).distinct().count()
+                : invoiceRepository.countDistinctCustomersByDateRange(startDate, endDate);
+
         LocalDateTime startDateTime = startDate.atStartOfDay();
-        int newCustomers = invoiceRepository.countNewCustomersByDateRange(startDate, endDate, startDateTime);
+        int newCustomers = userEmail != null && !userEmail.isEmpty()
+                ? (int) invoices.stream()
+                        .filter(i -> i.getCustomer() != null && i.getCustomer().getCreatedAt().isAfter(startDateTime))
+                        .map(i -> i.getCustomer().getId())
+                        .distinct()
+                        .count()
+                : invoiceRepository.countNewCustomersByDateRange(startDate, endDate, startDateTime);
 
         // Group by customer
         Map<Long, List<Invoice>> customerInvoices = invoices.stream()
