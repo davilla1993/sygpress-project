@@ -172,7 +172,7 @@
             </div>
           </div>
 
-          @if (invoice()!.payments && invoice()!.payments.length > 0) {
+          @if (invoice()!.payments?.length) {
             <div class="mt-4 pt-4 border-t">
               <p class="text-xs text-gray-500 mb-2">Historique des encaissements</p>
               <div class="space-y-2 max-h-48 overflow-y-auto">
