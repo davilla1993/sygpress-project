@@ -13,7 +13,7 @@ export class InvoiceService {
 
   constructor(private http: HttpClient) {}
 
-  getInvoices(page: number = 0, size: number = 10, search?: string, status?: ProcessingStatus): Observable<PageResponse<Invoice>> {
+  getInvoices(page: number = 0, size: number = 10, search?: string, status?: ProcessingStatus, createdBy?: string): Observable<PageResponse<Invoice>> {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
@@ -24,8 +24,15 @@ export class InvoiceService {
     if (status) {
       params = params.set('status', status);
     }
+    if (createdBy) {
+      params = params.set('createdBy', createdBy);
+    }
 
     return this.http.get<PageResponse<Invoice>>(this.apiUrl, { params });
+  }
+
+  getCreators(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.apiUrl}/creators`);
   }
 
   getInvoice(publicId: string): Observable<Invoice> {

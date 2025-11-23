@@ -78,23 +78,41 @@ public class InvoiceService {
     }
 
     @Transactional(readOnly = true)
-    public Page<Invoice> searchInvoices(String search, ProcessingStatus status, Pageable pageable) {
-        // Si on a à la fois une recherche et un statut
-        if (search != null && !search.isEmpty() && status != null) {
+    public Page<Invoice> searchInvoices(String search, ProcessingStatus status, String createdBy, Pageable pageable) {
+        boolean hasSearch = search != null && !search.isEmpty();
+        boolean hasStatus = status != null;
+        boolean hasCreatedBy = createdBy != null && !createdBy.isEmpty();
+
+        // Toutes les combinaisons possibles
+        if (hasSearch && hasStatus && hasCreatedBy) {
+            return invoiceRepository.searchInvoicesByStatusAndCreatedBy(search, status, createdBy, pageable);
+        }
+        else if (hasSearch && hasCreatedBy) {
+            return invoiceRepository.searchInvoicesByCreatedBy(search, createdBy, pageable);
+        }
+        else if (hasStatus && hasCreatedBy) {
+            return invoiceRepository.findByStatusAndCreatedBy(status, createdBy, pageable);
+        }
+        else if (hasSearch && hasStatus) {
             return invoiceRepository.searchInvoicesByStatus(search, status, pageable);
         }
-        // Si on a seulement une recherche
-        else if (search != null && !search.isEmpty()) {
+        else if (hasSearch) {
             return invoiceRepository.searchInvoices(search, pageable);
         }
-        // Si on a seulement un statut
-        else if (status != null) {
+        else if (hasStatus) {
             return invoiceRepository.findByProcessingStatus(status, pageable);
         }
-        // Sinon, tout retourner
+        else if (hasCreatedBy) {
+            return invoiceRepository.findByCreatedBy(createdBy, pageable);
+        }
         else {
             return invoiceRepository.findAllNonDeleted(pageable);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> getDistinctCreators() {
+        return invoiceRepository.findDistinctCreators();
     }
 
     @Transactional
