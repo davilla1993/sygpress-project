@@ -1,5 +1,6 @@
 package com.follysitou.sygpress.service;
 
+import com.follysitou.sygpress.enums.ProcessingStatus;
 import com.follysitou.sygpress.exception.ResourceNotFoundException;
 import com.follysitou.sygpress.model.Invoice;
 import com.follysitou.sygpress.model.InvoiceLine;
@@ -68,12 +69,32 @@ public class InvoiceService {
 
     @Transactional(readOnly = true)
     public Page<Invoice> findAll(Pageable pageable) {
-        return invoiceRepository.findAll(pageable);
+        return invoiceRepository.findAllNonDeleted(pageable);
     }
 
     @Transactional(readOnly = true)
     public Page<Invoice> findByCustomerPublicId(String customerPublicId, Pageable pageable) {
         return invoiceRepository.findByCustomerPublicIdAndDeletedFalse(customerPublicId, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Invoice> searchInvoices(String search, ProcessingStatus status, Pageable pageable) {
+        // Si on a à la fois une recherche et un statut
+        if (search != null && !search.isEmpty() && status != null) {
+            return invoiceRepository.searchInvoicesByStatus(search, status, pageable);
+        }
+        // Si on a seulement une recherche
+        else if (search != null && !search.isEmpty()) {
+            return invoiceRepository.searchInvoices(search, pageable);
+        }
+        // Si on a seulement un statut
+        else if (status != null) {
+            return invoiceRepository.findByProcessingStatus(status, pageable);
+        }
+        // Sinon, tout retourner
+        else {
+            return invoiceRepository.findAllNonDeleted(pageable);
+        }
     }
 
     @Transactional

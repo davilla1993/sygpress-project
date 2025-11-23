@@ -184,8 +184,12 @@ public class InvoiceController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<Page<InvoiceResponse>> getAll(Pageable pageable) {
-        Page<Invoice> invoices = invoiceService.findAll(pageable);
+    @Operation(summary = "Lister toutes les factures avec recherche et filtres")
+    public ResponseEntity<Page<InvoiceResponse>> getAll(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) ProcessingStatus status,
+            Pageable pageable) {
+        Page<Invoice> invoices = invoiceService.searchInvoices(search, status, pageable);
         return ResponseEntity.ok(invoices.map(invoiceMapper::toResponse));
     }
 

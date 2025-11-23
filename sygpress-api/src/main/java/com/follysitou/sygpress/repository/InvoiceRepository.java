@@ -68,4 +68,27 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 
     @Query("SELECT i FROM Invoice i WHERE i.deleted = false ORDER BY i.invoiceNumber DESC LIMIT 1")
     Optional<Invoice> findTopByOrderByInvoiceNumberDesc();
+
+    // Search invoices by invoice number or customer name
+    @Query("SELECT i FROM Invoice i JOIN i.customer c WHERE i.deleted = false AND " +
+           "(LOWER(i.invoiceNumber) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(c.name) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+           "ORDER BY i.createdAt DESC")
+    Page<Invoice> searchInvoices(@Param("search") String search, Pageable pageable);
+
+    // Search invoices by invoice number or customer name and status
+    @Query("SELECT i FROM Invoice i JOIN i.customer c WHERE i.deleted = false AND " +
+           "(LOWER(i.invoiceNumber) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(c.name) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
+           "i.processingStatus = :status " +
+           "ORDER BY i.createdAt DESC")
+    Page<Invoice> searchInvoicesByStatus(@Param("search") String search, @Param("status") ProcessingStatus status, Pageable pageable);
+
+    // Find all by status
+    @Query("SELECT i FROM Invoice i WHERE i.deleted = false AND i.processingStatus = :status ORDER BY i.createdAt DESC")
+    Page<Invoice> findByProcessingStatus(@Param("status") ProcessingStatus status, Pageable pageable);
+
+    // Find all non-deleted invoices ordered by creation date
+    @Query("SELECT i FROM Invoice i WHERE i.deleted = false ORDER BY i.createdAt DESC")
+    Page<Invoice> findAllNonDeleted(Pageable pageable);
 }
