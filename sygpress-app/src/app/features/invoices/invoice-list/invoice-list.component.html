@@ -15,7 +15,7 @@
 
   <!-- Advanced Filters -->
   <div class="card p-4 mb-6">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
       <!-- Search -->
       <div class="relative">
         <input
@@ -46,6 +46,14 @@
         <option value="">Tous paiements</option>
         <option value="paid">Paye</option>
         <option value="unpaid">Impaye</option>
+      </select>
+
+      <!-- User Filter -->
+      <select [(ngModel)]="createdByFilter" (ngModelChange)="onSearch()" class="input">
+        <option value="">Tous utilisateurs</option>
+        @for (creator of creators(); track creator) {
+          <option [value]="creator">{{ creator }}</option>
+        }
       </select>
 
       <!-- Date Range -->

@@ -1,5 +1,6 @@
 package com.follysitou.sygpress.service;
 
+import com.follysitou.sygpress.enums.ProcessingStatus;
 import com.follysitou.sygpress.exception.ResourceNotFoundException;
 import com.follysitou.sygpress.model.Invoice;
 import com.follysitou.sygpress.model.InvoiceLine;
@@ -68,12 +69,50 @@ public class InvoiceService {
 
     @Transactional(readOnly = true)
     public Page<Invoice> findAll(Pageable pageable) {
-        return invoiceRepository.findAll(pageable);
+        return invoiceRepository.findAllNonDeleted(pageable);
     }
 
     @Transactional(readOnly = true)
     public Page<Invoice> findByCustomerPublicId(String customerPublicId, Pageable pageable) {
         return invoiceRepository.findByCustomerPublicIdAndDeletedFalse(customerPublicId, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Invoice> searchInvoices(String search, ProcessingStatus status, String createdBy, Pageable pageable) {
+        boolean hasSearch = search != null && !search.isEmpty();
+        boolean hasStatus = status != null;
+        boolean hasCreatedBy = createdBy != null && !createdBy.isEmpty();
+
+        // Toutes les combinaisons possibles
+        if (hasSearch && hasStatus && hasCreatedBy) {
+            return invoiceRepository.searchInvoicesByStatusAndCreatedBy(search, status, createdBy, pageable);
+        }
+        else if (hasSearch && hasCreatedBy) {
+            return invoiceRepository.searchInvoicesByCreatedBy(search, createdBy, pageable);
+        }
+        else if (hasStatus && hasCreatedBy) {
+            return invoiceRepository.findByStatusAndCreatedBy(status, createdBy, pageable);
+        }
+        else if (hasSearch && hasStatus) {
+            return invoiceRepository.searchInvoicesByStatus(search, status, pageable);
+        }
+        else if (hasSearch) {
+            return invoiceRepository.searchInvoices(search, pageable);
+        }
+        else if (hasStatus) {
+            return invoiceRepository.findByProcessingStatus(status, pageable);
+        }
+        else if (hasCreatedBy) {
+            return invoiceRepository.findByCreatedBy(createdBy, pageable);
+        }
+        else {
+            return invoiceRepository.findAllNonDeleted(pageable);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> getDistinctCreators() {
+        return invoiceRepository.findDistinctCreators();
     }
 
     @Transactional

@@ -20,11 +20,13 @@ export class InvoiceListComponent implements OnInit {
   searchTerm = '';
   statusFilter = '';
   paymentFilter = '';
+  createdByFilter = '';
   startDate = '';
   endDate = '';
   currentPage = signal(0);
   totalPages = signal(0);
   totalElements = signal(0);
+  creators = signal<string[]>([]);
   private searchTimeout: any;
 
   constructor(
@@ -33,13 +35,26 @@ export class InvoiceListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.loadCreators();
     this.loadInvoices();
+  }
+
+  loadCreators(): void {
+    this.invoiceService.getCreators().subscribe({
+      next: (creators) => {
+        this.creators.set(creators);
+      },
+      error: (error) => {
+        console.error('Erreur lors du chargement des créateurs:', error);
+      }
+    });
   }
 
   loadInvoices(): void {
     this.isLoading.set(true);
     const status = this.statusFilter ? this.statusFilter as ProcessingStatus : undefined;
-    this.invoiceService.getInvoices(this.currentPage(), 10, this.searchTerm || undefined, status).subscribe({
+    const createdBy = this.createdByFilter || undefined;
+    this.invoiceService.getInvoices(this.currentPage(), 10, this.searchTerm || undefined, status, createdBy).subscribe({
       next: (response) => {
         let filtered = response.content;
 
@@ -117,6 +132,7 @@ export class InvoiceListComponent implements OnInit {
     this.searchTerm = '';
     this.statusFilter = '';
     this.paymentFilter = '';
+    this.createdByFilter = '';
     this.startDate = '';
     this.endDate = '';
     this.onSearch();

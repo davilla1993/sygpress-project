@@ -68,4 +68,65 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 
     @Query("SELECT i FROM Invoice i WHERE i.deleted = false ORDER BY i.invoiceNumber DESC LIMIT 1")
     Optional<Invoice> findTopByOrderByInvoiceNumberDesc();
+
+    // Search invoices by invoice number or customer name
+    @Query("SELECT i FROM Invoice i JOIN i.customer c WHERE i.deleted = false AND " +
+           "(LOWER(i.invoiceNumber) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(c.name) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+           "ORDER BY i.createdAt DESC")
+    Page<Invoice> searchInvoices(@Param("search") String search, Pageable pageable);
+
+    // Search invoices by invoice number or customer name and status
+    @Query("SELECT i FROM Invoice i JOIN i.customer c WHERE i.deleted = false AND " +
+           "(LOWER(i.invoiceNumber) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(c.name) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
+           "i.processingStatus = :status " +
+           "ORDER BY i.createdAt DESC")
+    Page<Invoice> searchInvoicesByStatus(@Param("search") String search, @Param("status") ProcessingStatus status, Pageable pageable);
+
+    // Find all by status
+    @Query("SELECT i FROM Invoice i WHERE i.deleted = false AND i.processingStatus = :status ORDER BY i.createdAt DESC")
+    Page<Invoice> findByProcessingStatus(@Param("status") ProcessingStatus status, Pageable pageable);
+
+    // Find all non-deleted invoices ordered by creation date
+    @Query("SELECT i FROM Invoice i WHERE i.deleted = false ORDER BY i.createdAt DESC")
+    Page<Invoice> findAllNonDeleted(Pageable pageable);
+
+    // Search with all filters: search, status, and createdBy
+    @Query("SELECT i FROM Invoice i JOIN i.customer c WHERE i.deleted = false AND " +
+           "(LOWER(i.invoiceNumber) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(c.name) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
+           "i.processingStatus = :status AND i.createdBy = :createdBy " +
+           "ORDER BY i.createdAt DESC")
+    Page<Invoice> searchInvoicesByStatusAndCreatedBy(@Param("search") String search,
+                                                      @Param("status") ProcessingStatus status,
+                                                      @Param("createdBy") String createdBy,
+                                                      Pageable pageable);
+
+    // Search with search and createdBy
+    @Query("SELECT i FROM Invoice i JOIN i.customer c WHERE i.deleted = false AND " +
+           "(LOWER(i.invoiceNumber) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(c.name) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
+           "i.createdBy = :createdBy " +
+           "ORDER BY i.createdAt DESC")
+    Page<Invoice> searchInvoicesByCreatedBy(@Param("search") String search,
+                                            @Param("createdBy") String createdBy,
+                                            Pageable pageable);
+
+    // Filter by status and createdBy
+    @Query("SELECT i FROM Invoice i WHERE i.deleted = false AND " +
+           "i.processingStatus = :status AND i.createdBy = :createdBy " +
+           "ORDER BY i.createdAt DESC")
+    Page<Invoice> findByStatusAndCreatedBy(@Param("status") ProcessingStatus status,
+                                           @Param("createdBy") String createdBy,
+                                           Pageable pageable);
+
+    // Filter by createdBy only
+    @Query("SELECT i FROM Invoice i WHERE i.deleted = false AND i.createdBy = :createdBy " +
+           "ORDER BY i.createdAt DESC")
+    Page<Invoice> findByCreatedBy(@Param("createdBy") String createdBy, Pageable pageable);
+
+    // Get distinct users who have created invoices
+    @Query("SELECT DISTINCT i.createdBy FROM Invoice i WHERE i.deleted = false AND i.createdBy IS NOT NULL ORDER BY i.createdBy")
+    List<String> findDistinctCreators();
 }

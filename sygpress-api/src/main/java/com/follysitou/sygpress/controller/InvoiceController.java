@@ -184,9 +184,21 @@ public class InvoiceController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<Page<InvoiceResponse>> getAll(Pageable pageable) {
-        Page<Invoice> invoices = invoiceService.findAll(pageable);
+    @Operation(summary = "Lister toutes les factures avec recherche et filtres")
+    public ResponseEntity<Page<InvoiceResponse>> getAll(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) ProcessingStatus status,
+            @RequestParam(required = false) String createdBy,
+            Pageable pageable) {
+        Page<Invoice> invoices = invoiceService.searchInvoices(search, status, createdBy, pageable);
         return ResponseEntity.ok(invoices.map(invoiceMapper::toResponse));
+    }
+
+    @GetMapping("/creators")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @Operation(summary = "Récupérer la liste des utilisateurs ayant créé des factures")
+    public ResponseEntity<List<String>> getCreators() {
+        return ResponseEntity.ok(invoiceService.getDistinctCreators());
     }
 
     @DeleteMapping("/{publicId}")
