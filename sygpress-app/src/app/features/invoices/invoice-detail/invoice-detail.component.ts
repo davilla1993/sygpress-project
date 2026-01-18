@@ -3,7 +3,9 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { InvoiceService } from '../../../core/services/invoice.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { Invoice, ProcessingStatus } from '../../../core/models';
+import { environment } from '../../../../environments/environment';
 import { ToastService } from '../../../shared/services/toast.service';
 import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 
@@ -34,10 +36,11 @@ export class InvoiceDetailComponent implements OnInit {
 
   constructor(
     private invoiceService: InvoiceService,
+    private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
     private toastService: ToastService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -140,20 +143,9 @@ export class InvoiceDetailComponent implements OnInit {
   printInvoice(): void {
     const inv = this.invoice();
     if (inv) {
-      this.invoiceService.printInvoice(inv.publicId).subscribe({
-        next: (blob) => {
-          const url = window.URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.target = '_blank';
-          link.click();
-          setTimeout(() => window.URL.revokeObjectURL(url), 100);
-        },
-        error: (error) => {
-          const message = error.error?.message || 'Erreur lors de l\'impression';
-          this.toastService.error(message);
-        }
-      });
+      const token = this.authService.getToken();
+      const url = `${environment.apiUrl}/invoices/${inv.publicId}/print?token=${token}`;
+      window.open(url, '_blank');
     }
   }
 

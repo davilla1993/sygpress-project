@@ -3,8 +3,10 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { InvoiceService } from '../../../core/services/invoice.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { PageResponse } from '../../../core/services/customer.service';
 import { Invoice, ProcessingStatus } from '../../../core/models';
+import { environment } from '../../../../environments/environment';
 import { ToastService } from '../../../shared/services/toast.service';
 
 @Component({
@@ -31,6 +33,7 @@ export class InvoiceListComponent implements OnInit {
 
   constructor(
     private invoiceService: InvoiceService,
+    private authService: AuthService,
     private toastService: ToastService
   ) { }
 
@@ -139,20 +142,9 @@ export class InvoiceListComponent implements OnInit {
   }
 
   printInvoice(invoice: Invoice): void {
-    this.invoiceService.printInvoice(invoice.publicId).subscribe({
-      next: (blob) => {
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.target = '_blank';
-        link.click();
-        setTimeout(() => window.URL.revokeObjectURL(url), 100);
-      },
-      error: (error) => {
-        const message = error.error?.message || 'Erreur lors de l\'impression';
-        this.toastService.error(message);
-      }
-    });
+    const token = this.authService.getToken();
+    const url = `${environment.apiUrl}/invoices/${invoice.publicId}/print?token=${token}`;
+    window.open(url, '_blank');
   }
 
   getInvoiceTotal(invoice: Invoice): number {

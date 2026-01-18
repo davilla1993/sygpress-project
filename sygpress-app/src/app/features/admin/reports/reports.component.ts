@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpParams } from '@angular/common/http';
+import { AuthService } from '../../../core/services/auth.service';
 import { environment } from '../../../../environments/environment';
 import { ToastService } from '../../../shared/services/toast.service';
 
@@ -88,6 +89,7 @@ export class ReportsComponent {
 
   constructor(
     private http: HttpClient,
+    private authService: AuthService,
     private toastService: ToastService
   ) {
     this.loadSalesReport();
@@ -158,21 +160,10 @@ export class ReportsComponent {
   }
 
   printReport(type: string): void {
+    const token = this.authService.getToken();
     const params = this.getDateParams();
-    this.http.get(`${environment.apiUrl}/reports/${type}/pdf`, { params, responseType: 'blob' }).subscribe({
-      next: (blob) => {
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.target = '_blank';
-        link.click();
-        setTimeout(() => window.URL.revokeObjectURL(url), 100);
-      },
-      error: (error) => {
-        const message = error.error?.message || 'Erreur lors de l\'impression du rapport';
-        this.toastService.error(message);
-      }
-    });
+    const url = `${environment.apiUrl}/reports/${type}/pdf?startDate=${params.get('startDate')}&endDate=${params.get('endDate')}&token=${token}`;
+    window.open(url, '_blank');
   }
 
   onDateChange(): void {
