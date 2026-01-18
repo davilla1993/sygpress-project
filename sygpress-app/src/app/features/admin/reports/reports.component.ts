@@ -162,7 +162,11 @@ export class ReportsComponent {
     this.http.get(`${environment.apiUrl}/reports/${type}/pdf`, { params, responseType: 'blob' }).subscribe({
       next: (blob) => {
         const url = window.URL.createObjectURL(blob);
-        window.open(url, '_blank');
+        const link = document.createElement('a');
+        link.href = url;
+        link.target = '_blank';
+        link.click();
+        setTimeout(() => window.URL.revokeObjectURL(url), 100);
       },
       error: (error) => {
         const message = error.error?.message || 'Erreur lors de l\'impression du rapport';
@@ -229,9 +233,9 @@ export class ReportsComponent {
     // Vérifier si c'est le mois en cours
     const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
     if (this.startDate === firstDayOfMonth.toISOString().split('T')[0] &&
-        this.endDate === this.getToday()) {
+      this.endDate === this.getToday()) {
       const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-                          'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+        'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
       return `${monthNames[today.getMonth()]} ${today.getFullYear()}`;
     }
 

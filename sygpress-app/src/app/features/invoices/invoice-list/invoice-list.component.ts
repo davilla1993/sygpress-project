@@ -32,7 +32,7 @@ export class InvoiceListComponent implements OnInit {
   constructor(
     private invoiceService: InvoiceService,
     private toastService: ToastService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadCreators();
@@ -142,7 +142,11 @@ export class InvoiceListComponent implements OnInit {
     this.invoiceService.printInvoice(invoice.publicId).subscribe({
       next: (blob) => {
         const url = window.URL.createObjectURL(blob);
-        window.open(url, '_blank');
+        const link = document.createElement('a');
+        link.href = url;
+        link.target = '_blank';
+        link.click();
+        setTimeout(() => window.URL.revokeObjectURL(url), 100);
       },
       error: (error) => {
         const message = error.error?.message || 'Erreur lors de l\'impression';
